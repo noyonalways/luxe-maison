@@ -1,0 +1,18 @@
+{
+  "extends": "@luxe-maison/typescript-config/react-library.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "noFallthroughCasesInSwitch": false,
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "strict": false,
+    "strictNullChecks": true,
+    "useDefineForClassFields": true
+  },
+  "include": ["src"]
+}

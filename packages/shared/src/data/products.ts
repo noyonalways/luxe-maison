@@ -1,0 +1,441 @@
+export interface ProductColor {
+  name: string;
+  hex: string;
+}
+
+export type Section = 'men' | 'women' | 'kids';
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  section: Section;
+  category: 'punjabi' | 'shirt' | 'tshirt' | 'pants';
+  fit: 'slim' | 'regular' | 'relaxed';
+  fabric: 'silk' | 'cotton' | 'linen' | 'blend';
+  season: 'summer' | 'winter' | 'all-season';
+  colors: ProductColor[];
+  sizes: string[];
+  images: string[];
+  description: string;
+  details: string[];
+  badge?: string;
+  rating: number;
+  reviews: number;
+}
+
+export const products: Product[] = [
+  {
+    id: 'pnj-001',
+    name: 'Royal Silk Punjabi',
+    price: 189,
+    originalPrice: 249,
+    section: 'men',
+    category: 'punjabi',
+    fit: 'regular',
+    fabric: 'silk',
+    season: 'all-season',
+    colors: [
+      { name: 'Ivory', hex: '#F5F0E8' },
+      { name: 'Navy', hex: '#1B2A4A' },
+      { name: 'Sage', hex: '#8B9D83' },
+    ],
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    images: [
+      'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800&q=80',
+      'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=800&q=80',
+    ],
+    description: 'Handcrafted from the finest mulberry silk, this Punjabi exudes regal sophistication. Intricate tone-on-tone embroidery adorns the placket and cuffs.',
+    details: ['100% Mulberry Silk', 'Hand-embroidered details', 'Mother-of-pearl buttons', 'Dry clean only'],
+    badge: 'Bestseller',
+    rating: 4.8,
+    reviews: 124,
+  },
+  {
+    id: 'pnj-002',
+    name: 'Heritage Cotton Punjabi',
+    price: 129,
+    section: 'men',
+    category: 'punjabi',
+    fit: 'relaxed',
+    fabric: 'cotton',
+    season: 'summer',
+    colors: [
+      { name: 'White', hex: '#FFFFFF' },
+      { name: 'Sky Blue', hex: '#87CEEB' },
+      { name: 'Khaki', hex: '#C3B091' },
+    ],
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    images: [
+      'https://images.unsplash.com/photo-1608234807905-4466023792f5?w=800&q=80',
+      'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80',
+    ],
+    description: 'A breathable cotton Punjabi perfect for warm weather occasions. The relaxed fit ensures all-day comfort while maintaining an elegant silhouette.',
+    details: ['100% Organic Cotton', 'Relaxed traditional cut', 'Coconut shell buttons', 'Machine washable'],
+    badge: 'New Arrival',
+    rating: 4.6,
+    reviews: 89,
+  },
+  {
+    id: 'sht-001',
+    name: 'Riviera Linen Shirt',
+    price: 149,
+    section: 'men',
+    category: 'shirt',
+    fit: 'slim',
+    fabric: 'linen',
+    season: 'summer',
+    colors: [
+      { name: 'White', hex: '#FFFFFF' },
+      { name: 'Sand', hex: '#D2B48C' },
+      { name: 'Olive', hex: '#556B2F' },
+    ],
+    sizes: ['S', 'M', 'L', 'XL'],
+    images: [
+      'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80',
+      'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80',
+    ],
+    description: 'European-cut linen shirt designed for the modern gentleman. Features a mother-of-pearl button placket and French seams throughout.',
+    details: ['100% European Linen', 'Slim European cut', 'French seam construction', 'Machine wash cold'],
+    badge: 'New Arrival',
+    rating: 4.7,
+    reviews: 67,
+  },
+  {
+    id: 'sht-002',
+    name: 'Oxford Classic Shirt',
+    price: 119,
+    section: 'men',
+    category: 'shirt',
+    fit: 'regular',
+    fabric: 'cotton',
+    season: 'all-season',
+    colors: [
+      { name: 'Light Blue', hex: '#ADD8E6' },
+      { name: 'White', hex: '#FFFFFF' },
+      { name: 'Pink', hex: '#FFB6C1' },
+      { name: 'Charcoal', hex: '#333333' },
+    ],
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    images: [
+      'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80',
+      'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80',
+    ],
+    description: 'The quintessential Oxford shirt, reimagined with a contemporary collar and premium Egyptian cotton. A wardrobe essential.',
+    details: ['Egyptian Cotton Oxford', 'Button-down collar', 'Reinforced cuffs', 'Machine washable'],
+    rating: 4.5,
+    reviews: 203,
+  },
+  {
+    id: 'tsh-001',
+    name: 'Pima Crew Tee',
+    price: 69,
+    section: 'men',
+    category: 'tshirt',
+    fit: 'slim',
+    fabric: 'cotton',
+    season: 'all-season',
+    colors: [
+      { name: 'Black', hex: '#1A1A1A' },
+      { name: 'White', hex: '#FFFFFF' },
+      { name: 'Heather Grey', hex: '#B6B6B4' },
+      { name: 'Navy', hex: '#1B2A4A' },
+    ],
+    sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+    images: [
+      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80',
+      'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&q=80',
+    ],
+    description: 'Crafted from Peruvian Pima cotton for an impossibly soft hand feel. The perfect foundation piece for any wardrobe.',
+    details: ['100% Peruvian Pima Cotton', 'Reinforced collar', 'Pre-shrunk', 'Machine washable'],
+    badge: 'Essential',
+    rating: 4.9,
+    reviews: 341,
+  },
+  {
+    id: 'tsh-002',
+    name: 'Merino Henley',
+    price: 89,
+    section: 'men',
+    category: 'tshirt',
+    fit: 'regular',
+    fabric: 'blend',
+    season: 'winter',
+    colors: [
+      { name: 'Burgundy', hex: '#722F37' },
+      { name: 'Forest', hex: '#228B22' },
+      { name: 'Charcoal', hex: '#333333' },
+    ],
+    sizes: ['S', 'M', 'L', 'XL'],
+    images: [
+      'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&q=80',
+      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80',
+    ],
+    description: 'A luxurious Merino wool blend Henley that transitions seamlessly from casual to smart-casual.',
+    details: ['70% Merino Wool, 30% Cotton', 'Three-button placket', 'Ribbed cuffs', 'Hand wash recommended'],
+    badge: 'New Arrival',
+    rating: 4.6,
+    reviews: 56,
+  },
+  {
+    id: 'pnt-001',
+    name: 'Tailored Wool Trousers',
+    price: 179,
+    section: 'men',
+    category: 'pants',
+    fit: 'slim',
+    fabric: 'blend',
+    season: 'winter',
+    colors: [
+      { name: 'Charcoal', hex: '#333333' },
+      { name: 'Navy', hex: '#1B2A4A' },
+      { name: 'Camel', hex: '#C19A6B' },
+    ],
+    sizes: ['28', '30', '32', '34', '36', '38'],
+    images: [
+      'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=800&q=80',
+      'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=800&q=80',
+    ],
+    description: 'Precision-tailored trousers in a Super 120s wool blend. Features a half-lined construction for structure and breathability.',
+    details: ['Super 120s Wool Blend', 'Half-lined', 'Extended tab closure', 'Dry clean only'],
+    badge: 'Premium',
+    rating: 4.7,
+    reviews: 98,
+  },
+  {
+    id: 'pnt-002',
+    name: 'Relaxed Linen Pants',
+    price: 139,
+    section: 'men',
+    category: 'pants',
+    fit: 'relaxed',
+    fabric: 'linen',
+    season: 'summer',
+    colors: [
+      { name: 'Sand', hex: '#D2B48C' },
+      { name: 'White', hex: '#FFFFFF' },
+      { name: 'Slate', hex: '#708090' },
+    ],
+    sizes: ['28', '30', '32', '34', '36'],
+    images: [
+      'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=800&q=80',
+      'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=800&q=80',
+    ],
+    description: 'Effortlessly elegant linen pants with a relaxed drawstring waist. Perfect for resort wear and casual summer evenings.',
+    details: ['100% French Linen', 'Drawstring waist', 'Side pockets', 'Machine wash cold'],
+    badge: 'New Arrival',
+    rating: 4.4,
+    reviews: 72,
+  },
+  {
+    id: 'pnj-003',
+    name: 'Midnight Jacquard Punjabi',
+    price: 219,
+    section: 'men',
+    category: 'punjabi',
+    fit: 'regular',
+    fabric: 'silk',
+    season: 'winter',
+    colors: [
+      { name: 'Midnight Blue', hex: '#191970' },
+      { name: 'Black', hex: '#1A1A1A' },
+    ],
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    images: [
+      'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=800&q=80',
+      'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800&q=80',
+    ],
+    description: 'A statement Punjabi featuring intricate jacquard weave in deep midnight tones. Perfect for evening celebrations and formal occasions.',
+    details: ['Jacquard Silk Weave', 'Tonal embroidery', 'Mandarin collar', 'Dry clean only'],
+    badge: 'Premium',
+    rating: 4.9,
+    reviews: 67,
+  },
+  {
+    id: 'sht-003',
+    name: 'Chambray Weekend Shirt',
+    price: 99,
+    section: 'men',
+    category: 'shirt',
+    fit: 'relaxed',
+    fabric: 'cotton',
+    season: 'all-season',
+    colors: [
+      { name: 'Indigo', hex: '#3F51B5' },
+      { name: 'Light Wash', hex: '#90CAF9' },
+    ],
+    sizes: ['S', 'M', 'L', 'XL'],
+    images: [
+      'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80',
+      'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80',
+    ],
+    description: 'A relaxed chambray shirt that bridges casual and smart effortlessly. Soft hand feel with a lived-in aesthetic from the first wear.',
+    details: ['100% Chambray Cotton', 'Relaxed fit', 'Chest pocket', 'Machine washable'],
+    badge: 'New Arrival',
+    rating: 4.5,
+    reviews: 43,
+  },
+  {
+    id: 'sht-004',
+    name: 'Silk Mandarin Collar Shirt',
+    price: 199,
+    section: 'men',
+    category: 'shirt',
+    fit: 'slim',
+    fabric: 'silk',
+    season: 'all-season',
+    colors: [
+      { name: 'Champagne', hex: '#F7E7CE' },
+      { name: 'Burgundy', hex: '#722F37' },
+      { name: 'Emerald', hex: '#046307' },
+    ],
+    sizes: ['S', 'M', 'L', 'XL'],
+    images: [
+      'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80',
+      'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80',
+    ],
+    description: 'A modern take on traditional elegance — this silk shirt features a clean mandarin collar and concealed placket for a seamless silhouette.',
+    details: ['100% Mulberry Silk', 'Mandarin collar', 'Concealed button placket', 'Dry clean only'],
+    badge: 'Premium',
+    rating: 4.8,
+    reviews: 91,
+  },
+  {
+    id: 'tsh-003',
+    name: 'Supima V-Neck Tee',
+    price: 59,
+    section: 'men',
+    category: 'tshirt',
+    fit: 'slim',
+    fabric: 'cotton',
+    season: 'summer',
+    colors: [
+      { name: 'White', hex: '#FFFFFF' },
+      { name: 'Slate', hex: '#708090' },
+      { name: 'Olive', hex: '#556B2F' },
+    ],
+    sizes: ['XS', 'S', 'M', 'L', 'XL'],
+    images: [
+      'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&q=80',
+      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80',
+    ],
+    description: 'Ultra-soft Supima cotton V-neck with a refined drape. The perfect layering piece or standalone essential.',
+    details: ['100% Supima Cotton', 'V-neck cut', 'Tagless comfort', 'Machine washable'],
+    badge: 'New Arrival',
+    rating: 4.4,
+    reviews: 158,
+  },
+  {
+    id: 'tsh-004',
+    name: 'Cashmere Blend Polo',
+    price: 159,
+    section: 'men',
+    category: 'tshirt',
+    fit: 'regular',
+    fabric: 'blend',
+    season: 'all-season',
+    colors: [
+      { name: 'Navy', hex: '#1B2A4A' },
+      { name: 'Cream', hex: '#FFFDD0' },
+      { name: 'Sage', hex: '#8B9D83' },
+    ],
+    sizes: ['S', 'M', 'L', 'XL'],
+    images: [
+      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80',
+      'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&q=80',
+    ],
+    description: 'Luxurious cashmere-cotton blend polo with a refined collar and mother-of-pearl buttons. Effortless sophistication.',
+    details: ['60% Cotton, 40% Cashmere', 'Mother-of-pearl buttons', 'Ribbed collar', 'Hand wash recommended'],
+    badge: 'Premium',
+    rating: 4.7,
+    reviews: 112,
+  },
+  {
+    id: 'pnt-003',
+    name: 'Chino Trousers Classic',
+    price: 109,
+    section: 'men',
+    category: 'pants',
+    fit: 'regular',
+    fabric: 'cotton',
+    season: 'all-season',
+    colors: [
+      { name: 'Tan', hex: '#D2B48C' },
+      { name: 'Navy', hex: '#1B2A4A' },
+      { name: 'Olive', hex: '#556B2F' },
+      { name: 'Stone', hex: '#928E85' },
+    ],
+    sizes: ['28', '30', '32', '34', '36', '38'],
+    images: [
+      'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=800&q=80',
+      'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=800&q=80',
+    ],
+    description: 'Versatile chinos crafted from brushed cotton twill. A wardrobe workhorse that pairs with everything from polos to blazers.',
+    details: ['100% Cotton Twill', 'Regular fit', 'Slash pockets', 'Machine washable'],
+    badge: 'Bestseller',
+    rating: 4.6,
+    reviews: 287,
+  },
+  {
+    id: 'pnt-004',
+    name: 'Silk-Blend Evening Trousers',
+    price: 229,
+    section: 'men',
+    category: 'pants',
+    fit: 'slim',
+    fabric: 'blend',
+    season: 'winter',
+    colors: [
+      { name: 'Black', hex: '#1A1A1A' },
+      { name: 'Midnight', hex: '#191970' },
+    ],
+    sizes: ['28', '30', '32', '34', '36'],
+    images: [
+      'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=800&q=80',
+      'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=800&q=80',
+    ],
+    description: 'Impeccably tailored evening trousers with a silk-wool blend for a subtle sheen. Finished with satin side-seam detailing.',
+    details: ['70% Wool, 30% Silk', 'Satin side-seam', 'Hook & bar closure', 'Dry clean only'],
+    badge: 'Premium',
+    rating: 4.8,
+    reviews: 54,
+  },
+];
+
+export const sections = [
+  { id: 'men' as Section, name: 'Men' },
+  { id: 'women' as Section, name: 'Women' },
+  { id: 'kids' as Section, name: 'Kids' },
+] as const;
+
+export const categories = [
+  { id: 'punjabi', name: 'Punjabi', description: 'Traditional elegance, modern craft' },
+  { id: 'shirt', name: 'Shirts', description: 'Refined everyday essentials' },
+  { id: 'tshirt', name: 'T-Shirts', description: 'Luxury basics, elevated' },
+  { id: 'pants', name: 'Pants', description: 'Tailored to perfection' },
+] as const;
+
+export function getProductById(id: string): Product | undefined {
+  return products.find(p => p.id === id);
+}
+
+export function getProductsByCategory(category: string): Product[] {
+  return products.filter(p => p.category === category);
+}
+
+export function getProductsBySection(section: string): Product[] {
+  return products.filter(p => p.section === section);
+}
+
+export function getProductsBySectionAndCategory(section: string, category: string): Product[] {
+  return products.filter(p => p.section === section && p.category === category);
+}
+
+export function getRelatedProducts(productId: string, limit = 4): Product[] {
+  const product = getProductById(productId);
+  if (!product) return [];
+  return products
+    .filter(p => p.id !== productId && p.category === product.category)
+    .slice(0, limit);
+}

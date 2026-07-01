@@ -1,0 +1,64 @@
+import Link from 'next/link';
+
+export default function Footer() {
+  return (
+    <footer className="bg-foreground text-background">
+      <div className="container mx-auto px-6 lg:px-12 py-16 lg:py-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+          <div>
+            <h3 className="font-heading text-2xl font-semibold mb-4">MAISON</h3>
+            <p className="text-sm opacity-60 leading-relaxed max-w-xs">
+              Curating the finest traditional and contemporary menswear since 2020.
+            </p>
+          </div>
+          <div>
+            <h4 className="text-xs font-body font-semibold letter-wide uppercase mb-4 opacity-80">Shop</h4>
+            <div className="flex flex-col gap-2.5">
+              {['Punjabi', 'Shirts', 'T-Shirts', 'Pants', 'New Arrivals'].map(item => (
+                <Link key={item} href="/shop" className="text-sm opacity-60 transition-smooth hover:opacity-100">
+                  {item}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h4 className="text-xs font-body font-semibold letter-wide uppercase mb-4 opacity-80">Company</h4>
+            <div className="flex flex-col gap-2.5">
+              {['Our Story', 'Craftsmanship', 'Sustainability', 'Careers'].map(item => (
+                <span key={item} className="text-sm opacity-60 cursor-pointer transition-smooth hover:opacity-100">
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h4 className="text-xs font-body font-semibold letter-wide uppercase mb-4 opacity-80">Support</h4>
+            <div className="flex flex-col gap-2.5">
+              {['Sizing Guide', 'Shipping & Returns', 'Care Instructions', 'Contact Us'].map(item => (
+                <span key={item} className="text-sm opacity-60 cursor-pointer transition-smooth hover:opacity-100">
+                  {item}
+                </span>
+              ))}
+              <Link href="/track-order" className="text-sm opacity-60 cursor-pointer transition-smooth hover:opacity-100">
+                Track Order
+              </Link>
+              <Link href="/admin" className="text-sm opacity-40 cursor-pointer transition-smooth hover:opacity-80 mt-2">
+                Store Manager →
+              </Link>
+            </div>
+          </div>
+        </div>
+        <div className="border-t border-background/10 mt-16 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-xs opacity-40">© 2026 MAISON. All rights reserved.</p>
+          <div className="flex gap-6">
+            {['Privacy', 'Terms', 'Cookies'].map(item => (
+              <span key={item} className="text-xs opacity-40 cursor-pointer transition-smooth hover:opacity-80">
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}

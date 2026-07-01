@@ -1,0 +1,34 @@
+{
+  "name": "@luxe-maison/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "check-types": "tsc --noEmit",
+    "clean": "rimraf dist .turbo"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./data/*": {
+      "types": "./dist/data/*.d.ts",
+      "default": "./dist/data/*.js"
+    },
+    "./lib/*": {
+      "types": "./dist/lib/*.d.ts",
+      "default": "./dist/lib/*.js"
+    }
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.6.0"
+  },
+  "devDependencies": {
+    "@luxe-maison/typescript-config": "workspace:*",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.3"
+  }
+}
