@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "rimraf dist tsconfig.tsbuildinfo && tsc",
     "check-types": "tsc --noEmit",
     "clean": "rimraf dist .turbo"
   },
