@@ -4,6 +4,13 @@ export {
   getProductRepository,
   getOrderRepository,
   getCustomerRepository,
+  getCampaignRepository,
+  getDiscountRepository,
+  getNewsletterRepository,
+  getStaffRepository,
+  getSettingsRepository,
+  getReviewRepository,
+  getPopupRepository,
 } from './get-repositories.js';
 
 export type {
@@ -24,12 +31,26 @@ export {
   createImpProductRepository as createInMemoryProductRepository,
   createImpOrderRepository as createInMemoryOrderRepository,
   createImpCustomerRepository as createInMemoryCustomerRepository,
+  createImpCampaignRepository as createInMemoryCampaignRepository,
+  createImpDiscountRepository as createInMemoryDiscountRepository,
+  createImpNewsletterRepository as createInMemoryNewsletterRepository,
+  createImpStaffRepository as createInMemoryStaffRepository,
+  createImpSettingsRepository as createInMemorySettingsRepository,
+  createImpReviewRepository as createInMemoryReviewRepository,
+  createImpPopupRepository as createInMemoryPopupRepository,
 } from './adapters/in_memory/repositories.js';
 
 export {
   createImpProductRepository as createMongooseProductRepository,
   createImpOrderRepository as createMongooseOrderRepository,
   createImpCustomerRepository as createMongooseCustomerRepository,
+  createImpCampaignRepository as createMongooseCampaignRepository,
+  createImpDiscountRepository as createMongooseDiscountRepository,
+  createImpNewsletterRepository as createMongooseNewsletterRepository,
+  createImpStaffRepository as createMongooseStaffRepository,
+  createImpSettingsRepository as createMongooseSettingsRepository,
+  createImpReviewRepository as createMongooseReviewRepository,
+  createImpPopupRepository as createMongoosePopupRepository,
   connectMongoose,
   disconnectMongoose,
 } from './adapters/mongoose/repositories.js';
@@ -43,6 +64,10 @@ export {
   mockSubscribers,
   mockNewsletterEmails,
   analyticsData,
+  mockStaff,
+  defaultStoreSettings,
+  seedReviews,
+  defaultPopups,
   products,
   sections,
   categories,

@@ -1,4 +1,17 @@
-import type { Order, AnalyticsData, AdminProduct, Subscriber, NewsletterEmail, Discount, Campaign, Customer } from '@luxe-maison/core';
+import type {
+  Order,
+  AnalyticsData,
+  AdminProduct,
+  Subscriber,
+  NewsletterEmail,
+  Discount,
+  Campaign,
+  Customer,
+  StaffMember,
+  StoreSettings,
+  Review,
+  PopupConfig,
+} from '@luxe-maison/core';
 import { products } from './catalog.seed.js';
 
 export const adminProducts: AdminProduct[] = products.map((p, i) => ({
@@ -170,4 +183,69 @@ export const mockCustomers: Customer[] = [
   { id: 'cust-8', name: 'Aisha Begum', email: 'aisha.b@example.com', phone: '+880 1700-000000', address: '90 Gulshan Avenue, Dhaka 1212, Bangladesh', totalOrders: 7, totalSpent: 1940, status: 'active', joinedAt: '2025-09-10T00:00:00Z', lastOrderAt: '2026-02-20T08:00:00Z' },
   { id: 'cust-9', name: 'Lucas Torres', email: 'lucas.t@example.com', phone: '+55 11-99999-0000', address: 'Av. Paulista 1578, São Paulo, SP 01310-200, Brazil', totalOrders: 4, totalSpent: 950, status: 'active', joinedAt: '2025-11-15T00:00:00Z', lastOrderAt: '2026-02-10T12:30:00Z' },
   { id: 'cust-10', name: 'Fatima Al-Rashid', email: 'fatima.r@example.com', phone: '+966 50-1112233', address: 'Al Olaya District, Riyadh, Saudi Arabia', totalOrders: 1, totalSpent: 189, status: 'blocked', joinedAt: '2026-01-20T00:00:00Z', lastOrderAt: '2026-01-20T09:00:00Z' },
+];
+
+export const mockStaff: StaffMember[] = [
+  { id: '1', name: 'Sarah Johnson', email: 'sarah@luxemaison.com', role: 'manager', addedAt: '2025-12-01' },
+  { id: '2', name: 'Ahmed Khan', email: 'ahmed@luxemaison.com', role: 'employee', addedAt: '2026-01-15' },
+  { id: '3', name: 'Emily Chen', email: 'emily@luxemaison.com', role: 'employee', addedAt: '2026-02-20' },
+];
+
+export const defaultStoreSettings: StoreSettings = {
+  storeName: 'MAISON',
+  contactEmail: 'hello@luxemaison.com',
+  currency: 'USD',
+  language: 'en',
+  maintenanceMode: false,
+  orderNotifications: true,
+  stockAlerts: true,
+  newsletterAutoReply: false,
+  lowStockThreshold: 15,
+  timezone: 'America/New_York',
+};
+
+export const seedReviews: Review[] = [
+  { id: 'r1', productId: 'pnj-001', author: 'Arjun M.', rating: 5, text: 'Absolutely stunning quality. The silk feels incredible and the embroidery is exquisite.', date: '2026-02-15' },
+  { id: 'r2', productId: 'pnj-001', author: 'Rahul K.', rating: 4, text: 'Beautiful Punjabi, fits well. Slightly long in the arms for me but overall excellent.', date: '2026-01-28' },
+  { id: 'r3', productId: 'tsh-001', author: 'David L.', rating: 5, text: "Best t-shirt I've ever owned. The Pima cotton is incredibly soft.", date: '2026-02-20' },
+  { id: 'r4', productId: 'sht-001', author: 'James W.', rating: 5, text: 'Perfect summer shirt. Light, breathable, and looks fantastic.', date: '2026-03-01' },
+];
+
+export const defaultPopups: PopupConfig[] = [
+  {
+    id: 'default-welcome',
+    type: 'welcome',
+    enabled: true,
+    title: 'Welcome! Enjoy 15% Off',
+    message: 'Sign up or shop now to get an exclusive 15% discount on your first order. Use the code below at checkout.',
+    discountCode: 'WELCOME15',
+    ctaText: 'Shop Now',
+    ctaLink: '/shop',
+    trigger: 'page_load',
+    priority: 10,
+  },
+  {
+    id: 'default-discount',
+    type: 'discount',
+    enabled: false,
+    title: 'Flash Sale — 20% Off Everything!',
+    message: "For a limited time, enjoy 20% off all items. Don't miss out on this exclusive deal!",
+    discountCode: 'FLASH20',
+    ctaText: 'Grab the Deal',
+    ctaLink: '/shop',
+    trigger: 'delay_10s',
+    priority: 20,
+  },
+  {
+    id: 'default-campaign',
+    type: 'campaign',
+    enabled: false,
+    title: 'Spring Collection is Here',
+    message: 'Discover our latest Spring/Summer collection with fresh styles and exclusive pieces.',
+    discountCode: '',
+    ctaText: 'Explore Collection',
+    ctaLink: '/shop?badge=New+Arrival',
+    trigger: 'scroll_50',
+    priority: 5,
+  },
 ];

@@ -6,3 +6,7 @@ export * from './discount.entity.js';
 export * from './newsletter.entity.js';
 export * from './analytics.entity.js';
 export * from './promo-code.entity.js';
+export * from './staff.entity.js';
+export * from './settings.entity.js';
+export * from './review.entity.js';
+export * from './popup.entity.js';

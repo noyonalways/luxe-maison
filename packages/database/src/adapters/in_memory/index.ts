@@ -7,6 +7,10 @@ export {
   mockSubscribers,
   mockNewsletterEmails,
   analyticsData,
+  mockStaff,
+  defaultStoreSettings,
+  seedReviews,
+  defaultPopups,
 } from './seed.js';
 
 export {

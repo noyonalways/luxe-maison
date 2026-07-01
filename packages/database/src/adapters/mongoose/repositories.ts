@@ -1,4 +1,11 @@
 export { createImpProductRepository } from './imp_product.repository.js';
 export { createImpOrderRepository } from './imp_order.repository.js';
 export { createImpCustomerRepository } from './imp_customer.repository.js';
+export { createImpCampaignRepository } from './imp_campaign.repository.js';
+export { createImpDiscountRepository } from './imp_discount.repository.js';
+export { createImpNewsletterRepository } from './imp_newsletter.repository.js';
+export { createImpStaffRepository } from './imp_staff.repository.js';
+export { createImpSettingsRepository } from './imp_settings.repository.js';
+export { createImpReviewRepository } from './imp_review.repository.js';
+export { createImpPopupRepository } from './imp_popup.repository.js';
 export { connectMongoose, disconnectMongoose } from './connection.js';
