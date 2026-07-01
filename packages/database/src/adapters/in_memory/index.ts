@@ -1,4 +1,3 @@
-export * from '@luxe-maison/core';
 export {
   adminProducts,
   mockOrders,
@@ -8,6 +7,9 @@ export {
   mockSubscribers,
   mockNewsletterEmails,
   analyticsData,
+} from './seed.js';
+
+export {
   products,
   sections,
   categories,
@@ -16,5 +18,4 @@ export {
   getProductsBySection,
   getProductsBySectionAndCategory,
   getRelatedProducts,
-} from '@luxe-maison/database';
-export { cn } from './lib/utils.js';
+} from './catalog.seed.js';

@@ -1,5 +1,5 @@
 {
-  "name": "@luxe-maison/shared",
+  "name": "@luxe-maison/database",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -12,24 +12,15 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    },
-    "./data/*": {
-      "types": "./dist/data/*.d.ts",
-      "default": "./dist/data/*.js"
-    },
-    "./lib/*": {
-      "types": "./dist/lib/*.d.ts",
-      "default": "./dist/lib/*.js"
     }
   },
   "dependencies": {
     "@luxe-maison/core": "workspace:*",
-    "@luxe-maison/database": "workspace:*",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^2.6.0"
+    "mongoose": "^8.16.4"
   },
   "devDependencies": {
     "@luxe-maison/typescript-config": "workspace:*",
+    "@types/node": "^22.16.5",
     "rimraf": "^6.0.1",
     "typescript": "^5.8.3"
   }

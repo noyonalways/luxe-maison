@@ -1,74 +1,22 @@
-export type StaffRole = "admin" | "manager" | "employee";
+import type { StaffRole, CmsSection, Permission } from '@luxe-maison/shared';
+import {
+  DEFAULT_PERMISSIONS,
+  ALL_SECTIONS,
+  getPermission as getCorePermission,
+  canAccessSection as canCoreAccessSection,
+  canModifySection as canCoreModifySection,
+  getAccessibleSections as getCoreAccessibleSections,
+  pathToSection,
+} from '@luxe-maison/shared';
 
-export type Section =
-  | "dashboard"
-  | "products"
-  | "orders"
-  | "customers"
-  | "analytics"
-  | "newsletter"
-  | "discounts"
-  | "campaigns"
-  | "popup"
-  | "access-control"
-  | "team"
-  | "settings";
+export type { StaffRole, Permission };
+export type Section = CmsSection;
+export { DEFAULT_PERMISSIONS, ALL_SECTIONS, pathToSection };
 
-export type Permission = "view" | "edit" | "full" | "none";
-
-const ADMIN_PERMISSIONS: Record<Section, Permission> = {
-  dashboard: "full",
-  products: "full",
-  orders: "full",
-  customers: "full",
-  analytics: "full",
-  newsletter: "full",
-  discounts: "full",
-  campaigns: "full",
-  popup: "full",
-  "access-control": "full",
-  team: "full",
-  settings: "full",
-};
-
-export const DEFAULT_PERMISSIONS: Record<
-  "manager" | "employee",
-  Record<Section, Permission>
-> = {
-  manager: {
-    dashboard: "full",
-    products: "none",
-    orders: "full",
-    customers: "edit",
-    analytics: "view",
-    newsletter: "full",
-    discounts: "full",
-    campaigns: "full",
-    popup: "none",
-    "access-control": "none",
-    team: "none",
-    settings: "none",
-  },
-  employee: {
-    dashboard: "view",
-    products: "view",
-    orders: "edit",
-    customers: "none",
-    analytics: "none",
-    newsletter: "none",
-    discounts: "none",
-    campaigns: "none",
-    popup: "none",
-    "access-control": "none",
-    team: "none",
-    settings: "none",
-  },
-};
-
-const STORAGE_KEY = "maison-role-permissions";
+const STORAGE_KEY = 'maison-role-permissions';
 
 export function loadStoredPermissions(): Record<
-  "manager" | "employee",
+  'manager' | 'employee',
   Record<Section, Permission>
 > {
   try {
@@ -89,71 +37,18 @@ export function loadStoredPermissions(): Record<
   };
 }
 
-export function getPermission(
-  role: StaffRole,
-  section: Section,
-  stored = loadStoredPermissions(),
-): Permission {
-  if (role === "admin") return ADMIN_PERMISSIONS[section];
-  return stored[role][section];
+export function getPermission(role: StaffRole, section: Section): Permission {
+  return getCorePermission(role, section, loadStoredPermissions());
 }
 
-export function canAccessSection(
-  role: StaffRole,
-  section: Section,
-  stored = loadStoredPermissions(),
-): boolean {
-  return getPermission(role, section, stored) !== "none";
+export function canAccessSection(role: StaffRole, section: Section): boolean {
+  return canCoreAccessSection(role, section, loadStoredPermissions());
 }
 
-export function canModifySection(
-  role: StaffRole,
-  section: Section,
-  stored = loadStoredPermissions(),
-): boolean {
-  const permission = getPermission(role, section, stored);
-  return permission === "edit" || permission === "full";
+export function canModifySection(role: StaffRole, section: Section): boolean {
+  return canCoreModifySection(role, section, loadStoredPermissions());
 }
 
-export function getAccessibleSections(
-  role: StaffRole,
-  stored = loadStoredPermissions(),
-): Section[] {
-  const sections: Section[] = [
-    "dashboard",
-    "products",
-    "orders",
-    "customers",
-    "analytics",
-    "newsletter",
-    "discounts",
-    "campaigns",
-    "popup",
-    "team",
-    "settings",
-    "access-control",
-  ];
-  return sections.filter((section) => canAccessSection(role, section, stored));
-}
-
-export function pathToSection(path: string): Section | null {
-  const parts = path.split("/").filter(Boolean);
-  if (parts.length < 2 || parts[1] === "dashboard") return "dashboard";
-  const section = parts[1];
-  const validSections: Section[] = [
-    "dashboard",
-    "products",
-    "orders",
-    "customers",
-    "analytics",
-    "newsletter",
-    "discounts",
-    "campaigns",
-    "popup",
-    "team",
-    "settings",
-    "access-control",
-  ];
-  if (validSections.includes(section as Section)) return section as Section;
-  return null;
+export function getAccessibleSections(role: StaffRole): Section[] {
+  return getCoreAccessibleSections(role, loadStoredPermissions());
 }

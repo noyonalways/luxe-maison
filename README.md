@@ -1,35 +1,41 @@
 # Luxe Maison
 
-[Turborepo](https://turbo.build) + [pnpm](https://pnpm.io) monorepo for the Luxe Maison e-commerce platform.
+[Turborepo](https://turbo.build) + [pnpm](https://pnpm.io) monorepo — **one codebase, many interfaces**.
 
-| Package | Description | Dev command |
-|---------|-------------|-------------|
-| [`apps/storefront`](apps/storefront) | Public Next.js shop | `pnpm dev:storefront` |
-| [`apps/cms`](apps/cms) | Staff CMS (TanStack Router) | `pnpm dev:admin` |
-| [`packages/shared`](packages/shared) | Shared types & mock data | — |
-| [`packages/typescript-config`](packages/typescript-config) | Shared TSConfig presets | — |
+## Structure
 
-Architecture and conventions are documented in [`design.md`](design.md).
+| Layer | Package | Description |
+|-------|---------|-------------|
+| **Core** | [`packages/core`](packages/core) | Domain types, business rules, services |
+| **Data** | [`packages/database`](packages/database) | DB client, adapters, repositories |
+| **Interface** | [`apps/restapi`](apps/restapi) | REST HTTP API (Hono, `:3001`) |
+| **Interface** | [`apps/storefront`](apps/storefront) | Public Next.js shop (`:3000`) |
+| **Interface** | [`apps/cms`](apps/cms) | Staff CMS — TanStack Router (`:5173`) |
+| **Shared** | [`packages/shared`](packages/shared) | Back-compat re-exports + `cn()` |
+| **Config** | [`packages/typescript-config`](packages/typescript-config) | TSConfig presets |
+
+Architecture details: [`design.md`](design.md).
 
 ## Quick start
 
 ```bash
 pnpm install
-pnpm dev              # storefront :3000 + cms :5173 (via Turbo)
+pnpm dev              # storefront + cms + restapi
 ```
 
-## Common commands
+## Commands
 
 | Command | Description |
 |---------|-------------|
-| `pnpm build` | Build all packages (with caching) |
-| `pnpm lint` | Lint all packages |
+| `pnpm dev` | All three interfaces |
+| `pnpm dev:storefront` | Storefront only |
+| `pnpm dev:admin` | CMS only |
+| `pnpm dev:api` | REST API only |
+| `pnpm build` | Build all packages |
 | `pnpm check-types` | Typecheck all packages |
-| `pnpm clean` | Remove `dist`, `.next`, `.turbo` artifacts |
-
-Copy env examples:
 
 ```bash
 cp apps/storefront/.env.example apps/storefront/.env.local
 cp apps/cms/.env.example apps/cms/.env
+cp apps/restapi/.env.example apps/restapi/.env
 ```

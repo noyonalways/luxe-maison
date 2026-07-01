@@ -1,36 +1,26 @@
 {
-  "name": "@luxe-maison/shared",
+  "name": "@luxe-maison/restapi",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "tsx watch src/index.ts",
     "build": "tsc",
+    "start": "node dist/index.js",
     "check-types": "tsc --noEmit",
     "clean": "rimraf dist .turbo"
   },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./data/*": {
-      "types": "./dist/data/*.d.ts",
-      "default": "./dist/data/*.js"
-    },
-    "./lib/*": {
-      "types": "./dist/lib/*.d.ts",
-      "default": "./dist/lib/*.js"
-    }
-  },
   "dependencies": {
+    "@hono/node-server": "^1.14.4",
     "@luxe-maison/core": "workspace:*",
     "@luxe-maison/database": "workspace:*",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^2.6.0"
+    "hono": "^4.8.3"
   },
   "devDependencies": {
     "@luxe-maison/typescript-config": "workspace:*",
+    "@types/node": "^22.16.5",
     "rimraf": "^6.0.1",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   }
 }

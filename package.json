@@ -4,14 +4,16 @@
   "version": "1.0.0",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev --filter=@luxe-maison/storefront --filter=@luxe-maison/cms",
+    "dev": "turbo run dev --filter=@luxe-maison/storefront --filter=@luxe-maison/cms --filter=@luxe-maison/restapi",
     "dev:storefront": "turbo run dev --filter=@luxe-maison/storefront",
     "dev:admin": "turbo run dev --filter=@luxe-maison/cms",
+    "dev:api": "turbo run dev --filter=@luxe-maison/restapi",
     "lint": "turbo run lint",
     "check-types": "turbo run check-types",
     "clean": "turbo run clean",
     "build:storefront": "turbo run build --filter=@luxe-maison/storefront",
-    "build:admin": "turbo run build --filter=@luxe-maison/cms"
+    "build:admin": "turbo run build --filter=@luxe-maison/cms",
+    "build:api": "turbo run build --filter=@luxe-maison/restapi"
   },
   "devDependencies": {
     "rimraf": "^6.0.1",

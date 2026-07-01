@@ -2,23 +2,97 @@
 
 ## Overview
 
-Luxe Maison is split into two independently deployable applications plus a shared package. The public storefront and the staff CMS never share a runtime bundle or route tree, so admin surfaces (including SEO tooling) cannot be reached from the storefront origin.
+Luxe Maison is a **one codebase, many interfaces** monorepo. Business logic and data access live in shared packages; each interface (REST API, CMS, storefront, and future GraphQL/SDK/CLI) is a thin deployable layer on top.
 
 ```
 luxe-maison/
-├── design.md                 # Architecture source of truth
-├── turbo.json                # Turborepo task pipeline
-├── package.json              # Root scripts (turbo run …)
+├── design.md
+├── turbo.json
+├── package.json
 ├── pnpm-workspace.yaml
-├── apps/
-│   ├── storefront/           # Next.js — public e-commerce site
-│   └── cms/                  # Vite + TanStack Router — staff CMS
-└── packages/
-    ├── shared/               # Types, mock data, utilities
-    └── typescript-config/    # Shared TSConfig presets
+├── packages/                    # Core platform
+│   ├── core/                    # Domain types, business rules, services, repository interfaces
+│   ├── database/                # DB client + adapters (repositories live inside adapters)
+│   ├── shared/                  # Back-compat re-exports + UI utilities (cn)
+│   └── typescript-config/
+└── apps/                        # Interfaces (deployables)
+    ├── restapi/                 # REST HTTP API (Hono)
+    ├── cms/                     # Staff CMS (Vite + TanStack Router)
+    └── storefront/              # Public shop (Next.js)
 ```
 
-## Applications
+Future interfaces (not yet implemented): `graphql`, `sdk`, `cli`.
+
+## Layered architecture
+
+```
+┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+│  storefront │  │     cms     │  │   restapi   │   ← interfaces (apps/)
+└──────┬──────┘  └──────┬──────┘  └──────┬──────┘
+       │                │                │
+       └────────────────┼────────────────┘
+                        ▼
+                 ┌─────────────┐
+                 │    core     │   domain, services, repositories
+                 └──────┬──────┘
+                        ▼
+                 ┌─────────────┐
+                 │  database   │   client + adapter + repositories
+                 └─────────────┘
+```
+
+- **`packages/core`** — Framework-agnostic business logic: domain types, promo validation, RBAC rules, services that orchestrate data access via **repository interfaces**.
+- **`packages/database`** — Persistence layer: `createMemoryDatabase()` today; future Supabase/Postgres adapters implement the same repository contracts.
+- **`apps/*`** — UI or protocol adapters only. No duplicated domain rules.
+
+## Packages
+
+### `packages/core`
+
+| Area | Contents |
+|------|----------|
+| `entities/` | `product.entity.ts`, `order.entity.ts`, `customer.entity.ts`, `campaign.entity.ts`, etc. |
+| `auth/` | Staff RBAC (`staff-permissions.auth.ts`) — pure functions, no `localStorage` |
+| `repositories/` | `product.repository.ts`, `order.repository.ts`, `customer.repository.ts` |
+| `services/` | `product.service.ts`, `order.service.ts`, `promo.service.ts` |
+
+### `packages/database`
+
+| Area | Contents |
+|------|----------|
+| `adapter/memory/` | In-memory adapter with seed data, catalog, and repository implementations |
+| `createMemoryDatabase()` | Returns `{ adapter, repositories }` |
+
+Swap adapters without touching core or interfaces:
+
+```ts
+const db = createMemoryDatabase();
+const products = createProductService(db.repositories.products);
+```
+
+### `packages/shared`
+
+Legacy compatibility layer: re-exports `@luxe-maison/core` and mock seed data from `@luxe-maison/database`, plus `cn()` for Tailwind. New code should import from `core` / `database` directly.
+
+## Interfaces
+
+### `apps/restapi` (Hono)
+
+**Purpose:** HTTP API for storefront, CMS, and external clients.
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /health` | Health check |
+| `GET /api/products` | Active storefront products |
+| `GET /api/products/admin` | All admin products |
+| `GET /api/products/:id` | Single product |
+| `GET /api/orders` | All orders (CMS) |
+| `GET /api/orders/track?email=` | Orders by customer email |
+| `GET /api/orders/:id` | Single order |
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3001` | Server port |
 
 ### `apps/storefront` (Next.js)
 
@@ -32,67 +106,33 @@ luxe-maison/
 | Auth | Customer login only (staff redirected to admin URL) |
 | Default port | `3000` |
 
-**Routes (App Router):**
-
-| Path | Page |
-|------|------|
-| `/` | Home |
-| `/shop` | Product listing |
-| `/product/[id]` | Product detail |
-| `/checkout` | Checkout (customer auth required) |
-| `/wishlist` | Wishlist |
-| `/login` | Customer login / signup |
-| `/account` | Customer account (auth required) |
-| `/track-order` | Order tracking |
-
 **Environment:**
 
 | Variable | Description |
 |----------|-------------|
-| `NEXT_PUBLIC_STOREFRONT_URL` | Canonical storefront URL (SEO, metadata) |
-| `NEXT_PUBLIC_ADMIN_URL` | Admin CMS URL (e.g. link for staff login redirect) |
+| `NEXT_PUBLIC_STOREFRONT_URL` | Canonical storefront URL |
+| `NEXT_PUBLIC_ADMIN_URL` | CMS URL for staff redirect |
+| `NEXT_PUBLIC_API_URL` | REST API base (optional, future) |
 
-### `apps/cms` (React + TanStack Router)
+### `apps/cms` (Vite + TanStack Router)
 
-**Purpose:** Staff CMS — products, orders, analytics, campaigns, team, access control, SEO board.
+**Purpose:** Staff CMS — products, orders, analytics, campaigns, team, access control.
 
 | Concern | Choice |
 |--------|--------|
 | Framework | Vite + React |
-| Routing | TanStack Router (file-based) |
-| Styling | Tailwind CSS + shadcn/ui (same design tokens as storefront) |
-| State | React Context + TanStack Query |
-| Auth | Staff login only; role-based route prefix `/:role/*` |
+| Routing | TanStack Router |
+| Auth | Staff login; role prefix `/:role/*` |
 | Default port | `5173` |
-
-**Routes:**
-
-| Path | Page |
-|------|------|
-| `/login` | Staff login |
-| `/:role/dashboard` | Dashboard |
-| `/:role/products` | Product list |
-| `/:role/products/new` | Create product |
-| `/:role/products/:id/edit` | Edit product |
-| `/:role/orders` | Orders |
-| `/:role/customers` | Customers |
-| `/:role/analytics` | Analytics |
-| `/:role/newsletter` | Newsletter |
-| `/:role/discounts` | Discounts |
-| `/:role/campaigns` | Campaigns |
-| `/:role/popup` | Welcome popup settings |
-| `/:role/team` | Team management |
-| `/:role/settings` | System settings |
-| `/:role/access-control` | Role permissions |
-
-Valid roles: `admin`, `manager`, `employee`.
 
 **Environment:**
 
 | Variable | Description |
 |----------|-------------|
-| `VITE_STOREFRONT_URL` | Link back to the public store (sidebar) |
-| `VITE_API_URL` | Future backend API base (optional) |
+| `VITE_STOREFRONT_URL` | Link to public store |
+| `VITE_API_URL` | REST API base (optional) |
+
+Valid roles: `admin`, `manager`, `employee`. RBAC defaults live in `core`; CMS persists overrides via `localStorage`.
 
 ## Security boundary
 
@@ -100,62 +140,30 @@ Valid roles: `admin`, `manager`, `employee`.
 ┌─────────────────────┐     ┌─────────────────────┐
 │   storefront        │     │   cms               │
 │   (public origin)   │     │   (private origin)  │
-│                     │     │                     │
 │  Customer auth      │     │  Staff auth         │
-│  No admin routes    │     │  No storefront UI   │
-│  No CMS bundle      │     │  Protected routes   │
-└─────────────────────┘     └─────────────────────┘
-         │                            │
-         └──────── packages/shared ───┘
-                    (types & data only)
+└──────────┬──────────┘     └──────────┬──────────┘
+           │                           │
+           └───────────┬───────────────┘
+                       ▼
+                ┌─────────────┐
+                │   restapi   │  (shared backend)
+                └──────┬──────┘
+                       ▼
+              core + database
 ```
 
-- Deploy on **separate origins** (e.g. `www.maison.com` vs `admin.maison.com`).
-- Admin must not be proxied under the storefront path (no `/admin` on the Next.js app).
-- Staff accounts logging in on the storefront are redirected to `NEXT_PUBLIC_ADMIN_URL`.
-- Customer accounts cannot access admin routes.
-
-## Shared package (`packages/shared`)
-
-Internal library compiled with `tsc` to `dist/`. Apps depend on it via `workspace:*`; Turbo ensures `shared` builds before apps (`dependsOn: ["^build"]`).
-
-Contains code safe to share across both apps:
-
-- `admin-types.ts` — Order, Product, Campaign, Customer types
-- `products.ts`, `promo-codes.ts`, `admin-mock.ts` — seed / mock data
-- `utils.ts` — `cn()` and other pure utilities
-
-Does **not** include React components or route definitions.
-
-## Design system
-
-Both apps share:
-
-- **Fonts:** Playfair Display (headings), Inter (body)
-- **Palette:** Gold primary (`hsl(40 45% 56%)`), charcoal text, cream/off-white surfaces
-- **Components:** shadcn/ui with identical CSS variables in `index.css` / `globals.css`
+Deploy storefront and CMS on **separate origins**. The REST API can be shared but should enforce auth per route when connected to real persistence.
 
 ## Development
 
-This repo uses [Turborepo](https://turbo.build) on top of pnpm workspaces. Turbo orchestrates tasks, caches build outputs, and respects dependency order (`shared` builds before apps).
-
-From the repository root:
-
 ```bash
 pnpm install
-pnpm dev              # Turbo: storefront :3000 + cms :5173
+pnpm dev              # storefront :3000 + cms :5173 + restapi :3001
 pnpm dev:storefront   # Next.js only
-pnpm dev:admin        # CMS only (:5173)
-pnpm build            # Turbo: build all packages (cached)
-pnpm lint             # Turbo: lint all packages
-pnpm check-types      # Turbo: typecheck all packages
-pnpm clean            # Remove build artifacts
-```
-
-Run a task in one app only:
-
-```bash
-pnpm turbo run build --filter=@luxe-maison/storefront
+pnpm dev:admin        # CMS only
+pnpm dev:api          # REST API only
+pnpm build
+pnpm check-types
 ```
 
 ## Deployment
@@ -163,15 +171,13 @@ pnpm turbo run build --filter=@luxe-maison/storefront
 | App | Suggested host | Build output |
 |-----|----------------|--------------|
 | Storefront | Vercel / Netlify | `apps/storefront/.next` |
-| CMS | Private subdomain, IP allowlist, or VPN | `apps/cms/dist` |
-
-## Migration notes
-
-The original single-app Vite project has been fully migrated into this monorepo.
+| CMS | Private subdomain | `apps/cms/dist` |
+| REST API | Fly.io / Railway / container | `apps/restapi/dist` |
 
 ## Future work
 
-- Replace mock data with Supabase / Shopify backend
-- Server-side staff session validation for cms
-- Shared `@luxe-maison/ui` package if component duplication becomes costly
-- SEO board as a dedicated admin section once backend is connected
+- Postgres/Supabase adapter in `packages/database`
+- Wire storefront/CMS to `restapi` via TanStack Query
+- Add `graphql`, `sdk`, `cli` interfaces
+- Server-side staff session validation
+- Shared `@luxe-maison/ui` package

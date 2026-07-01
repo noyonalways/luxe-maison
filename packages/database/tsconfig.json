@@ -1,5 +1,5 @@
 {
-  "extends": "@luxe-maison/typescript-config/react-library.json",
+  "extends": "@luxe-maison/typescript-config/node.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
@@ -7,7 +7,7 @@
     "composite": true,
     "noUncheckedIndexedAccess": false
   },
+  "references": [{ "path": "../core" }],
   "include": ["src"],
-  "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "../core" }, { "path": "../database" }]
+  "exclude": ["node_modules", "dist"]
 }
