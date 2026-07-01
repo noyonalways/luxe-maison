@@ -26,8 +26,8 @@ const newsletterEmailSchema = new Schema<NewsletterEmail>(
 );
 
 export const SubscriberModel: Model<Subscriber> =
-  mongoose.models.Subscriber ?? model<Subscriber>('Subscriber', subscriberSchema);
+  mongoose.models?.Subscriber ?? model<Subscriber>('Subscriber', subscriberSchema);
 
 export const NewsletterEmailModel: Model<NewsletterEmail> =
-  mongoose.models.NewsletterEmail ??
+  mongoose.models?.NewsletterEmail ??
   model<NewsletterEmail>('NewsletterEmail', newsletterEmailSchema);

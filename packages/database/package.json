@@ -14,6 +14,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./in-memory": {
+      "types": "./dist/adapters/in_memory/index.d.ts",
+      "default": "./dist/adapters/in_memory/index.js"
     }
   },
   "dependencies": {

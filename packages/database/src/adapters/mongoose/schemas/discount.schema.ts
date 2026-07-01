@@ -20,4 +20,4 @@ const discountSchema = new Schema<Discount>(
 );
 
 export const DiscountModel: Model<Discount> =
-  mongoose.models.Discount ?? model<Discount>('Discount', discountSchema);
+  mongoose.models?.Discount ?? model<Discount>('Discount', discountSchema);

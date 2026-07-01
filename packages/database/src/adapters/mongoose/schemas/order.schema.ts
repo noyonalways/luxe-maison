@@ -41,4 +41,4 @@ const orderSchema = new Schema<Order>(
 );
 
 export const OrderModel: Model<Order> =
-  mongoose.models.Order ?? model<Order>('Order', orderSchema);
+  mongoose.models?.Order ?? model<Order>('Order', orderSchema);

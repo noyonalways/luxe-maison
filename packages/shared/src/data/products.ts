@@ -14,4 +14,4 @@ export {
   getProductsBySection,
   getProductsBySectionAndCategory,
   getRelatedProducts,
-} from '@luxe-maison/database';
+} from '@luxe-maison/database/in-memory';

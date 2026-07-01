@@ -19,4 +19,4 @@ const customerSchema = new Schema<Customer>(
 );
 
 export const CustomerModel: Model<Customer> =
-  mongoose.models.Customer ?? model<Customer>('Customer', customerSchema);
+  mongoose.models?.Customer ?? model<Customer>('Customer', customerSchema);

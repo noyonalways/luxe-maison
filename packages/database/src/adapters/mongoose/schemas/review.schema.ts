@@ -14,4 +14,4 @@ const reviewSchema = new Schema<Review>(
 );
 
 export const ReviewModel: Model<Review> =
-  mongoose.models.Review ?? model<Review>('Review', reviewSchema);
+  mongoose.models?.Review ?? model<Review>('Review', reviewSchema);

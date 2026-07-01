@@ -25,7 +25,7 @@ const settingsSchema = new Schema<SettingsDocument>(
 );
 
 export const SettingsModel: Model<SettingsDocument> =
-  mongoose.models.StoreSettings ??
+  mongoose.models?.StoreSettings ??
   model<SettingsDocument>('StoreSettings', settingsSchema);
 
 export { SETTINGS_ID };

@@ -23,4 +23,4 @@ const campaignSchema = new Schema<Campaign>(
 );
 
 export const CampaignModel: Model<Campaign> =
-  mongoose.models.Campaign ?? model<Campaign>('Campaign', campaignSchema);
+  mongoose.models?.Campaign ?? model<Campaign>('Campaign', campaignSchema);

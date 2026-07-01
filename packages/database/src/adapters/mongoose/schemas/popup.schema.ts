@@ -22,4 +22,4 @@ const popupSchema = new Schema<PopupConfig>(
 );
 
 export const PopupModel: Model<PopupConfig> =
-  mongoose.models.PopupConfig ?? model<PopupConfig>('PopupConfig', popupSchema);
+  mongoose.models?.PopupConfig ?? model<PopupConfig>('PopupConfig', popupSchema);

@@ -40,4 +40,4 @@ const productSchema = new Schema<AdminProduct>(
 );
 
 export const ProductModel: Model<AdminProduct> =
-  mongoose.models.Product ?? model<AdminProduct>('Product', productSchema);
+  mongoose.models?.Product ?? model<AdminProduct>('Product', productSchema);

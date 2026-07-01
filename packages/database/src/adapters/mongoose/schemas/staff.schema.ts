@@ -13,4 +13,4 @@ const staffSchema = new Schema<StaffMember>(
 );
 
 export const StaffModel: Model<StaffMember> =
-  mongoose.models.StaffMember ?? model<StaffMember>('StaffMember', staffSchema);
+  mongoose.models?.StaffMember ?? model<StaffMember>('StaffMember', staffSchema);

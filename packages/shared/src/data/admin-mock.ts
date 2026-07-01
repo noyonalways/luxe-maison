@@ -7,4 +7,4 @@ export {
   mockSubscribers,
   mockNewsletterEmails,
   analyticsData,
-} from '@luxe-maison/database';
+} from '@luxe-maison/database/in-memory';
