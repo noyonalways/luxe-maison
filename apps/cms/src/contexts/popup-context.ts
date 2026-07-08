@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import type { CreatePopupPayload, UpdatePopupPayload } from '@/lib/api/popups.api';
 
 export type PopupType = 'welcome' | 'discount' | 'campaign';
 export type PopupTrigger = 'page_load' | 'exit_intent' | 'scroll_50' | 'delay_10s';
@@ -18,9 +19,13 @@ export interface PopupConfig {
 
 export interface PopupContextValue {
   popups: PopupConfig[];
-  addPopup: (popup: PopupConfig) => void;
-  updatePopup: (id: string, partial: Partial<PopupConfig>) => void;
-  deletePopup: (id: string) => void;
+  isLoading: boolean;
+  isSaving: boolean;
+  error: string | null;
+  addPopup: (popup: CreatePopupPayload) => Promise<PopupConfig>;
+  updatePopup: (id: string, partial: UpdatePopupPayload) => Promise<PopupConfig>;
+  setPopupEnabled: (id: string, enabled: boolean) => Promise<PopupConfig>;
+  deletePopup: (id: string) => Promise<void>;
   getActivePopups: () => PopupConfig[];
 }
 

@@ -19,9 +19,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <QueryProvider>
       <TooltipProvider>
         <AuthProvider>
-          <PopupProvider>
-            <CustomerProvider>
-              <RoleProvider>
+          <CustomerProvider>
+            <RoleProvider>
+              <PopupProvider>
                 <CampaignsProvider>
                   <NewsletterProvider>
                     <DiscountsProvider>
@@ -37,9 +37,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
                     </DiscountsProvider>
                   </NewsletterProvider>
                 </CampaignsProvider>
-              </RoleProvider>
-            </CustomerProvider>
-          </PopupProvider>
+              </PopupProvider>
+            </RoleProvider>
+          </CustomerProvider>
         </AuthProvider>
       </TooltipProvider>
     </QueryProvider>

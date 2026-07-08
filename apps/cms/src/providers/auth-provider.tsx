@@ -19,6 +19,7 @@ import { staffKeys } from '@/hooks/staff/staff-keys';
 import { campaignKeys } from '@/hooks/campaigns/campaign-keys';
 import { newsletterKeys } from '@/hooks/newsletter/newsletter-keys';
 import { discountKeys } from '@/hooks/discounts/discount-keys';
+import { popupKeys } from '@/hooks/popups/popup-keys';
 import { clearPermissionsCache } from '@/lib/permissions-cache';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -48,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryClient.removeQueries({ queryKey: campaignKeys.all });
     queryClient.removeQueries({ queryKey: newsletterKeys.all });
     queryClient.removeQueries({ queryKey: discountKeys.all });
+    queryClient.removeQueries({ queryKey: popupKeys.all });
   }, [queryClient]);
 
   useEffect(() => {
