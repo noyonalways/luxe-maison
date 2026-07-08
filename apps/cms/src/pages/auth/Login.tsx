@@ -1,56 +1,38 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from '@tanstack/react-router';
-import { useAuth, isStaffRole } from '@/context/AuthContext';
+import { useState } from 'react';
+import { Link } from '@tanstack/react-router';
+import { useAuth } from '@/contexts/auth-context';
+import { useLogin } from '@/hooks/auth/use-login';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Shield, Eye, EyeOff } from 'lucide-react';
+import { Shield, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { cmsDashboard } from '@/lib/cms-navigation';
 
 export default function Login() {
-  const navigate = useNavigate();
-  const { login, isAuthenticated, user } = useAuth();
+  const { isRestoringSession } = useAuth();
+  const { login, isPending } = useLogin();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (isAuthenticated && user && isStaffRole(user.role)) {
-      navigate({ ...cmsDashboard(user.role), replace: true });
-    }
-  }, [isAuthenticated, user, navigate]);
-
-  if (isAuthenticated && user && isStaffRole(user.role)) {
-    return null;
+  if (isRestoringSession) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-12 text-muted-foreground">
+        <Loader2 className="h-6 w-6 animate-spin" />
+        <p className="text-sm">Restoring session...</p>
+      </div>
+    );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
-    setTimeout(() => {
-      const result = login(email, password);
-      if (result.success) {
-        const stored = localStorage.getItem('maison-auth-user');
-        if (stored) {
-          const u = JSON.parse(stored);
-          if (isStaffRole(u.role)) {
-            navigate({ ...cmsDashboard(u.role), replace: true });
-          } else {
-            setError('This login is for staff only. Please use the customer login.');
-            localStorage.removeItem('maison-auth-user');
-            window.location.reload();
-          }
-        }
-      } else {
-        setError(result.error || 'Login failed');
-      }
-      setLoading(false);
-    }, 500);
+    const result = await login(email, password);
+    if (!result.success) {
+      setError(result.error || 'Login failed');
+    }
   };
 
   return (
@@ -73,7 +55,7 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="admin@maison.com" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" />
+              <Input id="email" type="email" placeholder="admin@maison.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -83,7 +65,7 @@ export default function Login() {
                 </Link>
               </div>
               <div className="relative">
-                <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password" />
+                <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-smooth">
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -92,8 +74,8 @@ export default function Login() {
             {error && (
               <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-destructive">{error}</motion.p>
             )}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
 
@@ -104,11 +86,11 @@ export default function Login() {
                 { label: 'Admin', email: 'admin@maison.com' },
                 { label: 'Manager', email: 'manager@maison.com' },
                 { label: 'Employee', email: 'employee@maison.com' },
-              ].map(cred => (
+              ].map((cred) => (
                 <button
                   key={cred.email}
                   type="button"
-                  onClick={() => { setEmail(cred.email); setPassword(cred.email.split('@')[0] + '123'); }}
+                  onClick={() => { setEmail(cred.email); setPassword(`${cred.email.split('@')[0]}123`); }}
                   className="w-full text-left px-3 py-2 rounded text-xs bg-secondary hover:bg-muted transition-smooth"
                 >
                   <span className="font-medium">{cred.label}</span>

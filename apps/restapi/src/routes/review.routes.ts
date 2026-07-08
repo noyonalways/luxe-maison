@@ -1,9 +1,10 @@
 import type { Hono } from 'hono';
 import type { ReviewRepository } from '@luxe-maison/core';
 import { createReviewService } from '@luxe-maison/core';
+import type { AuthVariables } from '../middleware/auth.middleware.js';
 
 export function reviewRoutes(
-  app: Hono,
+  app: Hono<{ Variables: AuthVariables }>,
   { reviewRepository }: { reviewRepository: ReviewRepository },
 ) {
   const reviews = createReviewService(reviewRepository);

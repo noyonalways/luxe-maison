@@ -11,6 +11,7 @@ import type {
   StaffRepository,
 } from '@luxe-maison/core';
 import type { DatabaseAdapter } from './clients/types.js';
+import { getDatabaseConfig } from './config/database.config.js';
 import {
   createImpCampaignRepository,
   createImpCustomerRepository,
@@ -40,16 +41,21 @@ import {
 
 let currentAdapter: DatabaseAdapter = 'in_memory';
 
-export async function initDatabase(
-  adapter: DatabaseAdapter,
-  options: { mongoUri?: string } = {},
-): Promise<void> {
+export interface InitDatabaseOptions {
+  adapter?: DatabaseAdapter;
+  mongoUri?: string;
+}
+
+export async function initDatabase(options: InitDatabaseOptions = {}): Promise<DatabaseAdapter> {
+  const config = getDatabaseConfig();
+  const adapter = options.adapter ?? config.adapter;
+  const mongoUri = options.mongoUri ?? config.mongoUri;
+
   if (adapter === 'mongoose') {
-    const uri = options.mongoUri ?? process.env.MONGODB_URI;
-    if (!uri) {
+    if (!mongoUri) {
       throw new Error('MONGODB_URI is required when using the mongoose adapter');
     }
-    await connectMongoose(uri);
+    await connectMongoose(mongoUri);
   }
 
   if (adapter === 'prisma') {
@@ -57,6 +63,11 @@ export async function initDatabase(
   }
 
   currentAdapter = adapter;
+  return adapter;
+}
+
+export function getActiveDatabaseAdapter(): DatabaseAdapter {
+  return currentAdapter;
 }
 
 export async function disconnectDatabase(): Promise<void> {

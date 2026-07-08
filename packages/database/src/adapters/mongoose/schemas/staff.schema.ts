@@ -6,8 +6,10 @@ const staffSchema = new Schema<StaffMember>(
     id: { type: String, required: true, unique: true, index: true },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true, index: true },
-    role: { type: String, required: true, enum: ['manager', 'employee'] },
+    role: { type: String, required: true, enum: ['admin', 'manager', 'employee'] },
+    passwordHash: { type: String, required: true },
     addedAt: { type: String, required: true },
+    avatar: { type: String },
   },
   { versionKey: false },
 );

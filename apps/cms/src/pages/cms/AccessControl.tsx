@@ -1,4 +1,4 @@
-import { useRole, ALL_SECTIONS, DEFAULT_PERMISSIONS, type Section, type Permission } from '@/context/RoleContext';
+import { useRole, ALL_SECTIONS, DEFAULT_PERMISSIONS, type Section, type Permission } from '@/contexts/role-context';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';

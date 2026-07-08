@@ -1,5 +1,5 @@
-import { useRole } from '@/context/RoleContext';
-import { useSettings } from '@/context/SettingsContext';
+import { useRole } from '@/contexts/role-context';
+import { useSettings } from '@/contexts/settings-context';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';

@@ -1,14 +1,15 @@
-import type { StaffMember } from '../entities/staff.entity.js';
+import type { StaffMember, StaffPublic } from '../entities/staff.entity.js';
+import { toStaffPublic } from '../entities/staff.entity.js';
 import type { StaffRepository } from '../repositories/staff.repository.js';
 
 export function createStaffService(repository: StaffRepository) {
   return {
-    list(): Promise<StaffMember[]> {
-      return repository.findAll();
+    list(): Promise<StaffPublic[]> {
+      return repository.findAll().then((members) => members.map(toStaffPublic));
     },
 
-    getById(id: string): Promise<StaffMember | null> {
-      return repository.findById(id);
+    getById(id: string): Promise<StaffPublic | null> {
+      return repository.findById(id).then((member) => (member ? toStaffPublic(member) : null));
     },
 
     getByEmail(email: string): Promise<StaffMember | null> {

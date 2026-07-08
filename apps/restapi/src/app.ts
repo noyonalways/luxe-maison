@@ -12,7 +12,10 @@ import {
 } from '@luxe-maison/database';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import type { AuthVariables } from './middleware/auth.middleware.js';
+import { requestLogger } from './middleware/request-logger.middleware.js';
 import { analyticsRoutes } from './routes/analytics.routes.js';
+import { authRoutes } from './routes/auth.routes.js';
 import { campaignRoutes } from './routes/campaign.routes.js';
 import { customerRoutes } from './routes/customer.routes.js';
 import { discountRoutes } from './routes/discount.routes.js';
@@ -36,11 +39,13 @@ const settingsRepository = getSettingsRepository();
 const reviewRepository = getReviewRepository();
 const popupRepository = getPopupRepository();
 
-const app = new Hono();
+const app = new Hono<{ Variables: AuthVariables }>();
 
+app.use('*', requestLogger);
 app.use('*', cors());
 
 healthRoutes(app);
+authRoutes(app, { staffRepository });
 productRoutes(app, { productRepository });
 orderRoutes(app, { orderRepository });
 customerRoutes(app, { customerRepository });
@@ -61,3 +66,4 @@ app.onError((err, c) => {
 });
 
 export default app;
+export { staffRepository };

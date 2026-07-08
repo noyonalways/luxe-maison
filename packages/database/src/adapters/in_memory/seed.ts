@@ -7,7 +7,6 @@ import type {
   Discount,
   Campaign,
   Customer,
-  StaffMember,
   StoreSettings,
   Review,
   PopupConfig,
@@ -185,11 +184,7 @@ export const mockCustomers: Customer[] = [
   { id: 'cust-10', name: 'Fatima Al-Rashid', email: 'fatima.r@example.com', phone: '+966 50-1112233', address: 'Al Olaya District, Riyadh, Saudi Arabia', totalOrders: 1, totalSpent: 189, status: 'blocked', joinedAt: '2026-01-20T00:00:00Z', lastOrderAt: '2026-01-20T09:00:00Z' },
 ];
 
-export const mockStaff: StaffMember[] = [
-  { id: '1', name: 'Sarah Johnson', email: 'sarah@luxemaison.com', role: 'manager', addedAt: '2025-12-01' },
-  { id: '2', name: 'Ahmed Khan', email: 'ahmed@luxemaison.com', role: 'employee', addedAt: '2026-01-15' },
-  { id: '3', name: 'Emily Chen', email: 'emily@luxemaison.com', role: 'employee', addedAt: '2026-02-20' },
-];
+export { STAFF_SEED_ACCOUNTS as mockStaff } from '../../seed/staff-accounts.seed.js';
 
 export const defaultStoreSettings: StoreSettings = {
   storeName: 'MAISON',

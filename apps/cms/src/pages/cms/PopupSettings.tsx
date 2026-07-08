@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { usePopup, type PopupConfig, type PopupType, type PopupTrigger } from '@/context/PopupContext';
+import { usePopup, type PopupConfig, type PopupType, type PopupTrigger } from '@/contexts/popup-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';

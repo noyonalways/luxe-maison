@@ -1,6 +1,7 @@
 export {
   initDatabase,
   disconnectDatabase,
+  getActiveDatabaseAdapter,
   getProductRepository,
   getOrderRepository,
   getCustomerRepository,
@@ -18,6 +19,8 @@ export type {
   DatabaseAdapter,
   CreateDatabaseOptions,
 } from './clients/index.js';
+
+export type { InitDatabaseOptions } from './get-repositories.js';
 
 export {
   createDatabase,
@@ -77,3 +80,5 @@ export {
   getProductsBySectionAndCategory,
   getRelatedProducts,
 } from './adapters/in_memory/index.js';
+
+export { STAFF_SEED_ACCOUNTS } from './seed/staff-accounts.seed.js';

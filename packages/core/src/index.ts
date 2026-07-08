@@ -8,6 +8,7 @@ export { createCampaignService, type CampaignService } from './services/campaign
 export { createDiscountService, type DiscountService } from './services/discount.service.js';
 export { createNewsletterService, type NewsletterService } from './services/newsletter.service.js';
 export { createStaffService, type StaffService } from './services/staff.service.js';
+export { createAuthService, type AuthService, type PasswordVerifier } from './services/auth.service.js';
 export { createSettingsService, type SettingsService } from './services/settings.service.js';
 export { createReviewService, type ReviewService } from './services/review.service.js';
 export { createPopupService, type PopupService } from './services/popup.service.js';

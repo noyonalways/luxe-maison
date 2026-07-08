@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useStaff, type StaffMember } from '@/context/StaffContext';
-import { useRole } from '@/context/RoleContext';
+import { useStaff, type StaffMember } from '@/contexts/staff-context';
+import { useRole } from '@/contexts/role-context';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

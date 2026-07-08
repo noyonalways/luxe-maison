@@ -1,4 +1,7 @@
-import type { StaffRole } from "@/context/RoleContext";
+import type { StaffRole } from "@/contexts/role-context";
+import type { FileRoutesByTo } from "@/routeTree.gen";
+
+export type AppRoutePath = keyof FileRoutesByTo;
 
 export type CmsSection =
   | "dashboard"
@@ -14,41 +17,62 @@ export type CmsSection =
   | "settings"
   | "access-control";
 
-type RolePath = `/admin` | `/manager` | `/employee`;
+const DASHBOARD_ROUTES: Record<StaffRole, AppRoutePath> = {
+  admin: "/admin/dashboard",
+  manager: "/manager/dashboard",
+  employee: "/employee/dashboard",
+};
 
-export type CmsRoutePath =
-  | `${RolePath}/dashboard`
-  | `${RolePath}/products`
-  | `${RolePath}/orders`
-  | `${RolePath}/customers`
-  | `${RolePath}/analytics`
-  | `${RolePath}/newsletter`
-  | `${RolePath}/discounts`
-  | `${RolePath}/campaigns`
-  | `${RolePath}/popup`
-  | `${RolePath}/team`
-  | `${RolePath}/settings`
-  | `${RolePath}/access-control`
-  | `${RolePath}/products/new`
-  | `${RolePath}/products/$id/edit`;
-
-function rolePath(role: StaffRole, section: string): CmsRoutePath {
-  return `/${role}/${section}` as CmsRoutePath;
-}
+const ROLE_SECTION_ROUTES: Record<StaffRole, Partial<Record<CmsSection, AppRoutePath>>> = {
+  admin: {
+    dashboard: "/admin/dashboard",
+    products: "/admin/products",
+    orders: "/admin/orders",
+    customers: "/admin/customers",
+    analytics: "/admin/analytics",
+    newsletter: "/admin/newsletter",
+    discounts: "/admin/discounts",
+    campaigns: "/admin/campaigns",
+    popup: "/admin/popup",
+    team: "/admin/team",
+    settings: "/admin/settings",
+    "access-control": "/admin/access-control",
+  },
+  manager: {
+    dashboard: "/manager/dashboard",
+    orders: "/manager/orders",
+    customers: "/manager/customers",
+    analytics: "/manager/analytics",
+    newsletter: "/manager/newsletter",
+    discounts: "/manager/discounts",
+    campaigns: "/manager/campaigns",
+  },
+  employee: {
+    dashboard: "/employee/dashboard",
+    products: "/employee/products",
+    orders: "/employee/orders",
+  },
+};
 
 /** Typed destinations for fixed role CMS routes. */
 export function cmsTo(section: CmsSection, role: StaffRole) {
-  return { to: rolePath(role, section) };
+  const to = ROLE_SECTION_ROUTES[role][section] ?? DASHBOARD_ROUTES[role];
+  return { to };
 }
 
 export function cmsProductNew(role: StaffRole) {
-  return { to: rolePath(role, "products/new") };
+  if (role !== "admin") return { to: DASHBOARD_ROUTES[role] };
+  return { to: "/admin/products/new" as const };
 }
 
 export function cmsProductEdit(role: StaffRole, id: string) {
-  return { to: `/${role}/products/${id}/edit` as CmsRoutePath };
+  if (role !== "admin") return { to: DASHBOARD_ROUTES[role] };
+  return {
+    to: "/admin/products/$id/edit" as const,
+    params: { id },
+  };
 }
 
 export function cmsDashboard(role: StaffRole) {
-  return { to: rolePath(role, "dashboard") };
+  return { to: DASHBOARD_ROUTES[role] };
 }

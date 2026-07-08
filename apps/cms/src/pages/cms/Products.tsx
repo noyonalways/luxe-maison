@@ -1,12 +1,11 @@
 import { useState, useRef, useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Plus, Search, Edit, Archive, Eye, AlertTriangle, Upload, Download, X, Check, FileSpreadsheet, Trash2 } from 'lucide-react';
-import { useProducts } from '@/context/ProductsContext';
+import { useProducts } from '@/contexts/products-context';
 import type { AdminProduct } from '@/data/cms-types';
 import { useTableSort, useTablePagination, SortableHeader, PaginationControls } from '@/components/staff/TableControls';
-import { useRole } from '@/context/RoleContext';
+import { useRole } from '@/contexts/role-context';
 import { cmsProductEdit, cmsProductNew } from '@/lib/cms-navigation';
-import { useStaffUrlRole } from '@/lib/use-staff-url-role';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 
@@ -19,8 +18,7 @@ const CSV_TEMPLATE = `name,sku,price,stock,category,fabric,fit,description,tags
 "Classic Oxford Shirt",SKU-NEW-002,129,75,shirt,cotton,slim,"Timeless oxford weave cotton shirt","shirt,cotton,formal"`;
 
 export default function Products() {
-  const urlRole = useStaffUrlRole();
-  const { canEdit: canEditFn, canDelete: canDeleteFn } = useRole();
+  const { role, canEdit: canEditFn, canDelete: canDeleteFn } = useRole();
   const canEditProducts = canEditFn('products');
   const canDeleteProducts = canDeleteFn('products');
   const { products, toggleStatus, deleteProduct, setProducts } = useProducts();
@@ -111,7 +109,7 @@ export default function Products() {
             <Upload size={14} /> Import
             <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleFileSelect} className="hidden" />
           </label>
-          <button onClick={() => navigate(cmsProductNew(urlRole))} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:opacity-90">
+          <button onClick={() => navigate(cmsProductNew(role))} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:opacity-90">
             <Plus size={14} /> Add Product
           </button>
         </div>
@@ -185,7 +183,7 @@ export default function Products() {
                 <td className="px-5 py-3 text-right">
                   {canEditProducts && (
                   <div className="flex items-center justify-end gap-2">
-                    <button onClick={() => navigate(cmsProductEdit(urlRole, p.id))} className="p-1.5 text-muted-foreground transition-smooth hover-gold" title="Edit"><Edit size={14} /></button>
+                    <button onClick={() => navigate(cmsProductEdit(role, p.id))} className="p-1.5 text-muted-foreground transition-smooth hover-gold" title="Edit"><Edit size={14} /></button>
                     <button onClick={() => toggleStatus(p.id)} className="p-1.5 text-muted-foreground transition-smooth hover-gold" title="Toggle status">
                       {p.status === 'active' ? <Archive size={14} /> : <Eye size={14} />}
                     </button>

@@ -1,9 +1,10 @@
 import type { Hono } from 'hono';
 import type { ProductRepository } from '@luxe-maison/core';
 import { createProductService } from '@luxe-maison/core';
+import { requireAuth, type AuthVariables } from '../middleware/auth.middleware.js';
 
 export function productRoutes(
-  app: Hono,
+  app: Hono<{ Variables: AuthVariables }>,
   { productRepository }: { productRepository: ProductRepository },
 ) {
   const products = createProductService(productRepository);
@@ -13,7 +14,7 @@ export function productRoutes(
     return c.json(list);
   });
 
-  app.get('/api/products/admin', async (c) => {
+  app.get('/api/products/admin', requireAuth, async (c) => {
     const list = await products.listAdminProducts();
     return c.json(list);
   });

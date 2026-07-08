@@ -1,6 +1,7 @@
 import type { StaffRole } from "@/lib/role-permissions";
 
-const STORAGE_KEY = "maison-auth-user";
+const USER_STORAGE_KEY = "maison-auth-user";
+const TOKEN_STORAGE_KEY = "maison-auth-token";
 
 export interface StoredUser {
   id: string;
@@ -12,12 +13,30 @@ export interface StoredUser {
 
 export function getStoredUser(): StoredUser | null {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(USER_STORAGE_KEY);
     if (!stored) return null;
     return JSON.parse(stored) as StoredUser;
   } catch {
     return null;
   }
+}
+
+export function getStoredToken(): string | null {
+  try {
+    return localStorage.getItem(TOKEN_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setAuthSession(user: StoredUser, token: string): void {
+  localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+  localStorage.setItem(TOKEN_STORAGE_KEY, token);
+}
+
+export function clearAuthSession(): void {
+  localStorage.removeItem(USER_STORAGE_KEY);
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
 }
 
 export function isStaffRole(

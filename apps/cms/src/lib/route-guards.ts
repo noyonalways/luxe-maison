@@ -1,5 +1,5 @@
 import { redirect } from "@tanstack/react-router";
-import { getStoredStaffUser } from "@/lib/auth-session";
+import { getStoredStaffUser, getStoredToken } from "@/lib/auth-session";
 import { cmsDashboard } from "@/lib/cms-navigation";
 import {
   canAccessSection,
@@ -11,7 +11,8 @@ import {
 /** Redirect authenticated staff away from guest-only auth pages. */
 export function requireGuest() {
   const user = getStoredStaffUser();
-  if (user) {
+  const token = getStoredToken();
+  if (user && token) {
     throw redirect(cmsDashboard(user.role));
   }
 }

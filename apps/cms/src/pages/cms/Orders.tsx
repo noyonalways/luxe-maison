@@ -4,7 +4,7 @@ import { mockOrders } from '@/data/cms-mock';
 import type { Order, OrderStatus } from '@/data/cms-types';
 import { StatusBadge } from '@/components/staff/StatusBadge';
 import { useTableSort, useTablePagination, SortableHeader, PaginationControls } from '@/components/staff/TableControls';
-import { useRole } from '@/context/RoleContext';
+import { useRole } from '@/contexts/role-context';
 
 const statusFlow: OrderStatus[] = ['pending', 'processing', 'shipped', 'delivered'];
 

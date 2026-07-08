@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { mockCustomers, mockOrders } from '@/data/cms-mock';
 import type { Customer } from '@/data/cms-types';
-import { useRole } from '@/context/RoleContext';
+import { useRole } from '@/contexts/role-context';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

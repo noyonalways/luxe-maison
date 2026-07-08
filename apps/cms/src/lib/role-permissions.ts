@@ -37,18 +37,33 @@ export function loadStoredPermissions(): Record<
   };
 }
 
-export function getPermission(role: StaffRole, section: Section): Permission {
-  return getCorePermission(role, section, loadStoredPermissions());
+export function getPermission(
+  role: StaffRole,
+  section: Section,
+  stored: Record<'manager' | 'employee', Record<Section, Permission>> = loadStoredPermissions(),
+): Permission {
+  return getCorePermission(role, section, stored);
 }
 
-export function canAccessSection(role: StaffRole, section: Section): boolean {
-  return canCoreAccessSection(role, section, loadStoredPermissions());
+export function canAccessSection(
+  role: StaffRole,
+  section: Section,
+  stored: Record<'manager' | 'employee', Record<Section, Permission>> = loadStoredPermissions(),
+): boolean {
+  return canCoreAccessSection(role, section, stored);
 }
 
-export function canModifySection(role: StaffRole, section: Section): boolean {
-  return canCoreModifySection(role, section, loadStoredPermissions());
+export function canModifySection(
+  role: StaffRole,
+  section: Section,
+  stored: Record<'manager' | 'employee', Record<Section, Permission>> = loadStoredPermissions(),
+): boolean {
+  return canCoreModifySection(role, section, stored);
 }
 
-export function getAccessibleSections(role: StaffRole): Section[] {
-  return getCoreAccessibleSections(role, loadStoredPermissions());
+export function getAccessibleSections(
+  role: StaffRole,
+  stored: Record<'manager' | 'employee', Record<Section, Permission>> = loadStoredPermissions(),
+): Section[] {
+  return getCoreAccessibleSections(role, stored);
 }

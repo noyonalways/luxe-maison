@@ -1,4 +1,6 @@
-export type StaffRole = 'admin' | 'manager' | 'employee';
+import type { StaffRole } from '../entities/staff.entity.js';
+
+export type { StaffRole };
 
 export type CmsSection =
   | 'dashboard'

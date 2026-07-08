@@ -1,9 +1,10 @@
 import type { Hono } from 'hono';
 import type { PopupRepository } from '@luxe-maison/core';
 import { createPopupService } from '@luxe-maison/core';
+import type { AuthVariables } from '../middleware/auth.middleware.js';
 
 export function popupRoutes(
-  app: Hono,
+  app: Hono<{ Variables: AuthVariables }>,
   { popupRepository }: { popupRepository: PopupRepository },
 ) {
   const popups = createPopupService(popupRepository);

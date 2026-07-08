@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Search, Plus, Edit, Eye, BarChart3, Megaphone, MousePointer, Users, DollarSign } from 'lucide-react';
 import { useTablePagination, PaginationControls } from '@/components/staff/TableControls';
 import { mockDiscounts } from '@/data/cms-mock';
-import { useCampaigns } from '@/context/CampaignsContext';
+import { useCampaigns } from '@/contexts/campaigns-context';
 import type { Campaign, CampaignType, CampaignStatus } from '@/data/cms-types';
 import { StatusBadge } from '@/components/staff/StatusBadge';
 

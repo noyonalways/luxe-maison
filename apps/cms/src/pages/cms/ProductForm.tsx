@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from '@tanstack/react-router';
-import { useRole } from '@/context/RoleContext';
+import { useRole } from '@/contexts/role-context';
 import { ArrowLeft, Plus, X, Trash2, GripVertical, Image as ImageIcon } from 'lucide-react';
-import { useProducts } from '@/context/ProductsContext';
+import { useProducts } from '@/contexts/products-context';
 import type { AdminProduct } from '@/data/cms-types';
 import type { ProductColor } from '@luxe-maison/shared/data/products';
 import { cmsTo } from '@/lib/cms-navigation';
-import { useStaffUrlRole } from '@/lib/use-staff-url-role';
 
 const defaultProduct: Omit<AdminProduct, 'id' | 'createdAt'> = {
   name: '', price: 0, originalPrice: undefined, section: 'men', category: 'shirt', fit: 'regular', fabric: 'cotton',
@@ -23,8 +22,8 @@ const PRESET_SIZES: Record<string, string[]> = {
 
 export default function ProductForm() {
   const { id } = useParams({ strict: false });
-  const urlRole = useStaffUrlRole();
-  const productsRoute = cmsTo('products', urlRole);
+  const { role } = useRole();
+  const productsRoute = cmsTo('products', role);
   const navigate = useNavigate();
   const { getProduct, addProduct, updateProduct, deleteProduct } = useProducts();
   const isEdit = Boolean(id);
