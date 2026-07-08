@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { getProductsBySection, categories } from '@/data/products';
+import { useProducts } from '@/context/ProductsContext';
+import { categories } from '@/data/products';
 import { ArrowRight } from 'lucide-react';
 
 import categoryPunjabi from '@/assets/category-punjabi.jpg';
@@ -40,7 +41,8 @@ interface MegaMenuProps {
 }
 
 export default function MegaMenu({ section, onClose }: MegaMenuProps) {
-  const products = getProductsBySection(section).slice(0, 2);
+  const { getProductsBySection } = useProducts();
+  const products = getProductsBySection(section as 'men' | 'women' | 'kids').slice(0, 2);
   const label = sectionLabels[section] || section;
   const heroImage = sectionImages[section] || categoryShirts;
 

@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { products } from '@/data/products';
+import { useProducts } from '@/context/ProductsContext';
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -12,6 +12,7 @@ interface SearchOverlayProps {
 }
 
 export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
+  const { products } = useProducts();
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -42,7 +43,7 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
       p.fit.toLowerCase().includes(q) ||
       p.colors.some(c => c.name.toLowerCase().includes(q))
     ).slice(0, 6);
-  }, [query]);
+  }, [query, products]);
 
   const handleSelect = (productId: string) => {
     router.push(`/product/${productId}`);

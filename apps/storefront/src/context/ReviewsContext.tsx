@@ -1,61 +1,77 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+'use client';
 
-export interface Review {
-  id: string;
-  productId: string;
-  author: string;
-  rating: number;
-  text: string;
-  date: string;
-}
+import { createContext, useCallback, useContext, type ReactNode } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { Review } from '@luxe-maison/shared';
+import { reviewsApi } from '@/lib/api/reviews.api';
+import { reviewKeys } from '@/hooks/products/product-keys';
+import { ApiError } from '@/lib/api/client';
 
 interface ReviewsContextType {
-  getReviews: (productId: string) => Review[];
-  addReview: (productId: string, author: string, rating: number, text: string) => void;
-  getAverageRating: (productId: string) => { avg: number; count: number } | null;
+  addReview: (
+    productId: string,
+    author: string,
+    rating: number,
+    text: string,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 const ReviewsContext = createContext<ReviewsContextType | undefined>(undefined);
 
-// Seed some demo reviews
-const seedReviews: Review[] = [
-  { id: 'r1', productId: 'pnj-001', author: 'Arjun M.', rating: 5, text: 'Absolutely stunning quality. The silk feels incredible and the embroidery is exquisite.', date: '2026-02-15' },
-  { id: 'r2', productId: 'pnj-001', author: 'Rahul K.', rating: 4, text: 'Beautiful Punjabi, fits well. Slightly long in the arms for me but overall excellent.', date: '2026-01-28' },
-  { id: 'r3', productId: 'tsh-001', author: 'David L.', rating: 5, text: 'Best t-shirt I\'ve ever owned. The Pima cotton is incredibly soft.', date: '2026-02-20' },
-  { id: 'r4', productId: 'sht-001', author: 'James W.', rating: 5, text: 'Perfect summer shirt. Light, breathable, and looks fantastic.', date: '2026-03-01' },
-];
+export function useProductReviews(productId: string) {
+  return useQuery({
+    queryKey: reviewKeys.byProduct(productId),
+    queryFn: () => reviewsApi.listByProduct(productId),
+    enabled: Boolean(productId),
+    staleTime: 30_000,
+  });
+}
 
-export function ReviewsProvider({ children }: { children: React.ReactNode }) {
-  const [reviews, setReviews] = useState<Review[]>(seedReviews);
+export function useProductAverage(productId: string) {
+  return useQuery({
+    queryKey: reviewKeys.average(productId),
+    queryFn: () => reviewsApi.getAverage(productId),
+    enabled: Boolean(productId),
+    staleTime: 30_000,
+  });
+}
 
-  const getReviews = useCallback((productId: string) => {
-    return reviews.filter(r => r.productId === productId).sort((a, b) => b.date.localeCompare(a.date));
-  }, [reviews]);
+export function ReviewsProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
 
-  const addReview = useCallback((productId: string, author: string, rating: number, text: string) => {
-    const newReview: Review = {
-      id: `r-${Date.now()}`,
-      productId,
-      author: author.trim(),
-      rating,
-      text: text.trim(),
-      date: new Date().toISOString().split('T')[0],
-    };
-    setReviews(prev => [newReview, ...prev]);
-  }, []);
+  const createMutation = useMutation({
+    mutationFn: reviewsApi.create,
+    onSuccess: (_review, variables) => {
+      void queryClient.invalidateQueries({ queryKey: reviewKeys.byProduct(variables.productId) });
+      void queryClient.invalidateQueries({ queryKey: reviewKeys.average(variables.productId) });
+    },
+  });
 
-  const getAverageRating = useCallback((productId: string) => {
-    const productReviews = reviews.filter(r => r.productId === productId);
-    if (productReviews.length === 0) return null;
-    const avg = productReviews.reduce((sum, r) => sum + r.rating, 0) / productReviews.length;
-    return { avg: Math.round(avg * 10) / 10, count: productReviews.length };
-  }, [reviews]);
-
-  return (
-    <ReviewsContext.Provider value={{ getReviews, addReview, getAverageRating }}>
-      {children}
-    </ReviewsContext.Provider>
+  const addReview = useCallback(
+    async (productId: string, author: string, rating: number, text: string) => {
+      try {
+        await createMutation.mutateAsync({ productId, author, rating, text });
+        return { success: true };
+      } catch (err) {
+        const message = err instanceof ApiError ? err.message : 'Failed to submit review';
+        return { success: false, error: message };
+      }
+    },
+    [createMutation],
   );
+
+  return <ReviewsContext.Provider value={{ addReview }}>{children}</ReviewsContext.Provider>;
+}
+
+export function useReviewsForProduct(productId: string) {
+  const reviewsQuery = useProductReviews(productId);
+  const averageQuery = useProductAverage(productId);
+
+  return {
+    reviews: reviewsQuery.data ?? [],
+    average: averageQuery.data && averageQuery.data.count > 0 ? averageQuery.data : null,
+    isLoading: reviewsQuery.isLoading || averageQuery.isLoading,
+  };
 }
 
 export function useReviews() {
@@ -63,3 +79,5 @@ export function useReviews() {
   if (!ctx) throw new Error('useReviews must be used within ReviewsProvider');
   return ctx;
 }
+
+export type { Review };

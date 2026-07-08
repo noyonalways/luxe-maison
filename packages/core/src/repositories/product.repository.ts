@@ -4,6 +4,7 @@ import type { Product } from '../entities/product.entity.js';
 export interface ProductRepository {
   findAll(): Promise<AdminProduct[]>;
   findAllActive(): Promise<Product[]>;
+  findActiveById(id: string): Promise<Product | null>;
   findById(id: string): Promise<AdminProduct | null>;
   create(product: AdminProduct): Promise<AdminProduct>;
   update(id: string, product: Partial<AdminProduct>): Promise<AdminProduct | null>;

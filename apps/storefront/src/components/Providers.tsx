@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CartProvider } from "@/context/CartContext";
+import { ProductsProvider } from "@/context/ProductsContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { ReviewsProvider } from "@/context/ReviewsContext";
 import { CampaignsProvider } from "@/context/CampaignsContext";
@@ -20,6 +21,7 @@ export function Providers({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
+          <ProductsProvider>
           <CartProvider>
             <WishlistProvider>
               <ReviewsProvider>
@@ -35,6 +37,7 @@ export function Providers({ children }: { children: ReactNode }) {
               </ReviewsProvider>
             </WishlistProvider>
           </CartProvider>
+          </ProductsProvider>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

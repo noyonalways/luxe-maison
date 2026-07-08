@@ -1,4 +1,5 @@
 import type { AdminProduct, Product } from '@luxe-maison/core';
+import { toStorefrontProduct } from '@luxe-maison/core';
 import type { ProductRepository } from '@luxe-maison/core';
 import type { Model } from 'mongoose';
 import { ProductModel } from './schemas/product.schema.js';
@@ -18,8 +19,16 @@ export function createImpProductRepository(
     },
 
     async findAllActive() {
-      const docs = await model.find({ status: 'active' }).lean<Product[]>();
-      return docs.map((doc) => toPlain(doc)!);
+      const docs = await model.find({ status: 'active' }).lean<AdminProduct[]>();
+      return docs
+        .map((doc) => toStorefrontProduct(toPlain(doc)!))
+        .filter((product): product is Product => product !== null);
+    },
+
+    async findActiveById(id: string) {
+      const doc = await model.findOne({ id, status: 'active' }).lean<AdminProduct>();
+      if (!doc) return null;
+      return toStorefrontProduct(toPlain(doc)!);
     },
 
     async findById(id: string) {

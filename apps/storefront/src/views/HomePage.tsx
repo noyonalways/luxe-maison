@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Star, Sparkles, Crown, TrendingUp } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
-import { products, getProductById } from '@/data/products';
+import { useProducts } from '@/context/ProductsContext';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { CampaignCards } from '@/components/CampaignBanner';
 import ProductCard from '@/components/ProductCard';
@@ -61,6 +61,7 @@ const categoryData = [
 
 /* ── New Arrivals Carousel ── */
 function NewArrivalsSection() {
+  const { products } = useProducts();
   const newArrivals = products.filter(p => p.badge === 'New Arrival');
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'start', slidesToScroll: 1 });
   const [canPrev, setCanPrev] = useState(false);
@@ -172,6 +173,7 @@ function NewArrivalsSection() {
 
 /* ── Top Selling Section ── */
 function TopSellingSection() {
+  const { products } = useProducts();
   const topSelling = [...products].sort((a, b) => b.reviews - a.reviews).slice(0, 4);
   const rankColors = ['from-gold to-gold-dark', 'from-muted-foreground to-charcoal', 'from-gold-light to-gold', 'from-muted-foreground to-charcoal-light'];
 
@@ -233,6 +235,7 @@ function TopSellingSection() {
 
 /* ── Premium Collection Section ── */
 function PremiumSection() {
+  const { products } = useProducts();
   const premiumProducts = products.filter(p => p.badge === 'Premium' || p.price >= 150).slice(0, 3);
   const heroProduct = premiumProducts[0];
   const sideProducts = premiumProducts.slice(1, 3);
@@ -319,6 +322,7 @@ function PremiumSection() {
 
 /* ── Luxury Showcase Section ── */
 function LuxuryShowcase() {
+  const { products } = useProducts();
   const luxuryProduct = [...products].sort((a, b) => b.price - a.price)[0];
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
@@ -389,6 +393,7 @@ function LuxuryShowcase() {
 }
 
 export default function HomePage() {
+  const { products, getProductById } = useProducts();
   const featuredProducts = products.filter(p => p.badge).slice(0, 4);
   const { viewedIds } = useRecentlyViewed();
   const recentlyViewed = viewedIds.map(id => getProductById(id)).filter(Boolean).slice(0, 4);

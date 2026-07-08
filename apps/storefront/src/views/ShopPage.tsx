@@ -4,8 +4,9 @@ import { useState, useMemo, useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { SlidersHorizontal, X } from 'lucide-react';
-import { products, categories, sections } from '@/data/products';
+import { useProducts } from '@/context/ProductsContext';
 import ProductCard from '@/components/ProductCard';
+import { Loader2 } from 'lucide-react';
 
 const fits = ['slim', 'regular', 'relaxed'] as const;
 const fabrics = ['silk', 'cotton', 'linen', 'blend'] as const;
@@ -16,6 +17,7 @@ const priceRanges = [
 ];
 
 export default function ShopPage() {
+  const { products, categories, sections, isLoading } = useProducts();
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -52,7 +54,16 @@ export default function ShopPage() {
       result = [...result].sort((a, b) => b.reviews - a.reviews);
     }
     return result;
-  }, [activeSection, activeCategory, activeBadge, activeSort, activeFit, activeFabric, activePrice]);
+  }, [products, activeSection, activeCategory, activeBadge, activeSort, activeFit, activeFabric, activePrice]);
+
+  if (isLoading) {
+    return (
+      <main className="pt-20 lg:pt-24 min-h-screen flex items-center justify-center text-muted-foreground gap-2">
+        <Loader2 size={20} className="animate-spin" />
+        <span className="text-sm">Loading collection…</span>
+      </main>
+    );
+  }
 
   const hasFilters = activeSection || activeCategory || activeBadge || activeFit || activeFabric || activePrice;
 

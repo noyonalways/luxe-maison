@@ -16,6 +16,10 @@ export function createProductService(repository: ProductRepository) {
       return repository.findById(id);
     },
 
+    getStorefrontProductById(id: string): Promise<Product | null> {
+      return repository.findActiveById(id);
+    },
+
     create(product: AdminProduct): Promise<AdminProduct> {
       return repository.create(product);
     },

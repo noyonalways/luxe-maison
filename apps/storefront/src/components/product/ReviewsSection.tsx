@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { z } from 'zod';
-import { useReviews } from '@/context/ReviewsContext';
+import { useReviews, useReviewsForProduct } from '@/context/ReviewsContext';
 
 const reviewSchema = z.object({
   author: z.string().trim().min(2, 'Name must be at least 2 characters').max(50, 'Max 50 characters'),
@@ -11,8 +11,8 @@ const reviewSchema = z.object({
 });
 
 export default function ReviewsSection({ productId }: { productId: string }) {
-  const { getReviews, addReview } = useReviews();
-  const reviews = getReviews(productId);
+  const { addReview } = useReviews();
+  const { reviews, isLoading } = useReviewsForProduct(productId);
 
   const [showForm, setShowForm] = useState(false);
   const [author, setAuthor] = useState('');
@@ -20,17 +20,25 @@ export default function ReviewsSection({ productId }: { productId: string }) {
   const [hoverRating, setHoverRating] = useState(0);
   const [text, setText] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState('');
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const result = reviewSchema.safeParse({ author, rating, text });
     if (!result.success) {
       const errs: Record<string, string> = {};
-      result.error.issues.forEach(i => { errs[i.path[0] as string] = i.message; });
+      result.error.issues.forEach((i) => {
+        errs[i.path[0] as string] = i.message;
+      });
       setErrors(errs);
       return;
     }
     setErrors({});
-    addReview(productId, author, rating, text);
+    setSubmitError('');
+    const response = await addReview(productId, author, rating, text);
+    if (!response.success) {
+      setSubmitError(response.error || 'Failed to submit review');
+      return;
+    }
     setAuthor('');
     setRating(0);
     setText('');
@@ -112,14 +120,16 @@ export default function ReviewsSection({ productId }: { productId: string }) {
             </div>
           </div>
 
-          <button onClick={handleSubmit} className="px-8 py-3 bg-primary text-primary-foreground text-sm font-medium letter-wide uppercase transition-smooth hover:opacity-90">
+          <button onClick={() => void handleSubmit()} className="px-8 py-3 bg-primary text-primary-foreground text-sm font-medium letter-wide uppercase transition-smooth hover:opacity-90">
             Submit Review
           </button>
+          {submitError && <p className="text-sm text-destructive mt-3">{submitError}</p>}
         </motion.div>
       )}
 
-      {/* Reviews List */}
-      {reviews.length > 0 ? (
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground py-6">Loading reviews…</p>
+      ) : reviews.length > 0 ? (
         <div className="space-y-6">
           {reviews.map(review => (
             <motion.div

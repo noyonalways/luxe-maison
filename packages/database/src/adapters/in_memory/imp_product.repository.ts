@@ -1,4 +1,5 @@
 import type { AdminProduct, Product } from '@luxe-maison/core';
+import { toStorefrontProduct } from '@luxe-maison/core';
 import type { ProductRepository } from '@luxe-maison/core';
 import { adminProducts } from './seed.js';
 
@@ -13,7 +14,16 @@ export function createImpProductRepository(
     },
 
     async findAllActive() {
-      return products.filter((p) => p.status === 'active') as Product[];
+      return products
+        .filter((p) => p.status === 'active')
+        .map((p) => toStorefrontProduct(p)!)
+        .filter(Boolean);
+    },
+
+    async findActiveById(id: string) {
+      const product = products.find((p) => p.id === id);
+      if (!product) return null;
+      return toStorefrontProduct(product);
     },
 
     async findById(id: string) {

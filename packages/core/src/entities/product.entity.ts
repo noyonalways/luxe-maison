@@ -34,3 +34,18 @@ export interface AdminProduct extends Product {
   status: 'active' | 'draft' | 'archived';
   createdAt: string;
 }
+
+export function toStorefrontProduct(product: AdminProduct): Product | null {
+  if (product.status !== 'active') return null;
+  const {
+    sku: _sku,
+    stock: _stock,
+    tags: _tags,
+    seoTitle: _seoTitle,
+    seoDescription: _seoDescription,
+    status: _status,
+    createdAt: _createdAt,
+    ...storefront
+  } = product;
+  return storefront;
+}

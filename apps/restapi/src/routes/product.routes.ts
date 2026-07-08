@@ -86,7 +86,7 @@ export function productRoutes(
   });
 
   app.get('/api/products/:id', async (c) => {
-    const product = await products.getById(c.req.param('id'));
+    const product = await products.getStorefrontProductById(c.req.param('id'));
     if (!product) return c.json({ error: 'Product not found' }, 404);
     return c.json(product);
   });
