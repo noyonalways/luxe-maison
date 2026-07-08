@@ -1,11 +1,15 @@
 import { createContext, useContext } from 'react';
 import type { Campaign } from '@/data/cms-types';
+import type { CreateCampaignPayload, UpdateCampaignPayload } from '@/lib/api/campaigns.api';
 
 export interface CampaignsContextValue {
   campaigns: Campaign[];
-  addCampaign: (c: Campaign) => void;
-  updateCampaign: (c: Campaign) => void;
-  deleteCampaign: (id: string) => void;
+  isLoading: boolean;
+  isSaving: boolean;
+  error: string | null;
+  addCampaign: (campaign: CreateCampaignPayload) => Promise<Campaign>;
+  updateCampaign: (id: string, campaign: UpdateCampaignPayload) => Promise<Campaign>;
+  deleteCampaign: (id: string) => Promise<void>;
   getActiveCampaigns: () => Campaign[];
 }
 

@@ -17,10 +17,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <QueryProvider>
       <TooltipProvider>
         <AuthProvider>
-          <CampaignsProvider>
-            <PopupProvider>
-              <CustomerProvider>
-                <RoleProvider>
+          <PopupProvider>
+            <CustomerProvider>
+              <RoleProvider>
+                <CampaignsProvider>
                   <ProductsProvider>
                     <StaffProvider>
                       <SettingsProvider>
@@ -30,10 +30,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
                       </SettingsProvider>
                     </StaffProvider>
                   </ProductsProvider>
-                </RoleProvider>
-              </CustomerProvider>
-            </PopupProvider>
-          </CampaignsProvider>
+                </CampaignsProvider>
+              </RoleProvider>
+            </CustomerProvider>
+          </PopupProvider>
         </AuthProvider>
       </TooltipProvider>
     </QueryProvider>

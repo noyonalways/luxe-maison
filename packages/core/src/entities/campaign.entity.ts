@@ -18,3 +18,15 @@ export interface Campaign {
   conversions: number;
   createdAt: string;
 }
+
+export function deriveCampaignStatus(
+  startDate: string,
+  endDate: string,
+  now: Date = new Date(),
+): CampaignStatus {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (end < now) return 'ended';
+  if (start > now) return 'scheduled';
+  return 'active';
+}
