@@ -5,6 +5,7 @@ import { QueryProvider } from '@/providers/query-provider';
 import { AuthProvider } from '@/providers/auth-provider';
 import { ProductsProvider } from '@/providers/products-provider';
 import { CampaignsProvider } from '@/providers/campaigns-provider';
+import { NewsletterProvider } from '@/providers/newsletter-provider';
 import { PopupProvider } from '@/providers/popup-provider';
 import { CustomerProvider } from '@/providers/customer-provider';
 import { RoleProvider } from '@/providers/role-provider';
@@ -21,15 +22,17 @@ export function AppProviders({ children }: { children: ReactNode }) {
             <CustomerProvider>
               <RoleProvider>
                 <CampaignsProvider>
-                  <ProductsProvider>
-                    <StaffProvider>
-                      <SettingsProvider>
-                        <Toaster />
-                        <Sonner />
-                        {children}
-                      </SettingsProvider>
-                    </StaffProvider>
-                  </ProductsProvider>
+                  <NewsletterProvider>
+                    <ProductsProvider>
+                      <StaffProvider>
+                        <SettingsProvider>
+                          <Toaster />
+                          <Sonner />
+                          {children}
+                        </SettingsProvider>
+                      </StaffProvider>
+                    </ProductsProvider>
+                  </NewsletterProvider>
                 </CampaignsProvider>
               </RoleProvider>
             </CustomerProvider>

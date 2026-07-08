@@ -38,6 +38,30 @@ export function createNewsletterService(repository: NewsletterRepository) {
     createEmail(email: NewsletterEmail): Promise<NewsletterEmail> {
       return repository.createEmail(email);
     },
+
+    async sendEmail(input: {
+      subject: string;
+      body: string;
+      audience: 'all' | 'active';
+    }): Promise<NewsletterEmail> {
+      const subscribers = await repository.findAllSubscribers();
+      const recipientCount =
+        input.audience === 'active'
+          ? subscribers.filter((s) => s.status === 'active').length
+          : subscribers.length;
+
+      const email: NewsletterEmail = {
+        id: `nl-${Date.now()}`,
+        subject: input.subject.trim(),
+        body: input.body.trim(),
+        audience: input.audience,
+        recipientCount,
+        openRate: 0,
+        sentAt: new Date().toISOString(),
+      };
+
+      return repository.createEmail(email);
+    },
   };
 }
 

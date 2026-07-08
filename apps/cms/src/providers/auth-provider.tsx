@@ -17,6 +17,7 @@ import { permissionsKeys } from '@/hooks/permissions/permissions-keys';
 import { productKeys } from '@/hooks/products/product-keys';
 import { staffKeys } from '@/hooks/staff/staff-keys';
 import { campaignKeys } from '@/hooks/campaigns/campaign-keys';
+import { newsletterKeys } from '@/hooks/newsletter/newsletter-keys';
 import { clearPermissionsCache } from '@/lib/permissions-cache';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -44,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryClient.removeQueries({ queryKey: productKeys.all });
     queryClient.removeQueries({ queryKey: staffKeys.all });
     queryClient.removeQueries({ queryKey: campaignKeys.all });
+    queryClient.removeQueries({ queryKey: newsletterKeys.all });
   }, [queryClient]);
 
   useEffect(() => {
