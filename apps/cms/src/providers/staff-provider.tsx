@@ -1,33 +1,69 @@
 import { useCallback, useMemo, type ReactNode } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { StaffContext } from '@/contexts/staff-context';
 import { useAuth } from '@/contexts/auth-context';
+import { useRole } from '@/contexts/role-context';
 import { useStaffList } from '@/hooks/staff/use-staff-list';
-import { staffKeys } from '@/hooks/staff/staff-keys';
-import type { StaffMember } from '@/contexts/staff-context';
+import { useCreateStaffMutation } from '@/hooks/staff/use-create-staff-mutation';
+import { useUpdateStaffMutation } from '@/hooks/staff/use-update-staff-mutation';
+import { useDeleteStaffMutation } from '@/hooks/staff/use-delete-staff-mutation';
+import { toApiError } from '@/lib/api/errors';
+import type { CreateStaffPayload, UpdateStaffPayload } from '@/lib/api/staff.api';
 
 export function StaffProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const isAdmin = user?.role === 'admin';
+  const { isAuthenticated } = useAuth();
+  const { hasAccess } = useRole();
+  const canViewTeam = isAuthenticated && hasAccess('team');
 
-  const { data, isLoading, error, refetch } = useStaffList(isAdmin);
+  const { data, isLoading, error, refetch } = useStaffList(canViewTeam);
+  const createMutation = useCreateStaffMutation();
+  const updateMutation = useUpdateStaffMutation();
+  const deleteMutation = useDeleteStaffMutation();
 
-  const invalidate = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: staffKeys.list() });
-  }, [queryClient]);
+  const addMember = useCallback(
+    async (payload: CreateStaffPayload) => createMutation.mutateAsync(payload),
+    [createMutation],
+  );
+
+  const removeMember = useCallback(
+    async (id: string) => {
+      await deleteMutation.mutateAsync(id);
+    },
+    [deleteMutation],
+  );
+
+  const updateMember = useCallback(
+    async (id: string, payload: UpdateStaffPayload) =>
+      updateMutation.mutateAsync({ id, payload }),
+    [updateMutation],
+  );
+
+  const isSaving =
+    createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
 
   const value = useMemo(
     () => ({
       members: data ?? [],
-      isLoading: isAdmin ? isLoading : false,
-      error: error ? 'Failed to load team members' : null,
-      refetch: () => { void refetch(); },
-      addMember: (_data: Omit<StaffMember, 'id' | 'addedAt'>) => invalidate(),
-      removeMember: (_id: string) => invalidate(),
-      updateMember: (_id: string, _data: Partial<Pick<StaffMember, 'name' | 'email' | 'role'>>) => invalidate(),
+      isLoading: canViewTeam && isLoading,
+      error: error ? toApiError(error).message : null,
+      refetch: () => {
+        void refetch();
+      },
+      addMember,
+      removeMember,
+      updateMember,
+      isSaving,
     }),
-    [data, isAdmin, isLoading, error, refetch, invalidate],
+    [
+      data,
+      canViewTeam,
+      isLoading,
+      error,
+      refetch,
+      addMember,
+      removeMember,
+      updateMember,
+      isSaving,
+    ],
   );
 
   return <StaffContext.Provider value={value}>{children}</StaffContext.Provider>;

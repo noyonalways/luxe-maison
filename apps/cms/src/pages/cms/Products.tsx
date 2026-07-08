@@ -1,11 +1,13 @@
 import { useState, useRef, useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Plus, Search, Edit, Archive, Eye, AlertTriangle, Upload, Download, X, Check, FileSpreadsheet, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Archive, Eye, AlertTriangle, Upload, Download, X, Check, FileSpreadsheet, Trash2, Loader2 } from 'lucide-react';
 import { useProducts } from '@/contexts/products-context';
 import type { AdminProduct } from '@/data/cms-types';
 import { useTableSort, useTablePagination, SortableHeader, PaginationControls } from '@/components/staff/TableControls';
 import { useRole } from '@/contexts/role-context';
 import { cmsProductEdit, cmsProductNew } from '@/lib/cms-navigation';
+import { toApiError } from '@/lib/api/errors';
+import { toast } from 'sonner';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 
@@ -21,7 +23,7 @@ export default function Products() {
   const { role, canEdit: canEditFn, canDelete: canDeleteFn } = useRole();
   const canEditProducts = canEditFn('products');
   const canDeleteProducts = canDeleteFn('products');
-  const { products, toggleStatus, deleteProduct, setProducts } = useProducts();
+  const { products, toggleStatus, deleteProduct, addProduct, isLoading, isSaving } = useProducts();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -75,29 +77,58 @@ export default function Products() {
     setImportData(validRows); setImportErrors(errors); setShowImport(true);
   };
 
-  const confirmImport = () => {
+  const confirmImport = async () => {
     setIsImporting(true);
-    const newProducts: AdminProduct[] = importData.map((row, idx) => ({
-      id: `import-${Date.now()}-${idx}`, name: row.name.trim(), price: Number(row.price),
-      category: (row.category?.trim().toLowerCase() || 'shirt') as AdminProduct['category'],
-      fit: (row.fit?.trim().toLowerCase() || 'regular') as AdminProduct['fit'],
-      fabric: (row.fabric?.trim().toLowerCase() || 'cotton') as AdminProduct['fabric'],
-      season: 'all-season' as const, colors: [{ name: 'Default', hex: '#333333' }], sizes: ['S', 'M', 'L', 'XL'],
-      images: ['https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80'],
-      description: row.description?.trim() || '', details: [], rating: 0, reviews: 0, section: 'men' as const,
-      sku: row.sku.trim(), stock: Number(row.stock) || 0,
-      tags: row.tags?.split(',').map(t => t.trim()).filter(Boolean) || [],
-      seoTitle: `${row.name.trim()} — MAISON`, seoDescription: row.description?.slice(0, 155) || '',
-      status: 'draft' as const, createdAt: new Date().toISOString(),
-    }));
-    setProducts(prev => [...newProducts, ...prev]);
-    setTimeout(() => { setIsImporting(false); setShowImport(false); setImportData([]); setImportErrors([]); }, 500);
+    try {
+      const newProducts: AdminProduct[] = importData.map((row, idx) => ({
+        id: `import-${Date.now()}-${idx}`,
+        name: row.name.trim(),
+        price: Number(row.price),
+        category: (row.category?.trim().toLowerCase() || 'shirt') as AdminProduct['category'],
+        fit: (row.fit?.trim().toLowerCase() || 'regular') as AdminProduct['fit'],
+        fabric: (row.fabric?.trim().toLowerCase() || 'cotton') as AdminProduct['fabric'],
+        season: 'all-season' as const,
+        colors: [{ name: 'Default', hex: '#333333' }],
+        sizes: ['S', 'M', 'L', 'XL'],
+        images: ['https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80'],
+        description: row.description?.trim() || '',
+        details: [],
+        rating: 0,
+        reviews: 0,
+        section: 'men' as const,
+        sku: row.sku.trim(),
+        stock: Number(row.stock) || 0,
+        tags: row.tags?.split(',').map((t) => t.trim()).filter(Boolean) || [],
+        seoTitle: `${row.name.trim()} — MAISON`,
+        seoDescription: row.description?.slice(0, 155) || '',
+        status: 'draft' as const,
+        createdAt: new Date().toISOString(),
+      }));
+
+      await Promise.all(newProducts.map((product) => addProduct(product)));
+      toast.success(`Imported ${newProducts.length} product${newProducts.length > 1 ? 's' : ''}`);
+      setShowImport(false);
+      setImportData([]);
+      setImportErrors([]);
+    } catch (error) {
+      toast.error(toApiError(error).message);
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   const downloadTemplate = () => {
     const blob = new Blob([CSV_TEMPLATE], { type: 'text/csv' }); const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = 'product-import-template.csv'; a.click(); URL.revokeObjectURL(url);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[320px] items-center justify-center text-muted-foreground">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -184,7 +215,18 @@ export default function Products() {
                   {canEditProducts && (
                   <div className="flex items-center justify-end gap-2">
                     <button onClick={() => navigate(cmsProductEdit(role, p.id))} className="p-1.5 text-muted-foreground transition-smooth hover-gold" title="Edit"><Edit size={14} /></button>
-                    <button onClick={() => toggleStatus(p.id)} className="p-1.5 text-muted-foreground transition-smooth hover-gold" title="Toggle status">
+                    <button
+                      onClick={async () => {
+                        try {
+                          await toggleStatus(p.id);
+                        } catch (error) {
+                          toast.error(toApiError(error).message);
+                        }
+                      }}
+                      disabled={isSaving}
+                      className="p-1.5 text-muted-foreground transition-smooth hover-gold"
+                      title="Toggle status"
+                    >
                       {p.status === 'active' ? <Archive size={14} /> : <Eye size={14} />}
                     </button>
                     {canDeleteProducts && (
@@ -263,7 +305,22 @@ export default function Products() {
             <p className="text-sm text-muted-foreground mb-5">This action cannot be undone. The product will be permanently removed.</p>
             <div className="flex justify-end gap-3">
               <button onClick={() => setDeleteConfirm(null)} className="px-4 py-2 border border-border text-xs font-medium letter-wide uppercase transition-smooth hover:border-foreground">Cancel</button>
-              <button onClick={() => { deleteProduct(deleteConfirm); setDeleteConfirm(null); }} className="px-4 py-2 bg-destructive text-destructive-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:opacity-90">Delete</button>
+              <button
+                onClick={async () => {
+                  if (!deleteConfirm) return;
+                  try {
+                    await deleteProduct(deleteConfirm);
+                    setDeleteConfirm(null);
+                    toast.success('Product deleted');
+                  } catch (error) {
+                    toast.error(toApiError(error).message);
+                  }
+                }}
+                disabled={isSaving}
+                className="px-4 py-2 bg-destructive text-destructive-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:opacity-90"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

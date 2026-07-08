@@ -14,6 +14,8 @@ import {
 import { useAuthSession } from '@/hooks/auth/use-auth-session';
 import { authKeys } from '@/hooks/auth/auth-keys';
 import { permissionsKeys } from '@/hooks/permissions/permissions-keys';
+import { productKeys } from '@/hooks/products/product-keys';
+import { staffKeys } from '@/hooks/staff/staff-keys';
 import { clearPermissionsCache } from '@/lib/permissions-cache';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -38,6 +40,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     queryClient.removeQueries({ queryKey: authKeys.all });
     queryClient.removeQueries({ queryKey: permissionsKeys.all });
+    queryClient.removeQueries({ queryKey: productKeys.all });
+    queryClient.removeQueries({ queryKey: staffKeys.all });
   }, [queryClient]);
 
   useEffect(() => {

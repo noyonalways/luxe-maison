@@ -3,12 +3,14 @@ import type { AdminProduct } from '@/data/cms-types';
 
 export interface ProductsContextValue {
   products: AdminProduct[];
-  addProduct: (p: AdminProduct) => void;
-  updateProduct: (p: AdminProduct) => void;
-  deleteProduct: (id: string) => void;
-  toggleStatus: (id: string) => void;
+  isLoading: boolean;
+  error: string | null;
+  addProduct: (product: AdminProduct) => Promise<AdminProduct>;
+  updateProduct: (product: AdminProduct) => Promise<AdminProduct>;
+  deleteProduct: (id: string) => Promise<void>;
+  toggleStatus: (id: string) => Promise<AdminProduct>;
   getProduct: (id: string) => AdminProduct | undefined;
-  setProducts: React.Dispatch<React.SetStateAction<AdminProduct[]>>;
+  isSaving: boolean;
 }
 
 export const ProductsContext = createContext<ProductsContextValue | null>(null);

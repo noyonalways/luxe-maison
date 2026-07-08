@@ -6,20 +6,26 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { UserPlus, Trash2, Users, Search, Edit2, Check, X } from 'lucide-react';
+import { UserPlus, Trash2, Users, Search, Edit2, Check, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { toApiError } from '@/lib/api/errors';
 
 export default function Team() {
-  const { role } = useRole();
-  const { members, addMember, removeMember, updateMember } = useStaff();
+  const { role, canEdit, canDelete } = useRole();
+  const { members, addMember, removeMember, updateMember, isLoading, isSaving } = useStaff();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [memberRole, setMemberRole] = useState<'manager' | 'employee'>('employee');
   const [search, setSearch] = useState('');
   const [filterRole, setFilterRole] = useState<'all' | 'manager' | 'employee'>('all');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editRole, setEditRole] = useState<'manager' | 'employee'>('employee');
+  const [deleteConfirm, setDeleteConfirm] = useState<StaffMember | null>(null);
+
+  const canEditTeam = canEdit('team');
+  const canDeleteTeam = canDelete('team');
 
   if (role !== 'admin') {
     return (
@@ -31,48 +37,80 @@ export default function Team() {
     );
   }
 
-  const filtered = members.filter(m => {
-    const matchSearch = m.name.toLowerCase().includes(search.toLowerCase()) || m.email.toLowerCase().includes(search.toLowerCase());
+  const filtered = members.filter((m) => {
+    const matchSearch =
+      m.name.toLowerCase().includes(search.toLowerCase()) ||
+      m.email.toLowerCase().includes(search.toLowerCase());
     const matchRole = filterRole === 'all' || m.role === filterRole;
     return matchSearch && matchRole;
   });
 
-  const managers = members.filter(m => m.role === 'manager').length;
-  const employees = members.filter(m => m.role === 'employee').length;
+  const managers = members.filter((m) => m.role === 'manager').length;
+  const employees = members.filter((m) => m.role === 'employee').length;
 
-  const handleAdd = () => {
-    if (!name.trim() || !email.trim()) {
+  const handleAdd = async () => {
+    if (!name.trim() || !email.trim() || !password.trim()) {
       toast.error('Please fill in all fields');
       return;
     }
-    addMember({ name: name.trim(), email: email.trim(), role: memberRole });
-    toast.success(`${name} added as ${memberRole}`);
-    setName('');
-    setEmail('');
-    setMemberRole('employee');
-    setOpen(false);
+
+    try {
+      await addMember({
+        name: name.trim(),
+        email: email.trim(),
+        role: memberRole,
+        password,
+      });
+      toast.success(`${name} added as ${memberRole}`);
+      setName('');
+      setEmail('');
+      setPassword('');
+      setMemberRole('employee');
+      setOpen(false);
+    } catch (error) {
+      toast.error(toApiError(error).message);
+    }
   };
 
-  const handleRemove = (member: StaffMember) => {
-    removeMember(member.id);
-    toast.success(`${member.name} removed`);
+  const handleRemove = async (member: StaffMember) => {
+    try {
+      await removeMember(member.id);
+      toast.success(`${member.name} removed`);
+      setDeleteConfirm(null);
+    } catch (error) {
+      toast.error(toApiError(error).message);
+    }
   };
 
   const startEdit = (member: StaffMember) => {
+    if (member.role === 'admin') return;
     setEditingId(member.id);
-    setEditRole(member.role);
+    setEditRole(member.role === 'manager' ? 'manager' : 'employee');
   };
 
-  const saveEdit = (member: StaffMember) => {
-    updateMember(member.id, { role: editRole });
-    toast.success(`${member.name} updated to ${editRole}`);
-    setEditingId(null);
+  const saveEdit = async (member: StaffMember) => {
+    try {
+      await updateMember(member.id, { role: editRole });
+      toast.success(`${member.name} updated to ${editRole}`);
+      setEditingId(null);
+    } catch (error) {
+      toast.error(toApiError(error).message);
+    }
   };
 
   const roleBadge = (r: string) => {
+    if (r === 'admin') return 'bg-primary/10 text-primary border border-primary/20';
     if (r === 'manager') return 'bg-amber-50 text-amber-700 border border-amber-200';
     return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[320px] items-center justify-center text-muted-foreground">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -83,52 +121,59 @@ export default function Team() {
             {managers} manager{managers !== 1 ? 's' : ''}, {employees} employee{employees !== 1 ? 's' : ''}
           </p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-1.5">
-              <UserPlus size={16} />
-              Add Member
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Team Member</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="team-name">Name</Label>
-                <Input id="team-name" value={name} onChange={e => setName(e.target.value)} placeholder="Full name" />
+        {canEditTeam && (
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-1.5" disabled={isSaving}>
+                <UserPlus size={16} />
+                Add Member
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Team Member</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="team-name">Name</Label>
+                  <Input id="team-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="team-email">Email</Label>
+                  <Input id="team-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="team-password">Password</Label>
+                  <Input id="team-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Minimum 6 characters" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Role</Label>
+                  <Select value={memberRole} onValueChange={(v: 'manager' | 'employee') => setMemberRole(v)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="employee">Employee</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={handleAdd} className="w-full" disabled={isSaving}>
+                  {isSaving ? 'Adding...' : 'Add Member'}
+                </Button>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="team-email">Email</Label>
-                <Input id="team-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Role</Label>
-                <Select value={memberRole} onValueChange={(v: 'manager' | 'employee') => setMemberRole(v)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="manager">Manager</SelectItem>
-                    <SelectItem value="employee">Employee</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button onClick={handleAdd} className="w-full">Add Member</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search by name or email..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
           />
         </div>
@@ -144,7 +189,6 @@ export default function Team() {
         </Select>
       </div>
 
-      {/* Table */}
       <div className="bg-background border border-border rounded">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -158,12 +202,12 @@ export default function Team() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(member => (
+              {filtered.map((member) => (
                 <tr key={member.id} className="border-b border-border last:border-0">
                   <td className="px-5 py-3 font-medium">{member.name}</td>
                   <td className="px-5 py-3 text-muted-foreground">{member.email}</td>
                   <td className="px-5 py-3">
-                    {editingId === member.id ? (
+                    {editingId === member.id && member.role !== 'admin' ? (
                       <Select value={editRole} onValueChange={(v: 'manager' | 'employee') => setEditRole(v)}>
                         <SelectTrigger className="h-7 w-28 text-xs">
                           <SelectValue />
@@ -181,37 +225,77 @@ export default function Team() {
                   </td>
                   <td className="px-5 py-3 text-muted-foreground">{member.addedAt}</td>
                   <td className="px-5 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {editingId === member.id ? (
-                        <>
-                          <button onClick={() => saveEdit(member)} className="text-emerald-600 hover:text-emerald-700 transition-colors">
-                            <Check size={14} />
-                          </button>
-                          <button onClick={() => setEditingId(null)} className="text-muted-foreground hover:text-foreground transition-colors">
-                            <X size={14} />
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button onClick={() => startEdit(member)} className="text-muted-foreground hover:text-foreground transition-colors">
-                            <Edit2 size={14} />
-                          </button>
-                          <button onClick={() => handleRemove(member)} className="text-muted-foreground hover:text-destructive transition-colors">
-                            <Trash2 size={14} />
-                          </button>
-                        </>
-                      )}
-                    </div>
+                    {member.role !== 'admin' && (canEditTeam || canDeleteTeam) && (
+                      <div className="flex items-center justify-end gap-2">
+                        {editingId === member.id ? (
+                          <>
+                            <button
+                              onClick={() => saveEdit(member)}
+                              disabled={isSaving}
+                              className="text-emerald-600 hover:text-emerald-700 transition-colors"
+                            >
+                              <Check size={14} />
+                            </button>
+                            <button onClick={() => setEditingId(null)} className="text-muted-foreground hover:text-foreground transition-colors">
+                              <X size={14} />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            {canEditTeam && (
+                              <button onClick={() => startEdit(member)} className="text-muted-foreground hover:text-foreground transition-colors">
+                                <Edit2 size={14} />
+                              </button>
+                            )}
+                            {canDeleteTeam && (
+                              <button
+                                onClick={() => setDeleteConfirm(member)}
+                                className="text-muted-foreground hover:text-destructive transition-colors"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={5} className="px-5 py-8 text-center text-muted-foreground text-sm">No team members found</td></tr>
+                <tr>
+                  <td colSpan={5} className="px-5 py-8 text-center text-muted-foreground text-sm">
+                    No team members found
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30" onClick={() => setDeleteConfirm(null)}>
+          <div className="bg-background p-6 m-4 shadow-elevated max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-heading text-lg mb-2">Remove Team Member?</h3>
+            <p className="text-sm text-muted-foreground mb-5">
+              {deleteConfirm.name} will lose access to the CMS. This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setDeleteConfirm(null)} className="px-4 py-2 border border-border text-xs font-medium letter-wide uppercase transition-smooth hover:border-foreground">
+                Cancel
+              </button>
+              <button
+                onClick={() => handleRemove(deleteConfirm)}
+                disabled={isSaving}
+                className="px-4 py-2 bg-destructive text-destructive-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:opacity-90"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

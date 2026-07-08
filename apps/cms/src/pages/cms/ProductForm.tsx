@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useRole } from '@/contexts/role-context';
-import { ArrowLeft, Plus, X, Trash2, GripVertical, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Plus, X, Trash2, GripVertical, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { useProducts } from '@/contexts/products-context';
+import { useProduct } from '@/hooks/products/use-product';
 import type { AdminProduct } from '@/data/cms-types';
 import type { ProductColor } from '@luxe-maison/shared/data/products';
 import { cmsTo } from '@/lib/cms-navigation';
+import { toApiError } from '@/lib/api/errors';
+import { toast } from 'sonner';
 
 const defaultProduct: Omit<AdminProduct, 'id' | 'createdAt'> = {
   name: '', price: 0, originalPrice: undefined, section: 'men', category: 'shirt', fit: 'regular', fabric: 'cotton',
@@ -25,7 +28,8 @@ export default function ProductForm() {
   const { role } = useRole();
   const productsRoute = cmsTo('products', role);
   const navigate = useNavigate();
-  const { getProduct, addProduct, updateProduct, deleteProduct } = useProducts();
+  const { addProduct, updateProduct, deleteProduct, isSaving } = useProducts();
+  const productQuery = useProduct(id);
   const isEdit = Boolean(id);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -49,16 +53,18 @@ export default function ProductForm() {
   const [tagInput, setTagInput] = useState('');
 
   useEffect(() => {
-    if (id) {
-      const existing = getProduct(id);
-      if (existing) {
-        const { id: _id, createdAt: _ca, ...rest } = existing;
-        setForm(rest);
-      } else {
-        navigate(productsRoute);
-      }
+    if (id && productQuery.data) {
+      const { id: _id, createdAt: _ca, ...rest } = productQuery.data;
+      setForm(rest);
     }
-  }, [id]);
+  }, [id, productQuery.data]);
+
+  useEffect(() => {
+    if (id && productQuery.isError) {
+      toast.error('Product not found');
+      navigate(productsRoute);
+    }
+  }, [id, productQuery.isError, navigate, productsRoute]);
 
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm(prev => ({ ...prev, [key]: value }));
@@ -105,23 +111,51 @@ export default function ProductForm() {
   };
   const removeTag = (i: number) => set('tags', form.tags.filter((_, idx) => idx !== i));
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name.trim()) return;
+
     const product: AdminProduct = {
       ...form,
       id: productId,
       seoTitle: form.seoTitle || `${form.name} — MAISON`,
       seoDescription: form.seoDescription || form.description.slice(0, 155),
-      createdAt: isEdit ? (getProduct(id!)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+      createdAt: isEdit
+        ? productQuery.data?.createdAt || new Date().toISOString()
+        : new Date().toISOString(),
     };
-    if (isEdit) updateProduct(product);
-    else addProduct(product);
-    navigate(productsRoute);
+
+    try {
+      if (isEdit) {
+        await updateProduct(product);
+        toast.success('Product updated');
+      } else {
+        await addProduct(product);
+        toast.success('Product created');
+      }
+      navigate(productsRoute);
+    } catch (error) {
+      toast.error(toApiError(error).message);
+    }
   };
 
-  const handleDelete = () => {
-    if (id) { deleteProduct(id); navigate(productsRoute); }
+  const handleDelete = async () => {
+    if (!id) return;
+    try {
+      await deleteProduct(id);
+      toast.success('Product deleted');
+      navigate(productsRoute);
+    } catch (error) {
+      toast.error(toApiError(error).message);
+    }
   };
+
+  if (isEdit && productQuery.isLoading) {
+    return (
+      <div className="flex min-h-[320px] items-center justify-center text-muted-foreground">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
 
   const presetSizes = PRESET_SIZES[form.category] || PRESET_SIZES.shirt;
 
@@ -146,7 +180,7 @@ export default function ProductForm() {
           <button onClick={() => navigate(productsRoute)} className="px-5 py-2.5 border border-border text-xs font-medium letter-wide uppercase transition-smooth hover:border-foreground">
             Cancel
           </button>
-          <button onClick={handleSave} disabled={!form.name.trim()}
+          <button onClick={handleSave} disabled={!form.name.trim() || isSaving}
             className="px-5 py-2.5 bg-primary text-primary-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:opacity-90 disabled:opacity-50">
             {isEdit ? 'Save Changes' : 'Create Product'}
           </button>
