@@ -3,6 +3,7 @@ import type { CmsSection } from '@luxe-maison/core';
 import {
   getPermission,
   meetsPermissionLevel,
+  isStaffRole,
   type EditableRolePermissions,
 } from '@luxe-maison/core';
 import type { RolePermissionsService } from '@luxe-maison/core';
@@ -36,6 +37,10 @@ export function createRequireSection(service: RolePermissionsService) {
       const user = c.get('user');
       if (!user) {
         return c.json({ status: 'error', message: 'Authentication required' }, 401);
+      }
+
+      if (!isStaffRole(user.role)) {
+        return c.json({ status: 'error', message: 'Insufficient permissions' }, 403);
       }
 
       const permissions = await getPermissionsForRequest(service);

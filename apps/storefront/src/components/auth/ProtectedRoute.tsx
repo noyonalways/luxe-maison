@@ -10,22 +10,23 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children, type }: ProtectedRouteProps) {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
+    if (isLoading) return;
     if (!isAuthenticated || !user) {
-      router.replace(type === "customer" ? "/login" : "/login");
+      router.replace('/login');
       return;
     }
-    if (type === "customer" && user.role !== "customer") {
-      const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL || "http://localhost:5173";
-      window.location.href = `${adminUrl}/login`;
+    if (type === 'customer' && user.role !== 'customer') {
+      router.replace('/login');
     }
-  }, [isAuthenticated, user, type, router]);
+  }, [isAuthenticated, isLoading, user, type, router]);
 
+  if (isLoading) return null;
   if (!isAuthenticated || !user) return null;
-  if (type === "customer" && user.role !== "customer") return null;
+  if (type === 'customer' && user.role !== 'customer') return null;
 
   return <>{children}</>;
 }

@@ -28,11 +28,52 @@ export function createImpOrderRepository(model: Model<Order> = OrderModel): Orde
       return docs.map((doc) => toPlain(doc)!);
     },
 
+    async findByIdAndEmail(id: string, email: string) {
+      const normalized = email.toLowerCase();
+      const doc = await model
+        .findOne({
+          id: { $regex: new RegExp(`^${id}$`, 'i') },
+          customerEmail: { $regex: new RegExp(`^${normalized}$`, 'i') },
+        })
+        .lean<Order>();
+      return toPlain(doc);
+    },
+
+    async create(order: Order) {
+      const created = await model.create(order);
+      return toPlain(created.toObject() as Order)!;
+    },
+
     async updateStatus(id: string, status: Order['status']) {
       const doc = await model
         .findOneAndUpdate(
           { id },
           { $set: { status, updatedAt: new Date().toISOString() } },
+          { new: true },
+        )
+        .lean<Order>();
+      return toPlain(doc);
+    },
+
+    async update(id: string, updates: Partial<Pick<Order, 'status' | 'trackingNumber' | 'carrier' | 'notes'>>) {
+      const doc = await model
+        .findOneAndUpdate(
+          { id },
+          { $set: { ...updates, updatedAt: new Date().toISOString() } },
+          { new: true },
+        )
+        .lean<Order>();
+      return toPlain(doc);
+    },
+
+    async appendNote(id: string, note: string) {
+      const doc = await model
+        .findOneAndUpdate(
+          { id },
+          {
+            $push: { notes: note },
+            $set: { updatedAt: new Date().toISOString() },
+          },
           { new: true },
         )
         .lean<Order>();

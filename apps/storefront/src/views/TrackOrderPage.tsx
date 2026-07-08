@@ -7,12 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Search, Package, Truck, AlertCircle } from 'lucide-react';
+import { Search, Package, Truck, AlertCircle, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { mockOrders } from '@/data/admin-mock';
 import OrderTimeline from '@/components/account/OrderTimeline';
-import type { Order, OrderStatus } from '@/data/admin-types';
+import type { Order, OrderStatus } from '@luxe-maison/shared';
+import { ordersApi } from '@/lib/api/orders.api';
+import { ApiError } from '@/lib/api/client';
 
 const statusColor: Record<OrderStatus, string> = {
   pending: 'bg-yellow-500/15 text-yellow-700 border-yellow-200',
@@ -28,22 +29,26 @@ export default function TrackOrderPage() {
   const [result, setResult] = useState<Order | null>(null);
   const [error, setError] = useState('');
   const [searched, setSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleTrack = (e: React.FormEvent) => {
+  const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setResult(null);
     setSearched(true);
+    setLoading(true);
 
-    const order = mockOrders.find(
-      o => o.id.toLowerCase() === orderId.trim().toLowerCase() &&
-           o.customerEmail.toLowerCase() === email.trim().toLowerCase()
-    );
-
-    if (order) {
+    try {
+      const order = await ordersApi.track(orderId.trim(), email.trim());
       setResult(order);
-    } else {
-      setError('No order found. Please check your Order ID and email address.');
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : 'No order found. Please check your Order ID and email address.',
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -65,7 +70,7 @@ export default function TrackOrderPage() {
                 id="orderId"
                 placeholder="e.g. ORD-1001"
                 value={orderId}
-                onChange={e => setOrderId(e.target.value)}
+                onChange={(e) => setOrderId(e.target.value)}
                 className="mt-1.5"
                 required
               />
@@ -77,13 +82,21 @@ export default function TrackOrderPage() {
                 type="email"
                 placeholder="Email used for the order"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 className="mt-1.5"
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
-              <Search size={16} className="mr-2" /> Track Order
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 size={16} className="mr-2 animate-spin" /> Tracking...
+                </>
+              ) : (
+                <>
+                  <Search size={16} className="mr-2" /> Track Order
+                </>
+              )}
             </Button>
           </form>
         </Card>
@@ -128,7 +141,9 @@ export default function TrackOrderPage() {
                 {result.trackingNumber && (
                   <div className="mt-4 pt-4 border-t border-border flex items-center gap-2 text-sm text-muted-foreground">
                     <Truck size={14} />
-                    <span>{result.carrier} — {result.trackingNumber}</span>
+                    <span>
+                      {result.carrier} — {result.trackingNumber}
+                    </span>
                   </div>
                 )}
               </Card>
@@ -138,14 +153,20 @@ export default function TrackOrderPage() {
                 <div className="space-y-4">
                   {result.items.map((item, i) => (
                     <div key={i} className="flex gap-4">
-                      <img src={item.image} alt={item.productName} className="w-16 h-20 object-cover rounded-md bg-muted" />
+                      <img
+                        src={item.image}
+                        alt={item.productName}
+                        className="w-16 h-20 object-cover rounded-md bg-muted"
+                      />
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">{item.productName}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           {item.color} · {item.size} · Qty {item.quantity}
                         </p>
                       </div>
-                      <p className="text-sm font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="text-sm font-medium">
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -154,22 +175,36 @@ export default function TrackOrderPage() {
               <Card className="p-6">
                 <h3 className="text-sm font-medium mb-4">Order Summary</h3>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>${result.subtotal.toFixed(2)}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Shipping</span><span>{result.shipping === 0 ? 'Free' : `$${result.shipping.toFixed(2)}`}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Tax</span><span>${result.tax.toFixed(2)}</span></div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span>${result.subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Shipping</span>
+                    <span>{result.shipping === 0 ? 'Free' : `$${result.shipping.toFixed(2)}`}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Tax</span>
+                    <span>${result.tax.toFixed(2)}</span>
+                  </div>
                   <Separator />
-                  <div className="flex justify-between font-semibold text-base"><span>Total</span><span>${result.total.toFixed(2)}</span></div>
+                  <div className="flex justify-between font-semibold text-base">
+                    <span>Total</span>
+                    <span>${result.total.toFixed(2)}</span>
+                  </div>
                 </div>
               </Card>
 
               <Card className="p-6">
                 <h3 className="text-sm font-medium mb-3">Shipping Address</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{result.shippingAddress}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {result.shippingAddress}
+                </p>
               </Card>
             </motion.div>
           )}
 
-          {!result && !error && searched && (
+          {!result && !error && searched && !loading && (
             <motion.div
               key="empty"
               initial={{ opacity: 0 }}

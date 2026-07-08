@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowLeft, CreditCard, Banknote, Check, Lock, Tag, Printer } from 'lucide-react';
 import { z } from 'zod';
 import { useCart, CartItem } from '@/context/CartContext';
-import { validatePromoCode, calculateDiscount, type PromoCode } from '@/data/promo-codes';
+import { useAuth } from '@/context/AuthContext';
+import { ordersApi } from '@/lib/api/orders.api';
+import { discountsApi } from '@/lib/api/discounts.api';
+import { ApiError } from '@/lib/api/client';
 
 const shippingSchema = z.object({
   firstName: z.string().trim().min(1, 'First name is required').max(50, 'Max 50 characters'),
@@ -52,13 +54,15 @@ const SHIPPING_RATE = 12;
 const FREE_SHIPPING_THRESHOLD = 200;
 const TAX_RATE = 0.08;
 
-function generateOrderNumber() {
-  return `MSN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-}
+type AppliedPromo = {
+  code: string;
+  discountAmount: number;
+  description?: string;
+};
 
 export default function CheckoutPage() {
-  const { items, totalPrice, totalItems } = useCart();
-  const router = useRouter();
+  const { items, totalPrice, totalItems, clearCart } = useCart();
+  const { user } = useAuth();
 
   const [shipping, setShipping] = useState<ShippingData>({
     firstName: '', lastName: '', email: '', phone: '',
@@ -76,7 +80,7 @@ export default function CheckoutPage() {
 
   // Promo code state
   const [promoInput, setPromoInput] = useState('');
-  const [appliedPromo, setAppliedPromo] = useState<PromoCode | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
   const [promoError, setPromoError] = useState('');
   const [promoSuccess, setPromoSuccess] = useState('');
 
@@ -90,25 +94,39 @@ export default function CheckoutPage() {
 
   const shippingCost = totalPrice >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_RATE;
   const giftWrapCost = giftWrap ? 8 : 0;
-  const discount = appliedPromo ? calculateDiscount(appliedPromo, totalPrice) : 0;
-  const subtotal = totalPrice + shippingCost + giftWrapCost - discount;
-  const tax = subtotal * TAX_RATE;
-  const grandTotal = subtotal + tax;
+  const discount = appliedPromo?.discountAmount ?? 0;
+  const taxableSubtotal = totalPrice + shippingCost + giftWrapCost - discount;
+  const tax = taxableSubtotal * TAX_RATE;
+  const grandTotal = taxableSubtotal + tax;
 
-  const handleApplyPromo = () => {
+  useEffect(() => {
+    if (!user) return;
+    setShipping((prev) => ({
+      ...prev,
+      email: user.email,
+      firstName: prev.firstName || user.name.split(' ')[0] || '',
+      lastName: prev.lastName || user.name.split(' ').slice(1).join(' ') || '',
+    }));
+  }, [user]);
+
+  const handleApplyPromo = async () => {
     setPromoError('');
     setPromoSuccess('');
     if (!promoInput.trim()) {
       setPromoError('Please enter a promo code');
       return;
     }
-    const result = validatePromoCode(promoInput, totalPrice);
-    if (result.valid && result.promo) {
-      setAppliedPromo(result.promo);
+    try {
+      const result = await discountsApi.validate(promoInput, totalPrice);
+      setAppliedPromo({
+        code: result.promo.code,
+        discountAmount: result.discountAmount,
+        description: result.promo.description,
+      });
       setPromoSuccess(result.promo.description);
       setPromoError('');
-    } else {
-      setPromoError(result.error || 'Invalid code');
+    } catch (err) {
+      setPromoError(err instanceof ApiError ? err.message : 'Invalid code');
       setAppliedPromo(null);
     }
   };
@@ -269,7 +287,7 @@ export default function CheckoutPage() {
     return digits;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const shipResult = shippingSchema.safeParse(shipping);
     const payResult = paymentSchema.safeParse(payment);
 
@@ -277,10 +295,14 @@ export default function CheckoutPage() {
     const pErrors: FieldErrors = {};
 
     if (!shipResult.success) {
-      shipResult.error.issues.forEach(i => { sErrors[i.path[0] as string] = i.message; });
+      shipResult.error.issues.forEach((i) => {
+        sErrors[i.path[0] as string] = i.message;
+      });
     }
     if (!payResult.success) {
-      payResult.error.issues.forEach(i => { pErrors[i.path[0] as string] = i.message; });
+      payResult.error.issues.forEach((i) => {
+        pErrors[i.path[0] as string] = i.message;
+      });
     }
 
     setShippingErrors(sErrors);
@@ -289,17 +311,55 @@ export default function CheckoutPage() {
     if (Object.keys(sErrors).length > 0 || Object.keys(pErrors).length > 0) return;
 
     setIsSubmitting(true);
-    // Save order data before clearing cart
     const savedItems = [...items];
-    const savedTotals = { subtotal: totalPrice, shipping: shippingCost, giftWrap: giftWrapCost, discount, tax, total: grandTotal };
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setOrderNumber(generateOrderNumber());
-      setOrderDate(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
+    const savedTotals = {
+      subtotal: totalPrice,
+      shipping: shippingCost + giftWrapCost,
+      giftWrap: giftWrapCost,
+      discount,
+      tax,
+      total: grandTotal,
+    };
+
+    try {
+      const order = await ordersApi.create({
+        items: items.map((item) => ({
+          productId: item.product.id,
+          productName: item.product.name,
+          size: item.selectedSize,
+          color: item.selectedColor,
+          quantity: item.quantity,
+          price: item.product.price,
+          image: item.product.images[0] ?? '',
+        })),
+        customerName: `${shipping.firstName} ${shipping.lastName}`.trim(),
+        customerEmail: shipping.email,
+        phone: shipping.phone,
+        shippingAddress: `${shipping.address}, ${shipping.city}, ${shipping.state} ${shipping.zip}, ${shipping.country}`,
+        subtotal: totalPrice,
+        shipping: shippingCost + giftWrapCost,
+        tax,
+        total: grandTotal,
+        promoCode: appliedPromo?.code,
+      });
+
+      clearCart();
+      setOrderNumber(order.id);
+      setOrderDate(new Date(order.createdAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }));
       setOrderItems(savedItems);
       setOrderTotals(savedTotals);
       setOrderPlaced(true);
-    }, 1500);
+    } catch (err) {
+      setPaymentErrors({
+        method: err instanceof ApiError ? err.message : 'Unable to place order. Please try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const Input = ({ label, field, value, onChange, error, type = 'text', placeholder = '' }: {

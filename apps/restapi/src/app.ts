@@ -16,6 +16,7 @@ import type { AuthVariables } from './middleware/auth.middleware.js';
 import { requestLogger } from './middleware/request-logger.middleware.js';
 import { analyticsRoutes } from './routes/analytics.routes.js';
 import { authRoutes } from './routes/auth.routes.js';
+import { customerAuthRoutes } from './routes/customer-auth.routes.js';
 import { campaignRoutes } from './routes/campaign.routes.js';
 import { customerRoutes } from './routes/customer.routes.js';
 import { discountRoutes } from './routes/discount.routes.js';
@@ -47,8 +48,9 @@ app.use('*', cors());
 
 healthRoutes(app);
 authRoutes(app, { staffRepository });
+customerAuthRoutes(app, { customerRepository });
 productRoutes(app, { productRepository });
-orderRoutes(app, { orderRepository });
+orderRoutes(app, { orderRepository, customerRepository, discountRepository });
 customerRoutes(app, { customerRepository });
 campaignRoutes(app, { campaignRepository });
 discountRoutes(app, { discountRepository });

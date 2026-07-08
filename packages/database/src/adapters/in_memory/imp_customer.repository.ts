@@ -21,6 +21,11 @@ export function createImpCustomerRepository(
       return customers.find((c) => c.email.toLowerCase() === normalized) ?? null;
     },
 
+    async findByEmailForAuth(email: string) {
+      const normalized = email.toLowerCase();
+      return customers.find((c) => c.email.toLowerCase() === normalized) ?? null;
+    },
+
     async create(customer: Customer) {
       customers.push(customer);
       return customer;

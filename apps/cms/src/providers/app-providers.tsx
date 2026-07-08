@@ -9,6 +9,7 @@ import { NewsletterProvider } from '@/providers/newsletter-provider';
 import { DiscountsProvider } from '@/providers/discounts-provider';
 import { PopupProvider } from '@/providers/popup-provider';
 import { CustomersProvider } from '@/providers/customers-provider';
+import { OrdersProvider } from '@/providers/orders-provider';
 import { RoleProvider } from '@/providers/role-provider';
 import { StaffProvider } from '@/providers/staff-provider';
 import { SettingsProvider } from '@/providers/settings-provider';
@@ -21,6 +22,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
         <AuthProvider>
           <RoleProvider>
             <CustomersProvider>
+              <OrdersProvider>
               <PopupProvider>
                 <CampaignsProvider>
                   <NewsletterProvider>
@@ -38,6 +40,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
                   </NewsletterProvider>
                 </CampaignsProvider>
               </PopupProvider>
+              </OrdersProvider>
             </CustomersProvider>
           </RoleProvider>
         </AuthProvider>

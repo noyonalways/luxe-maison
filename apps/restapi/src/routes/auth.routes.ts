@@ -3,7 +3,7 @@ import { compare } from 'bcryptjs';
 import type { StaffRepository } from '@luxe-maison/core';
 import { createAuthService } from '@luxe-maison/core';
 import { signAccessToken } from '../lib/jwt.js';
-import { requireAuth, type AuthVariables } from '../middleware/auth.middleware.js';
+import { requireStaffAuth, type AuthVariables } from '../middleware/auth.middleware.js';
 
 export function authRoutes(
   app: Hono<{ Variables: AuthVariables }>,
@@ -33,7 +33,7 @@ export function authRoutes(
     });
   });
 
-  app.get('/api/auth/me', requireAuth, async (c) => {
+  app.get('/api/auth/me', requireStaffAuth, async (c) => {
     const tokenUser = c.get('user');
     const user = await auth.getUserById(tokenUser.id);
     if (!user) {

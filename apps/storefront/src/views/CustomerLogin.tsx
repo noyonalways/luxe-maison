@@ -17,6 +17,7 @@ export default function CustomerLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,48 +37,34 @@ export default function CustomerLogin() {
     setEmail('');
     setPassword('');
     setName('');
+    setPhone('');
     setError('');
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    setTimeout(() => {
-      const result = login(email, password);
-      if (result.success) {
-        const stored = localStorage.getItem('maison-auth-user');
-        if (stored) {
-          const u = JSON.parse(stored);
-          if (u.role === 'customer') {
-            router.replace('/');
-          } else {
-            setError('Staff accounts should use the admin portal.');
-            localStorage.removeItem('maison-auth-user');
-            const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:5173';
-            window.location.href = `${adminUrl}/login`;
-          }
-        }
-      } else {
-        setError(result.error || 'Login failed');
-      }
-      setLoading(false);
-    }, 500);
+    const result = await login(email, password);
+    if (result.success) {
+      router.replace('/');
+    } else {
+      setError(result.error || 'Login failed');
+    }
+    setLoading(false);
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    setTimeout(() => {
-      const result = signup(name, email, password);
-      if (result.success) {
-        router.replace('/');
-      } else {
-        setError(result.error || 'Signup failed');
-      }
-      setLoading(false);
-    }, 500);
+    const result = await signup(name, email, password, phone);
+    if (result.success) {
+      router.replace('/');
+    } else {
+      setError(result.error || 'Signup failed');
+    }
+    setLoading(false);
   };
 
   return (
@@ -166,6 +153,19 @@ export default function CustomerLogin() {
                       <div className="space-y-2">
                         <Label htmlFor="signup-email">Email</Label>
                         <Input id="signup-email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required maxLength={255} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-phone">Phone</Label>
+                        <Input
+                          id="signup-phone"
+                          type="tel"
+                          placeholder="+1 555-0100"
+                          value={phone}
+                          onChange={e => setPhone(e.target.value)}
+                          required
+                          minLength={7}
+                          maxLength={20}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="signup-password">Password</Label>

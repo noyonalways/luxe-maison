@@ -1,6 +1,6 @@
 import type { Hono } from 'hono';
 import type { Customer, CustomerRepository } from '@luxe-maison/core';
-import { createCustomerService } from '@luxe-maison/core';
+import { createCustomerService, toCustomerPublic } from '@luxe-maison/core';
 import { requireAuth, type AuthVariables } from '../middleware/auth.middleware.js';
 import { requireSection } from '../lib/role-permissions.js';
 
@@ -20,13 +20,13 @@ export function customerRoutes(
 
   app.get('/api/customers', requireAuth, requireSection('customers', 'view'), async (c) => {
     const list = await customers.list();
-    return c.json(list);
+    return c.json(list.map(toCustomerPublic));
   });
 
   app.get('/api/customers/:id', requireAuth, requireSection('customers', 'view'), async (c) => {
     const customer = await customers.getById(c.req.param('id'));
     if (!customer) return c.json({ error: 'Customer not found' }, 404);
-    return c.json(customer);
+    return c.json(toCustomerPublic(customer));
   });
 
   app.post('/api/customers', requireAuth, requireSection('customers', 'edit'), async (c) => {
@@ -75,7 +75,7 @@ export function customerRoutes(
     };
 
     const created = await customers.create(customer);
-    return c.json(created, 201);
+    return c.json(toCustomerPublic(created), 201);
   });
 
   app.put('/api/customers/:id', requireAuth, requireSection('customers', 'edit'), async (c) => {
@@ -127,7 +127,7 @@ export function customerRoutes(
 
     const updated = await customers.update(id, updates);
     if (!updated) return c.json({ error: 'Customer not found' }, 404);
-    return c.json(updated);
+    return c.json(toCustomerPublic(updated));
   });
 
   app.patch('/api/customers/:id/status', requireAuth, requireSection('customers', 'full'), async (c) => {
@@ -140,7 +140,7 @@ export function customerRoutes(
 
     const updated = await customers.update(id, { status: body.status });
     if (!updated) return c.json({ error: 'Customer not found' }, 404);
-    return c.json(updated);
+    return c.json(toCustomerPublic(updated));
   });
 
   app.delete('/api/customers/:id', requireAuth, requireSection('customers', 'full'), async (c) => {

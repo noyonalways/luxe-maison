@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify } from 'jose';
-import type { AuthUser, JwtPayload, StaffRole } from '@luxe-maison/core';
+import type { AuthUser, JwtPayload, UserRole } from '@luxe-maison/core';
 
 const DEFAULT_EXPIRES_IN = '7d';
 
@@ -30,6 +30,15 @@ function parseExpiresIn(value: string): number {
     default:
       return 7 * 24 * 60 * 60;
   }
+}
+
+function isUserRole(role: string): role is UserRole {
+  return (
+    role === 'customer' ||
+    role === 'admin' ||
+    role === 'manager' ||
+    role === 'employee'
+  );
 }
 
 export async function signAccessToken(user: AuthUser): Promise<{ accessToken: string; expiresAt: string }> {
@@ -70,13 +79,9 @@ export async function verifyAccessToken(token: string): Promise<JwtPayload> {
     throw new Error('Invalid token payload');
   }
 
-  if (!isStaffRole(role)) {
+  if (!isUserRole(role)) {
     throw new Error('Invalid token role');
   }
 
   return { sub, email, role, name };
-}
-
-function isStaffRole(role: string): role is StaffRole {
-  return role === 'admin' || role === 'manager' || role === 'employee';
 }

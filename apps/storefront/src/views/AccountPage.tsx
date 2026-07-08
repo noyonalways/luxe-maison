@@ -14,8 +14,7 @@ import { User, Package, MapPin, Phone, Mail, ChevronRight, ArrowLeft, Truck, Sea
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import OrderTimeline from '@/components/account/OrderTimeline';
-import type { Order, OrderStatus } from '@/data/admin-types';
-import { mockOrders } from '@/data/admin-mock';
+import type { Order, OrderStatus } from '@luxe-maison/shared';
 import { useToast } from '@/hooks/use-toast';
 
 const statusColor: Record<OrderStatus, string> = {
@@ -46,7 +45,7 @@ export default function AccountPage() {
     e.preventDefault();
     setTrackError('');
     setTrackResult(null);
-    const order = mockOrders.find(o => o.id.toLowerCase() === trackId.trim().toLowerCase());
+    const order = orders.find((o) => o.id.toLowerCase() === trackId.trim().toLowerCase());
     if (order) {
       setTrackResult(order);
     } else {
@@ -68,6 +67,10 @@ export default function AccountPage() {
     };
     reader.readAsDataURL(file);
   };
+
+  const totalSpent = orders.reduce((sum, order) => sum + order.total, 0);
+  const lastOrderAt = orders[0]?.createdAt;
+  const memberSince = orders.length > 0 ? orders[orders.length - 1]!.createdAt : null;
 
   const handleSaveProfile = () => {
     updateProfile({ name, phone, address });
@@ -280,19 +283,23 @@ export default function AccountPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Member Since</span>
-                    <p className="font-medium mt-0.5">{format(new Date(profile.joinedAt), 'MMM yyyy')}</p>
+                    <p className="font-medium mt-0.5">
+                      {memberSince ? format(new Date(memberSince), 'MMM yyyy') : '—'}
+                    </p>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Total Orders</span>
-                    <p className="font-medium mt-0.5">{profile.totalOrders}</p>
+                    <p className="font-medium mt-0.5">{orders.length}</p>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Total Spent</span>
-                    <p className="font-medium mt-0.5">${profile.totalSpent.toLocaleString()}</p>
+                    <p className="font-medium mt-0.5">${totalSpent.toLocaleString()}</p>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Last Order</span>
-                    <p className="font-medium mt-0.5">{format(new Date(profile.lastOrderAt), 'MMM d, yyyy')}</p>
+                    <p className="font-medium mt-0.5">
+                      {lastOrderAt ? format(new Date(lastOrderAt), 'MMM d, yyyy') : '—'}
+                    </p>
                   </div>
                 </div>
               </Card>

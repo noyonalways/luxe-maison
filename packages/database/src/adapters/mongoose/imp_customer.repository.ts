@@ -30,6 +30,15 @@ export function createImpCustomerRepository(
       return toPlain(doc);
     },
 
+    async findByEmailForAuth(email: string) {
+      const normalized = email.toLowerCase();
+      const doc = await model
+        .findOne({ email: { $regex: new RegExp(`^${normalized}$`, 'i') } })
+        .select('+passwordHash')
+        .lean<Customer>();
+      return toPlain(doc);
+    },
+
     async create(customer: Customer) {
       const doc = await model.create(customer);
       return toPlain(doc.toObject())!;

@@ -171,7 +171,22 @@ export const mockCampaigns: Campaign[] = [
 ];
 
 // Customers mock data
+import { CUSTOMER_DEMO_ACCOUNT } from '../../seed/customer-accounts.seed.js';
+
 export const mockCustomers: Customer[] = [
+  {
+    id: CUSTOMER_DEMO_ACCOUNT.id,
+    name: CUSTOMER_DEMO_ACCOUNT.name,
+    email: CUSTOMER_DEMO_ACCOUNT.email,
+    phone: '+1 555-0001',
+    address: '123 Fashion Ave, New York, NY 10001, USA',
+    totalOrders: 3,
+    totalSpent: 890,
+    status: 'active',
+    joinedAt: '2025-10-01T00:00:00Z',
+    lastOrderAt: '2026-02-15T10:30:00Z',
+    passwordHash: CUSTOMER_DEMO_ACCOUNT.passwordHash,
+  },
   { id: 'cust-1', name: 'Arjun Patel', email: 'arjun@example.com', phone: '+1 555-0101', address: '42 Park Avenue, New York, NY 10016, USA', totalOrders: 8, totalSpent: 2340, status: 'active', joinedAt: '2025-08-15T00:00:00Z', lastOrderAt: '2026-02-15T10:30:00Z' },
   { id: 'cust-2', name: 'Sophia Chen', email: 'sophia.c@example.com', phone: '+1 555-0202', address: '88 Market St, San Francisco, CA 94103, USA', totalOrders: 5, totalSpent: 1580, status: 'active', joinedAt: '2025-09-20T00:00:00Z', lastOrderAt: '2026-03-01T09:15:00Z' },
   { id: 'cust-3', name: 'Ravi Sharma', email: 'ravi.s@example.com', phone: '+91 98765-43210', address: '12 MG Road, Bangalore, KA 560001, India', totalOrders: 12, totalSpent: 3720, status: 'active', joinedAt: '2025-07-10T00:00:00Z', lastOrderAt: '2026-03-05T16:45:00Z' },

@@ -12,4 +12,12 @@ export interface Customer {
   joinedAt: string;
   lastOrderAt: string;
   avatar?: string;
+  passwordHash?: string;
+}
+
+export type CustomerPublic = Omit<Customer, 'passwordHash'>;
+
+export function toCustomerPublic(customer: Customer): CustomerPublic {
+  const { passwordHash: _passwordHash, ...publicCustomer } = customer;
+  return publicCustomer;
 }
