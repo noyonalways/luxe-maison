@@ -86,7 +86,7 @@ export const DEFAULT_PERMISSIONS: EditableRolePermissions = {
     dashboard: 'view',
     products: 'view',
     orders: 'edit',
-    customers: 'none',
+    customers: 'edit',
     analytics: 'none',
     newsletter: 'none',
     discounts: 'none',

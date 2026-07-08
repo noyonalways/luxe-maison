@@ -51,6 +51,7 @@ const ROLE_SECTION_ROUTES: Record<StaffRole, Partial<Record<CmsSection, AppRoute
     dashboard: "/employee/dashboard",
     products: "/employee/products",
     orders: "/employee/orders",
+    customers: "/employee/customers",
   },
 };
 

@@ -28,6 +28,7 @@ import { Route as rolesManagerCampaignsRouteImport } from './routes/(roles)/mana
 import { Route as rolesManagerAnalyticsRouteImport } from './routes/(roles)/manager/analytics'
 import { Route as rolesEmployeeOrdersRouteImport } from './routes/(roles)/employee/orders'
 import { Route as rolesEmployeeDashboardRouteImport } from './routes/(roles)/employee/dashboard'
+import { Route as rolesEmployeeCustomersRouteImport } from './routes/(roles)/employee/customers'
 import { Route as rolesAdminTeamRouteImport } from './routes/(roles)/admin/team'
 import { Route as rolesAdminSettingsRouteImport } from './routes/(roles)/admin/settings'
 import { Route as rolesAdminPopupRouteImport } from './routes/(roles)/admin/popup'
@@ -138,6 +139,11 @@ const rolesEmployeeDashboardRoute = rolesEmployeeDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rolesEmployeeRouteRoute,
 } as any)
+const rolesEmployeeCustomersRoute = rolesEmployeeCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => rolesEmployeeRouteRoute,
+} as any)
 const rolesAdminTeamRoute = rolesAdminTeamRouteImport.update({
   id: '/team',
   path: '/team',
@@ -234,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/admin/popup': typeof rolesAdminPopupRoute
   '/admin/settings': typeof rolesAdminSettingsRoute
   '/admin/team': typeof rolesAdminTeamRoute
+  '/employee/customers': typeof rolesEmployeeCustomersRoute
   '/employee/dashboard': typeof rolesEmployeeDashboardRoute
   '/employee/orders': typeof rolesEmployeeOrdersRoute
   '/manager/analytics': typeof rolesManagerAnalyticsRoute
@@ -266,6 +273,7 @@ export interface FileRoutesByTo {
   '/admin/popup': typeof rolesAdminPopupRoute
   '/admin/settings': typeof rolesAdminSettingsRoute
   '/admin/team': typeof rolesAdminTeamRoute
+  '/employee/customers': typeof rolesEmployeeCustomersRoute
   '/employee/dashboard': typeof rolesEmployeeDashboardRoute
   '/employee/orders': typeof rolesEmployeeOrdersRoute
   '/manager/analytics': typeof rolesManagerAnalyticsRoute
@@ -303,6 +311,7 @@ export interface FileRoutesById {
   '/(roles)/admin/popup': typeof rolesAdminPopupRoute
   '/(roles)/admin/settings': typeof rolesAdminSettingsRoute
   '/(roles)/admin/team': typeof rolesAdminTeamRoute
+  '/(roles)/employee/customers': typeof rolesEmployeeCustomersRoute
   '/(roles)/employee/dashboard': typeof rolesEmployeeDashboardRoute
   '/(roles)/employee/orders': typeof rolesEmployeeOrdersRoute
   '/(roles)/manager/analytics': typeof rolesManagerAnalyticsRoute
@@ -340,6 +349,7 @@ export interface FileRouteTypes {
     | '/admin/popup'
     | '/admin/settings'
     | '/admin/team'
+    | '/employee/customers'
     | '/employee/dashboard'
     | '/employee/orders'
     | '/manager/analytics'
@@ -372,6 +382,7 @@ export interface FileRouteTypes {
     | '/admin/popup'
     | '/admin/settings'
     | '/admin/team'
+    | '/employee/customers'
     | '/employee/dashboard'
     | '/employee/orders'
     | '/manager/analytics'
@@ -408,6 +419,7 @@ export interface FileRouteTypes {
     | '/(roles)/admin/popup'
     | '/(roles)/admin/settings'
     | '/(roles)/admin/team'
+    | '/(roles)/employee/customers'
     | '/(roles)/employee/dashboard'
     | '/(roles)/employee/orders'
     | '/(roles)/manager/analytics'
@@ -567,6 +579,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/employee/dashboard'
       preLoaderRoute: typeof rolesEmployeeDashboardRouteImport
+      parentRoute: typeof rolesEmployeeRouteRoute
+    }
+    '/(roles)/employee/customers': {
+      id: '/(roles)/employee/customers'
+      path: '/customers'
+      fullPath: '/employee/customers'
+      preLoaderRoute: typeof rolesEmployeeCustomersRouteImport
       parentRoute: typeof rolesEmployeeRouteRoute
     }
     '/(roles)/admin/team': {
@@ -732,6 +751,7 @@ const rolesAdminRouteRouteWithChildren = rolesAdminRouteRoute._addFileChildren(
 )
 
 interface rolesEmployeeRouteRouteChildren {
+  rolesEmployeeCustomersRoute: typeof rolesEmployeeCustomersRoute
   rolesEmployeeDashboardRoute: typeof rolesEmployeeDashboardRoute
   rolesEmployeeOrdersRoute: typeof rolesEmployeeOrdersRoute
   rolesEmployeeIndexRoute: typeof rolesEmployeeIndexRoute
@@ -739,6 +759,7 @@ interface rolesEmployeeRouteRouteChildren {
 }
 
 const rolesEmployeeRouteRouteChildren: rolesEmployeeRouteRouteChildren = {
+  rolesEmployeeCustomersRoute: rolesEmployeeCustomersRoute,
   rolesEmployeeDashboardRoute: rolesEmployeeDashboardRoute,
   rolesEmployeeOrdersRoute: rolesEmployeeOrdersRoute,
   rolesEmployeeIndexRoute: rolesEmployeeIndexRoute,

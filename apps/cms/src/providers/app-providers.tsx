@@ -8,7 +8,7 @@ import { CampaignsProvider } from '@/providers/campaigns-provider';
 import { NewsletterProvider } from '@/providers/newsletter-provider';
 import { DiscountsProvider } from '@/providers/discounts-provider';
 import { PopupProvider } from '@/providers/popup-provider';
-import { CustomerProvider } from '@/providers/customer-provider';
+import { CustomersProvider } from '@/providers/customers-provider';
 import { RoleProvider } from '@/providers/role-provider';
 import { StaffProvider } from '@/providers/staff-provider';
 import { SettingsProvider } from '@/providers/settings-provider';
@@ -19,8 +19,8 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <QueryProvider>
       <TooltipProvider>
         <AuthProvider>
-          <CustomerProvider>
-            <RoleProvider>
+          <RoleProvider>
+            <CustomersProvider>
               <PopupProvider>
                 <CampaignsProvider>
                   <NewsletterProvider>
@@ -38,8 +38,8 @@ export function AppProviders({ children }: { children: ReactNode }) {
                   </NewsletterProvider>
                 </CampaignsProvider>
               </PopupProvider>
-            </RoleProvider>
-          </CustomerProvider>
+            </CustomersProvider>
+          </RoleProvider>
         </AuthProvider>
       </TooltipProvider>
     </QueryProvider>

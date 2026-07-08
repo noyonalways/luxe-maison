@@ -29,5 +29,22 @@ export function createImpCustomerRepository(
         .lean<Customer>();
       return toPlain(doc);
     },
+
+    async create(customer: Customer) {
+      const doc = await model.create(customer);
+      return toPlain(doc.toObject())!;
+    },
+
+    async update(id: string, updates: Partial<Customer>) {
+      const doc = await model
+        .findOneAndUpdate({ id }, { $set: updates }, { new: true })
+        .lean<Customer>();
+      return toPlain(doc);
+    },
+
+    async delete(id: string) {
+      const result = await model.deleteOne({ id });
+      return result.deletedCount > 0;
+    },
   };
 }

@@ -14,6 +14,18 @@ export function createCustomerService(repository: CustomerRepository) {
     getByEmail(email: string): Promise<Customer | null> {
       return repository.findByEmail(email);
     },
+
+    create(customer: Customer): Promise<Customer> {
+      return repository.create(customer);
+    },
+
+    update(id: string, updates: Partial<Customer>): Promise<Customer | null> {
+      return repository.update(id, updates);
+    },
+
+    delete(id: string): Promise<boolean> {
+      return repository.delete(id);
+    },
   };
 }
 

@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
-import { mockCustomers, mockOrders } from '@/data/cms-mock';
 import type { Customer } from '@/data/cms-types';
+import { useCustomers } from '@/contexts/customers-context';
 import { useRole } from '@/contexts/role-context';
+import { useOrdersList } from '@/hooks/orders/use-orders-list';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,12 +17,16 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Search, Download, Eye, ShieldBan, ShieldCheck, Users, ShoppingCart, DollarSign, Calendar, TrendingUp, UserCheck, BarChart3, Package, Truck, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Download, Eye, ShieldBan, ShieldCheck, Users, ShoppingCart, DollarSign, Calendar, TrendingUp, UserCheck, BarChart3, Package, Truck, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Plus, Loader2 } from 'lucide-react';
 import { format, parseISO, startOfMonth } from 'date-fns';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area, PieChart, Pie, Cell,
 } from 'recharts';
+import { toast } from 'sonner';
+import { toApiError } from '@/lib/api/errors';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 const COLORS = ['hsl(40, 45%, 56%)', 'hsl(0, 0%, 20%)', 'hsl(0, 0%, 50%)', 'hsl(0, 0%, 75%)', 'hsl(40, 30%, 70%)'];
 
@@ -188,9 +193,18 @@ function CustomerAnalytics({ customers }: { customers: Customer[] }) {
 
 // --- Main page ---
 export default function Customers() {
-  const { canDelete } = useRole();
+  const { canEdit, canDelete } = useRole();
+  const canEditCustomers = canEdit('customers');
   const canDeleteCustomers = canDelete('customers');
-  const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
+  const {
+    customers,
+    addCustomer,
+    setCustomerStatus,
+    isLoading,
+    isSaving,
+  } = useCustomers();
+  const { data: orders = [] } = useOrdersList(true);
+
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [sortField, setSortField] = useState<SortField>('name');
@@ -199,6 +213,8 @@ export default function Customers() {
   const [perPage, setPerPage] = useState(5);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [toggleCustomer, setToggleCustomer] = useState<Customer | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [form, setForm] = useState({ name: '', email: '', phone: '', address: '' });
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -244,14 +260,40 @@ export default function Customers() {
     totalSpent: customers.reduce((s, c) => s + c.totalSpent, 0),
   }), [customers]);
 
-  const handleToggleStatus = () => {
+  const handleToggleStatus = async () => {
     if (!toggleCustomer) return;
-    setCustomers(prev => prev.map(c =>
-      c.id === toggleCustomer.id
-        ? { ...c, status: c.status === 'active' ? 'blocked' : 'active' }
-        : c
-    ));
-    setToggleCustomer(null);
+    const nextStatus = toggleCustomer.status === 'active' ? 'blocked' : 'active';
+    try {
+      await setCustomerStatus(toggleCustomer.id, nextStatus);
+      toast.success(
+        nextStatus === 'blocked'
+          ? `${toggleCustomer.name} blocked`
+          : `${toggleCustomer.name} unblocked`,
+      );
+      setToggleCustomer(null);
+    } catch (error) {
+      toast.error(toApiError(error).message);
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!form.name.trim() || !form.email.trim() || !form.phone.trim() || !form.address.trim()) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+    try {
+      const created = await addCustomer({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        address: form.address.trim(),
+      });
+      toast.success(`${created.name} added as customer`);
+      setForm({ name: '', email: '', phone: '', address: '' });
+      setShowCreate(false);
+    } catch (error) {
+      toast.error(toApiError(error).message);
+    }
   };
 
   const exportCSV = () => {
@@ -274,14 +316,27 @@ export default function Customers() {
 
   return (
     <div className="space-y-6">
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-heading font-semibold">Customers</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage your customer base</p>
         </div>
-        <Button variant="outline" size="sm" onClick={exportCSV} className="gap-2 self-start">
-          <Download size={14} /> Export CSV
-        </Button>
+        <div className="flex gap-2 self-start">
+          {canEditCustomers && (
+            <Button size="sm" onClick={() => setShowCreate(true)} className="gap-2">
+              <Plus size={14} /> Add Customer
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={exportCSV} className="gap-2">
+            <Download size={14} /> Export CSV
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="directory" className="w-full">
@@ -465,7 +520,7 @@ export default function Customers() {
             <DialogDescription>Full details, lifetime stats & order history</DialogDescription>
           </DialogHeader>
           {selectedCustomer && (() => {
-            const customerOrders = mockOrders.filter(
+            const customerOrders = orders.filter(
               o => o.customerEmail.toLowerCase() === selectedCustomer.email.toLowerCase()
             );
             const statusColors: Record<string, string> = {
@@ -578,12 +633,70 @@ export default function Customers() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleToggleStatus}>
+            <AlertDialogAction onClick={() => void handleToggleStatus()} disabled={isSaving}>
               {toggleCustomer?.status === 'active' ? 'Block' : 'Unblock'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-heading">Add Customer</DialogTitle>
+            <DialogDescription>
+              Create a customer account for phone or in-store orders.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-xs mb-1.5 block">Full Name</Label>
+              <Input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Customer name"
+              />
+            </div>
+            <div>
+              <Label className="text-xs mb-1.5 block">Email</Label>
+              <Input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="email@example.com"
+              />
+            </div>
+            <div>
+              <Label className="text-xs mb-1.5 block">Phone</Label>
+              <Input
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                placeholder="+1 555-0100"
+              />
+            </div>
+            <div>
+              <Label className="text-xs mb-1.5 block">Address</Label>
+              <Textarea
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                rows={3}
+                placeholder="Full shipping address"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setShowCreate(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => void handleCreate()} disabled={isSaving}>
+              {isSaving && <Loader2 size={14} className="mr-2 animate-spin" />}
+              Create Account
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+        </>
+      )}
     </div>
   );
 }
