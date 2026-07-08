@@ -5,10 +5,11 @@ import {
   ALL_SECTIONS,
   type Section,
   type Permission,
+  type EditableRolePermissions,
 } from '@/lib/role-permissions';
 
 export type StaffRole = 'admin' | 'manager' | 'employee';
-export type { Section, Permission };
+export type { Section, Permission, EditableRolePermissions };
 export { DEFAULT_PERMISSIONS, pathToSection, ALL_SECTIONS };
 
 export interface RoleContextValue {
@@ -19,8 +20,10 @@ export interface RoleContextValue {
   canDelete: (section: Section) => boolean;
   getPermission: (section: Section) => Permission;
   updatePermission: (role: 'manager' | 'employee', section: Section, permission: Permission) => void;
-  getPermissions: () => Record<'manager' | 'employee', Record<Section, Permission>>;
+  getPermissions: () => EditableRolePermissions;
   resetPermissions: () => void;
+  isLoadingPermissions: boolean;
+  isSavingPermissions: boolean;
 }
 
 export const RoleContext = createContext<RoleContextValue | null>(null);

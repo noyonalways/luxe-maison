@@ -2,6 +2,7 @@ import type { Hono } from 'hono';
 import type { DiscountRepository } from '@luxe-maison/core';
 import { calculateDiscount, createDiscountService } from '@luxe-maison/core';
 import { requireAuth, type AuthVariables } from '../middleware/auth.middleware.js';
+import { requireSection } from '../lib/role-permissions.js';
 
 export function discountRoutes(
   app: Hono<{ Variables: AuthVariables }>,
@@ -9,12 +10,12 @@ export function discountRoutes(
 ) {
   const discounts = createDiscountService(discountRepository);
 
-  app.get('/api/discounts', requireAuth, async (c) => {
+  app.get('/api/discounts', requireAuth, requireSection('discounts', 'view'), async (c) => {
     const list = await discounts.list();
     return c.json(list);
   });
 
-  app.get('/api/discounts/:id', requireAuth, async (c) => {
+  app.get('/api/discounts/:id', requireAuth, requireSection('discounts', 'view'), async (c) => {
     const discount = await discounts.getById(c.req.param('id'));
     if (!discount) return c.json({ error: 'Discount not found' }, 404);
     return c.json(discount);

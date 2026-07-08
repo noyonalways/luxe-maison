@@ -22,6 +22,7 @@ import { discountRoutes } from './routes/discount.routes.js';
 import { healthRoutes } from './routes/health.routes.js';
 import { newsletterRoutes } from './routes/newsletter.routes.js';
 import { orderRoutes } from './routes/order.routes.js';
+import { permissionsRoutes } from './routes/permissions.routes.js';
 import { popupRoutes } from './routes/popup.routes.js';
 import { productRoutes } from './routes/product.routes.js';
 import { reviewRoutes } from './routes/review.routes.js';
@@ -56,6 +57,7 @@ staffRoutes(app, { staffRepository });
 settingsRoutes(app, { settingsRepository });
 reviewRoutes(app, { reviewRepository });
 popupRoutes(app, { popupRepository });
+permissionsRoutes(app);
 analyticsRoutes(app);
 
 app.notFound((c) => c.json({ status: 'error', message: 'Not Found' }, 404));

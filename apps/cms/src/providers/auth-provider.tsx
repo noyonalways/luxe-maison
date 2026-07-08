@@ -13,6 +13,8 @@ import {
 } from '@/lib/auth-session';
 import { useAuthSession } from '@/hooks/auth/use-auth-session';
 import { authKeys } from '@/hooks/auth/auth-keys';
+import { permissionsKeys } from '@/hooks/permissions/permissions-keys';
+import { clearPermissionsCache } from '@/lib/permissions-cache';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
@@ -25,14 +27,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (token) setAuthSession(profile, token);
       setUser(profile);
       queryClient.setQueryData(authKeys.session(), profile);
+      void queryClient.invalidateQueries({ queryKey: permissionsKeys.matrix() });
     },
     [queryClient],
   );
 
   const signOut = useCallback(() => {
     clearAuthSession();
+    clearPermissionsCache();
     setUser(null);
     queryClient.removeQueries({ queryKey: authKeys.all });
+    queryClient.removeQueries({ queryKey: permissionsKeys.all });
   }, [queryClient]);
 
   useEffect(() => {

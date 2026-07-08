@@ -10,6 +10,7 @@ import { createImpStaffRepository } from '../adapters/mongoose/imp_staff.reposit
 import { createImpSettingsRepository } from '../adapters/mongoose/imp_settings.repository.js';
 import { createImpReviewRepository } from '../adapters/mongoose/imp_review.repository.js';
 import { createImpPopupRepository } from '../adapters/mongoose/imp_popup.repository.js';
+import { createImpRolePermissionsRepository } from '../adapters/mongoose/imp_role-permissions.repository.js';
 
 export async function createMongooseClient(uri: string): Promise<DatabaseClient> {
   await connectMongoose(uri);
@@ -27,6 +28,7 @@ export async function createMongooseClient(uri: string): Promise<DatabaseClient>
       settings: createImpSettingsRepository(),
       reviews: createImpReviewRepository(),
       popups: createImpPopupRepository(),
+      rolePermissions: createImpRolePermissionsRepository(),
     },
     disconnect: disconnectMongoose,
   };

@@ -2,6 +2,7 @@ import type { Hono } from 'hono';
 import type { OrderRepository } from '@luxe-maison/core';
 import { createOrderService } from '@luxe-maison/core';
 import { requireAuth, type AuthVariables } from '../middleware/auth.middleware.js';
+import { requireSection } from '../lib/role-permissions.js';
 
 export function orderRoutes(
   app: Hono<{ Variables: AuthVariables }>,
@@ -9,7 +10,7 @@ export function orderRoutes(
 ) {
   const orders = createOrderService(orderRepository);
 
-  app.get('/api/orders', requireAuth, async (c) => {
+  app.get('/api/orders', requireAuth, requireSection('orders', 'view'), async (c) => {
     const list = await orders.list();
     return c.json(list);
   });
@@ -21,7 +22,7 @@ export function orderRoutes(
     return c.json(list);
   });
 
-  app.get('/api/orders/:id', requireAuth, async (c) => {
+  app.get('/api/orders/:id', requireAuth, requireSection('orders', 'view'), async (c) => {
     const order = await orders.getById(c.req.param('id'));
     if (!order) return c.json({ error: 'Order not found' }, 404);
     return c.json(order);

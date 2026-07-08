@@ -7,6 +7,7 @@ import type {
   PopupRepository,
   ProductRepository,
   ReviewRepository,
+  RolePermissionsRepository,
   SettingsRepository,
   StaffRepository,
 } from '@luxe-maison/core';
@@ -21,6 +22,7 @@ import {
   createImpPopupRepository,
   createImpProductRepository,
   createImpReviewRepository,
+  createImpRolePermissionsRepository,
   createImpSettingsRepository,
   createImpStaffRepository,
 } from './adapters/in_memory/repositories.js';
@@ -34,6 +36,7 @@ import {
   createImpPopupRepository as createMongoosePopupRepository,
   createImpProductRepository as createMongooseProductRepository,
   createImpReviewRepository as createMongooseReviewRepository,
+  createImpRolePermissionsRepository as createMongooseRolePermissionsRepository,
   createImpSettingsRepository as createMongooseSettingsRepository,
   createImpStaffRepository as createMongooseStaffRepository,
   disconnectMongoose,
@@ -191,5 +194,16 @@ export function getPopupRepository(adapter?: DatabaseAdapter): PopupRepository {
       return createMongoosePopupRepository();
     default:
       return unsupported('popup', resolveAdapter(adapter));
+  }
+}
+
+export function getRolePermissionsRepository(adapter?: DatabaseAdapter): RolePermissionsRepository {
+  switch (resolveAdapter(adapter)) {
+    case 'in_memory':
+      return createImpRolePermissionsRepository();
+    case 'mongoose':
+      return createMongooseRolePermissionsRepository();
+    default:
+      return unsupported('role permissions', resolveAdapter(adapter));
   }
 }

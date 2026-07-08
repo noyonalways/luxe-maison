@@ -1,11 +1,25 @@
-import { useRole, ALL_SECTIONS, DEFAULT_PERMISSIONS, type Section, type Permission } from '@/contexts/role-context';
+import { useRole, ALL_SECTIONS, type Section, type Permission } from '@/contexts/role-context';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Mail, Percent, Megaphone, MessageSquare, RotateCcw } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Users,
+  BarChart3,
+  Mail,
+  Percent,
+  Megaphone,
+  MessageSquare,
+  Shield,
+  Settings,
+  RotateCcw,
+  Loader2,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
-const sectionMeta: Record<string, { label: string; icon: React.ElementType }> = {
+const sectionMeta: Record<Section, { label: string; icon: React.ElementType }> = {
   dashboard: { label: 'Dashboard', icon: LayoutDashboard },
   products: { label: 'Products', icon: Package },
   orders: { label: 'Orders', icon: ShoppingCart },
@@ -15,6 +29,9 @@ const sectionMeta: Record<string, { label: string; icon: React.ElementType }> = 
   discounts: { label: 'Discounts', icon: Percent },
   campaigns: { label: 'Campaigns', icon: Megaphone },
   popup: { label: 'Welcome Popup', icon: MessageSquare },
+  team: { label: 'Team', icon: Users },
+  settings: { label: 'Settings', icon: Settings },
+  'access-control': { label: 'Access Control', icon: Shield },
 };
 
 const permissionOptions: { value: Permission; label: string }[] = [
@@ -32,7 +49,13 @@ const permissionColors: Record<Permission, string> = {
 };
 
 export default function AccessControl() {
-  const { getPermissions, updatePermission, resetPermissions } = useRole();
+  const {
+    getPermissions,
+    updatePermission,
+    resetPermissions,
+    isLoadingPermissions,
+    isSavingPermissions,
+  } = useRole();
   const permissions = getPermissions();
 
   const handleReset = () => {
@@ -40,15 +63,31 @@ export default function AccessControl() {
     toast.success('Permissions reset to defaults');
   };
 
+  if (isLoadingPermissions) {
+    return (
+      <div className="flex min-h-[320px] items-center justify-center text-muted-foreground">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-heading font-bold">Access Control</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage what Manager and Employee roles can access</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage what Manager and Employee roles can access across the CMS
+          </p>
         </div>
-        <Button variant="outline" size="sm" onClick={handleReset} className="gap-2">
-          <RotateCcw size={14} />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleReset}
+          disabled={isSavingPermissions}
+          className="gap-2"
+        >
+          {isSavingPermissions ? <Loader2 size={14} className="animate-spin" /> : <RotateCcw size={14} />}
           Reset to Defaults
         </Button>
       </div>
@@ -63,9 +102,8 @@ export default function AccessControl() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {ALL_SECTIONS.map(section => {
+            {ALL_SECTIONS.map((section) => {
               const meta = sectionMeta[section];
-              if (!meta) return null;
               const Icon = meta.icon;
               return (
                 <TableRow key={section}>
@@ -75,10 +113,11 @@ export default function AccessControl() {
                       <span className="font-medium text-sm">{meta.label}</span>
                     </div>
                   </TableCell>
-                  {(['manager', 'employee'] as const).map(targetRole => (
+                  {(['manager', 'employee'] as const).map((targetRole) => (
                     <TableCell key={targetRole}>
                       <Select
                         value={permissions[targetRole][section]}
+                        disabled={isSavingPermissions}
                         onValueChange={(val: Permission) => {
                           updatePermission(targetRole, section, val);
                           toast.success(`${meta.label} → ${targetRole}: ${val}`);
@@ -88,7 +127,7 @@ export default function AccessControl() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {permissionOptions.map(opt => (
+                          {permissionOptions.map((opt) => (
                             <SelectItem key={opt.value} value={opt.value}>
                               <span className={permissionColors[opt.value]}>{opt.label}</span>
                             </SelectItem>

@@ -1,7 +1,8 @@
 import type { Hono } from 'hono';
 import type { SettingsRepository } from '@luxe-maison/core';
 import { createSettingsService } from '@luxe-maison/core';
-import { requireAuth, requireRole, type AuthVariables } from '../middleware/auth.middleware.js';
+import { requireAuth, type AuthVariables } from '../middleware/auth.middleware.js';
+import { requireSection } from '../lib/role-permissions.js';
 
 export function settingsRoutes(
   app: Hono<{ Variables: AuthVariables }>,
@@ -9,7 +10,7 @@ export function settingsRoutes(
 ) {
   const settings = createSettingsService(settingsRepository);
 
-  app.get('/api/settings', requireAuth, requireRole('admin'), async (c) => {
+  app.get('/api/settings', requireAuth, requireSection('settings', 'view'), async (c) => {
     const data = await settings.get();
     return c.json(data);
   });

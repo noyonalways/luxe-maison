@@ -3,24 +3,39 @@ import { RoleContext, type StaffRole } from '@/contexts/role-context';
 import { useAuth, isStaffRole } from '@/contexts/auth-context';
 import {
   DEFAULT_PERMISSIONS,
-  loadStoredPermissions,
   getPermission as resolvePermission,
   type Section,
   type Permission,
+  type EditableRolePermissions,
 } from '@/lib/role-permissions';
-
-const STORAGE_KEY = 'maison-role-permissions';
+import { setPermissionsCache } from '@/lib/permissions-cache';
+import { usePermissionsQuery } from '@/hooks/permissions/use-permissions-query';
+import { useUpdatePermissionsMutation } from '@/hooks/permissions/use-update-permissions-mutation';
+import { useResetPermissionsMutation } from '@/hooks/permissions/use-reset-permissions-mutation';
 
 export function RoleProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [role, setRoleState] = useState<StaffRole>('employee');
-  const [editablePermissions, setEditablePermissions] = useState(loadStoredPermissions);
+  const permissionsQuery = usePermissionsQuery();
+  const updateMutation = useUpdatePermissionsMutation();
+  const resetMutation = useResetPermissionsMutation();
+
+  const editablePermissions = permissionsQuery.data ?? {
+    manager: { ...DEFAULT_PERMISSIONS.manager },
+    employee: { ...DEFAULT_PERMISSIONS.employee },
+  };
 
   useEffect(() => {
     if (user && isStaffRole(user.role)) {
       setRoleState(user.role);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (permissionsQuery.data) {
+      setPermissionsCache(permissionsQuery.data);
+    }
+  }, [permissionsQuery.data]);
 
   const setRole = (newRole: StaffRole) => {
     setRoleState(newRole);
@@ -37,24 +52,25 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   };
   const canDelete = (section: Section): boolean => getPermission(section) === 'full';
 
-  const updatePermission = useCallback((targetRole: 'manager' | 'employee', section: Section, permission: Permission) => {
-    setEditablePermissions((prev) => {
-      const next = {
-        ...prev,
-        [targetRole]: { ...prev[targetRole], [section]: permission },
+  const updatePermission = useCallback(
+    (targetRole: 'manager' | 'employee', section: Section, permission: Permission) => {
+      const next: EditableRolePermissions = {
+        ...editablePermissions,
+        [targetRole]: {
+          ...editablePermissions[targetRole],
+          [section]: permission,
+        },
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      return next;
-    });
-  }, []);
+      updateMutation.mutate(next);
+    },
+    [editablePermissions, updateMutation],
+  );
 
   const getPermissions = useCallback(() => editablePermissions, [editablePermissions]);
 
   const resetPermissions = useCallback(() => {
-    const defaults = { manager: { ...DEFAULT_PERMISSIONS.manager }, employee: { ...DEFAULT_PERMISSIONS.employee } };
-    setEditablePermissions(defaults);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaults));
-  }, []);
+    resetMutation.mutate();
+  }, [resetMutation]);
 
   const value = useMemo(
     () => ({
@@ -67,8 +83,20 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       updatePermission,
       getPermissions,
       resetPermissions,
+      isLoadingPermissions: isAuthenticated && permissionsQuery.isLoading,
+      isSavingPermissions: updateMutation.isPending || resetMutation.isPending,
     }),
-    [role, editablePermissions, updatePermission, getPermissions, resetPermissions],
+    [
+      role,
+      editablePermissions,
+      updatePermission,
+      getPermissions,
+      resetPermissions,
+      isAuthenticated,
+      permissionsQuery.isLoading,
+      updateMutation.isPending,
+      resetMutation.isPending,
+    ],
   );
 
   return <RoleContext.Provider value={value}>{children}</RoleContext.Provider>;

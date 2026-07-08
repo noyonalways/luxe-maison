@@ -12,6 +12,7 @@ export { createAuthService, type AuthService, type PasswordVerifier } from './se
 export { createSettingsService, type SettingsService } from './services/settings.service.js';
 export { createReviewService, type ReviewService } from './services/review.service.js';
 export { createPopupService, type PopupService } from './services/popup.service.js';
+export { createRolePermissionsService, type RolePermissionsService } from './services/role-permissions.service.js';
 export {
   validatePromoCode,
   calculateDiscount,

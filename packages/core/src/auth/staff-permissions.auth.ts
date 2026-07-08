@@ -18,6 +18,40 @@ export type CmsSection =
 
 export type Permission = 'view' | 'edit' | 'full' | 'none';
 
+export type EditableRole = 'manager' | 'employee';
+
+export type EditableRolePermissions = Record<
+  EditableRole,
+  Record<CmsSection, Permission>
+>;
+
+const PERMISSION_RANK: Record<Permission, number> = {
+  none: 0,
+  view: 1,
+  edit: 2,
+  full: 3,
+};
+
+export function meetsPermissionLevel(
+  permission: Permission,
+  required: 'view' | 'edit' | 'full',
+): boolean {
+  return PERMISSION_RANK[permission] >= PERMISSION_RANK[required];
+}
+
+export function normalizeRolePermissions(
+  permissions: Partial<EditableRolePermissions> = {},
+): EditableRolePermissions {
+  return {
+    manager: { ...DEFAULT_PERMISSIONS.manager, ...permissions.manager },
+    employee: { ...DEFAULT_PERMISSIONS.employee, ...permissions.employee },
+  };
+}
+
+export function cloneDefaultPermissions(): EditableRolePermissions {
+  return normalizeRolePermissions();
+}
+
 const ADMIN_PERMISSIONS: Record<CmsSection, Permission> = {
   dashboard: 'full',
   products: 'full',
@@ -33,10 +67,7 @@ const ADMIN_PERMISSIONS: Record<CmsSection, Permission> = {
   settings: 'full',
 };
 
-export const DEFAULT_PERMISSIONS: Record<
-  'manager' | 'employee',
-  Record<CmsSection, Permission>
-> = {
+export const DEFAULT_PERMISSIONS: EditableRolePermissions = {
   manager: {
     dashboard: 'full',
     products: 'none',
@@ -85,7 +116,7 @@ export const ALL_SECTIONS: CmsSection[] = [
 export function getPermission(
   role: StaffRole,
   section: CmsSection,
-  stored: Record<'manager' | 'employee', Record<CmsSection, Permission>> = DEFAULT_PERMISSIONS,
+  stored: EditableRolePermissions = DEFAULT_PERMISSIONS,
 ): Permission {
   if (role === 'admin') return ADMIN_PERMISSIONS[section];
   return stored[role][section];
@@ -94,7 +125,7 @@ export function getPermission(
 export function canAccessSection(
   role: StaffRole,
   section: CmsSection,
-  stored: Record<'manager' | 'employee', Record<CmsSection, Permission>> = DEFAULT_PERMISSIONS,
+  stored: EditableRolePermissions = DEFAULT_PERMISSIONS,
 ): boolean {
   return getPermission(role, section, stored) !== 'none';
 }
@@ -102,7 +133,7 @@ export function canAccessSection(
 export function canModifySection(
   role: StaffRole,
   section: CmsSection,
-  stored: Record<'manager' | 'employee', Record<CmsSection, Permission>> = DEFAULT_PERMISSIONS,
+  stored: EditableRolePermissions = DEFAULT_PERMISSIONS,
 ): boolean {
   const permission = getPermission(role, section, stored);
   return permission === 'edit' || permission === 'full';
@@ -110,7 +141,7 @@ export function canModifySection(
 
 export function getAccessibleSections(
   role: StaffRole,
-  stored: Record<'manager' | 'employee', Record<CmsSection, Permission>> = DEFAULT_PERMISSIONS,
+  stored: EditableRolePermissions = DEFAULT_PERMISSIONS,
 ): CmsSection[] {
   return ALL_SECTIONS.filter((section) => canAccessSection(role, section, stored));
 }

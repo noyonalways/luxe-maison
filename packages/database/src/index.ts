@@ -12,6 +12,7 @@ export {
   getSettingsRepository,
   getReviewRepository,
   getPopupRepository,
+  getRolePermissionsRepository,
 } from './get-repositories.js';
 
 export type {
@@ -41,6 +42,7 @@ export {
   createImpSettingsRepository as createInMemorySettingsRepository,
   createImpReviewRepository as createInMemoryReviewRepository,
   createImpPopupRepository as createInMemoryPopupRepository,
+  createImpRolePermissionsRepository as createInMemoryRolePermissionsRepository,
 } from './adapters/in_memory/repositories.js';
 
 export {
@@ -54,6 +56,7 @@ export {
   createImpSettingsRepository as createMongooseSettingsRepository,
   createImpReviewRepository as createMongooseReviewRepository,
   createImpPopupRepository as createMongoosePopupRepository,
+  createImpRolePermissionsRepository as createMongooseRolePermissionsRepository,
   connectMongoose,
   disconnectMongoose,
 } from './adapters/mongoose/repositories.js';
