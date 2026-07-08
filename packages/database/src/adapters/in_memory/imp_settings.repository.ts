@@ -1,5 +1,6 @@
 import type { StoreSettings } from '@luxe-maison/core';
 import type { SettingsRepository } from '@luxe-maison/core';
+import { DEFAULT_STORE_SETTINGS } from '@luxe-maison/core';
 import { defaultStoreSettings } from './seed.js';
 
 export function createImpSettingsRepository(
@@ -14,6 +15,11 @@ export function createImpSettingsRepository(
 
     async update(updates: Partial<StoreSettings>) {
       settings = { ...settings, ...updates };
+      return { ...settings };
+    },
+
+    async reset() {
+      settings = structuredClone(DEFAULT_STORE_SETTINGS);
       return { ...settings };
     },
   };

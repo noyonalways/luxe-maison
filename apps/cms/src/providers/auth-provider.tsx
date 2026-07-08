@@ -21,6 +21,7 @@ import { newsletterKeys } from '@/hooks/newsletter/newsletter-keys';
 import { discountKeys } from '@/hooks/discounts/discount-keys';
 import { popupKeys } from '@/hooks/popups/popup-keys';
 import { customerKeys } from '@/hooks/customers/customer-keys';
+import { settingsKeys } from '@/hooks/settings/settings-keys';
 import { clearPermissionsCache } from '@/lib/permissions-cache';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -52,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryClient.removeQueries({ queryKey: discountKeys.all });
     queryClient.removeQueries({ queryKey: popupKeys.all });
     queryClient.removeQueries({ queryKey: customerKeys.all });
+    queryClient.removeQueries({ queryKey: settingsKeys.all });
   }, [queryClient]);
 
   useEffect(() => {

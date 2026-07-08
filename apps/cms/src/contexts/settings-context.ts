@@ -1,22 +1,15 @@
 import { createContext, useContext } from 'react';
+import type { StoreSettings } from '@luxe-maison/shared';
 
-export interface StoreSettings {
-  storeName: string;
-  contactEmail: string;
-  currency: string;
-  language: string;
-  maintenanceMode: boolean;
-  orderNotifications: boolean;
-  stockAlerts: boolean;
-  newsletterAutoReply: boolean;
-  lowStockThreshold: number;
-  timezone: string;
-}
+export type { StoreSettings };
 
 export interface SettingsContextValue {
-  settings: StoreSettings;
-  updateSettings: (partial: Partial<StoreSettings>) => void;
-  resetSettings: () => void;
+  settings: StoreSettings | null;
+  isLoading: boolean;
+  error: string | null;
+  updateSettings: (partial: Partial<StoreSettings>) => Promise<void>;
+  resetSettings: () => Promise<void>;
+  isSaving: boolean;
 }
 
 export const SettingsContext = createContext<SettingsContextValue | undefined>(undefined);

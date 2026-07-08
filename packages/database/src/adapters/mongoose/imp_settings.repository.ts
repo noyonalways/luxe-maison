@@ -1,5 +1,5 @@
-import type { StoreSettings } from '@luxe-maison/core';
-import type { SettingsRepository } from '@luxe-maison/core';
+import type { StoreSettings, SettingsRepository } from '@luxe-maison/core';
+import { DEFAULT_STORE_SETTINGS } from '@luxe-maison/core';
 import type { Model } from 'mongoose';
 import { defaultStoreSettings } from '../in_memory/seed.js';
 import { SETTINGS_ID, SettingsModel, type SettingsDocument } from './schemas/settings.schema.js';
@@ -32,6 +32,17 @@ export function createImpSettingsRepository(
         .findOneAndUpdate(
           { id: SETTINGS_ID },
           { $set: updates },
+          { new: true, upsert: true, setDefaultsOnInsert: true },
+        )
+        .lean<SettingsDocument>();
+      return stripId(toPlain(doc)!);
+    },
+
+    async reset() {
+      const doc = await model
+        .findOneAndUpdate(
+          { id: SETTINGS_ID },
+          { $set: DEFAULT_STORE_SETTINGS },
           { new: true, upsert: true, setDefaultsOnInsert: true },
         )
         .lean<SettingsDocument>();
