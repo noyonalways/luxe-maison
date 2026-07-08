@@ -13,8 +13,8 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useTablePagination, PaginationControls } from '@/components/staff/TableControls';
-import { mockDiscounts } from '@/data/cms-mock';
 import { useCampaigns } from '@/contexts/campaigns-context';
+import { useDiscounts } from '@/contexts/discounts-context';
 import { useRole } from '@/contexts/role-context';
 import type { Campaign, CampaignType } from '@/data/cms-types';
 import { StatusBadge } from '@/components/staff/StatusBadge';
@@ -38,6 +38,7 @@ export default function Campaigns() {
   const { canEdit, canDelete } = useRole();
   const { campaigns, addCampaign, updateCampaign, deleteCampaign, isLoading, isSaving } =
     useCampaigns();
+  const { discounts } = useDiscounts();
   const canEditCampaigns = canEdit('campaigns');
   const canDeleteCampaigns = canDelete('campaigns');
 
@@ -603,7 +604,7 @@ export default function Campaigns() {
                   className="w-full px-3 py-2.5 border border-border text-sm bg-background focus:outline-none focus:border-foreground"
                 >
                   <option value="">None</option>
-                  {mockDiscounts
+                  {discounts
                     .filter((d) => d.status === 'active')
                     .map((d) => (
                       <option key={d.id} value={d.code}>

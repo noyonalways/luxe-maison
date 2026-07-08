@@ -6,6 +6,7 @@ import { AuthProvider } from '@/providers/auth-provider';
 import { ProductsProvider } from '@/providers/products-provider';
 import { CampaignsProvider } from '@/providers/campaigns-provider';
 import { NewsletterProvider } from '@/providers/newsletter-provider';
+import { DiscountsProvider } from '@/providers/discounts-provider';
 import { PopupProvider } from '@/providers/popup-provider';
 import { CustomerProvider } from '@/providers/customer-provider';
 import { RoleProvider } from '@/providers/role-provider';
@@ -23,15 +24,17 @@ export function AppProviders({ children }: { children: ReactNode }) {
               <RoleProvider>
                 <CampaignsProvider>
                   <NewsletterProvider>
-                    <ProductsProvider>
-                      <StaffProvider>
-                        <SettingsProvider>
-                          <Toaster />
-                          <Sonner />
-                          {children}
-                        </SettingsProvider>
-                      </StaffProvider>
-                    </ProductsProvider>
+                    <DiscountsProvider>
+                      <ProductsProvider>
+                        <StaffProvider>
+                          <SettingsProvider>
+                            <Toaster />
+                            <Sonner />
+                            {children}
+                          </SettingsProvider>
+                        </StaffProvider>
+                      </ProductsProvider>
+                    </DiscountsProvider>
                   </NewsletterProvider>
                 </CampaignsProvider>
               </RoleProvider>
