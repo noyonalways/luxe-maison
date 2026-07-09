@@ -1,11 +1,34 @@
 import type { Hono } from 'hono';
-import type { AdminProduct, ProductRepository } from '@luxe-maison/core';
+import type { AdminProduct, ProductRepository, StorefrontProductFilters } from '@luxe-maison/core';
 import { createProductService } from '@luxe-maison/core';
 import { requireAuth, type AuthVariables } from '../middleware/auth.middleware.js';
 import { requireSection } from '../lib/role-permissions.js';
 
 function isValidStatus(status: unknown): status is AdminProduct['status'] {
   return status === 'active' || status === 'draft' || status === 'archived';
+}
+
+function parseStorefrontFilters(query: Record<string, string | string[] | undefined>): StorefrontProductFilters {
+  const filters: StorefrontProductFilters = {};
+  const section = typeof query.section === 'string' ? query.section : undefined;
+  const category = typeof query.category === 'string' ? query.category : undefined;
+  const fit = typeof query.fit === 'string' ? query.fit : undefined;
+  const fabric = typeof query.fabric === 'string' ? query.fabric : undefined;
+
+  if (section === 'men' || section === 'women' || section === 'kids') {
+    filters.section = section;
+  }
+  if (category === 'punjabi' || category === 'shirt' || category === 'tshirt' || category === 'pants') {
+    filters.category = category;
+  }
+  if (fit === 'slim' || fit === 'regular' || fit === 'relaxed') {
+    filters.fit = fit;
+  }
+  if (fabric === 'silk' || fabric === 'cotton' || fabric === 'linen' || fabric === 'blend') {
+    filters.fabric = fabric;
+  }
+
+  return filters;
 }
 
 export function productRoutes(
@@ -15,7 +38,8 @@ export function productRoutes(
   const products = createProductService(productRepository);
 
   app.get('/api/products', async (c) => {
-    const list = await products.listStorefrontProducts();
+    const filters = parseStorefrontFilters(c.req.query());
+    const list = await products.listStorefrontProducts(filters);
     return c.json(list);
   });
 

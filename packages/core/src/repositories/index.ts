@@ -8,6 +8,7 @@ export type { StaffRepository } from './staff.repository.js';
 export type { SettingsRepository } from './settings.repository.js';
 export type { ReviewRepository } from './review.repository.js';
 export type { PopupRepository } from './popup.repository.js';
+export type { HomepageRepository } from './homepage.repository.js';
 export type { RolePermissionsRepository } from './role-permissions.repository.js';
 
 import type { ProductRepository } from './product.repository.js';

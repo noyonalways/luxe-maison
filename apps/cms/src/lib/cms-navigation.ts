@@ -13,6 +13,7 @@ export type CmsSection =
   | "discounts"
   | "campaigns"
   | "popup"
+  | "homepage"
   | "team"
   | "settings"
   | "access-control";
@@ -34,6 +35,7 @@ const ROLE_SECTION_ROUTES: Record<StaffRole, Partial<Record<CmsSection, AppRoute
     discounts: "/admin/discounts",
     campaigns: "/admin/campaigns",
     popup: "/admin/popup",
+    homepage: "/admin/homepage",
     team: "/admin/team",
     settings: "/admin/settings",
     "access-control": "/admin/access-control",

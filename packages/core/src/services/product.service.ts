@@ -1,11 +1,14 @@
 import type { AdminProduct } from '../entities/product.entity.js';
-import type { Product } from '../entities/product.entity.js';
+import type { Product, StorefrontProductFilters } from '../entities/product.entity.js';
+import { matchesStorefrontProductFilters } from '../entities/product.entity.js';
 import type { ProductRepository } from '../repositories/product.repository.js';
 
 export function createProductService(repository: ProductRepository) {
   return {
-    listStorefrontProducts(): Promise<Product[]> {
-      return repository.findAllActive();
+    async listStorefrontProducts(filters?: StorefrontProductFilters): Promise<Product[]> {
+      const products = await repository.findAllActive();
+      if (!filters) return products;
+      return products.filter((product) => matchesStorefrontProductFilters(product, filters));
     },
 
     listAdminProducts(): Promise<AdminProduct[]> {

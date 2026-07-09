@@ -5,11 +5,13 @@ import { createStaffService, toStaffPublic } from '@luxe-maison/core';
 import { requireAuth, type AuthVariables } from '../middleware/auth.middleware.js';
 import { requireSection } from '../lib/role-permissions.js';
 
-const ASSIGNABLE_ROLES = ['manager', 'employee'] as const;
-type AssignableRole = (typeof ASSIGNABLE_ROLES)[number];
+function isStaffRoleValue(role: unknown): role is StaffRole {
+  return role === 'admin' || role === 'manager' || role === 'employee';
+}
 
-function isAssignableRole(role: unknown): role is AssignableRole {
-  return role === 'manager' || role === 'employee';
+function canAssignRole(actorRole: StaffRole, targetRole: StaffRole): boolean {
+  if (targetRole === 'admin') return actorRole === 'admin';
+  return true;
 }
 
 function isValidEmail(email: string): boolean {
@@ -54,8 +56,13 @@ export function staffRoutes(
       return c.json({ status: 'error', message: 'Invalid email address' }, 400);
     }
 
-    if (!isAssignableRole(body.role)) {
-      return c.json({ status: 'error', message: 'role must be manager or employee' }, 400);
+    if (!isStaffRoleValue(body.role)) {
+      return c.json({ status: 'error', message: 'role must be admin, manager, or employee' }, 400);
+    }
+
+    const currentUser = c.get('user');
+    if (!canAssignRole(currentUser.role as StaffRole, body.role)) {
+      return c.json({ status: 'error', message: 'Only admins can create admin accounts' }, 403);
     }
 
     if (password.length < 6) {
@@ -100,6 +107,7 @@ export function staffRoutes(
     }>();
 
     const updates: Partial<StaffMember> = {};
+    const currentUser = c.get('user');
 
     if (body.name !== undefined) {
       const name = body.name.trim();
@@ -120,8 +128,11 @@ export function staffRoutes(
     }
 
     if (body.role !== undefined) {
-      if (!isAssignableRole(body.role)) {
-        return c.json({ status: 'error', message: 'role must be manager or employee' }, 400);
+      if (!isStaffRoleValue(body.role)) {
+        return c.json({ status: 'error', message: 'role must be admin, manager, or employee' }, 400);
+      }
+      if (!canAssignRole(currentUser.role as StaffRole, body.role)) {
+        return c.json({ status: 'error', message: 'Only admins can assign the admin role' }, 403);
       }
       updates.role = body.role;
     }

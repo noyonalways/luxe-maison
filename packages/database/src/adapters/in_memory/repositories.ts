@@ -8,4 +8,5 @@ export { createImpStaffRepository } from './imp_staff.repository.js';
 export { createImpSettingsRepository } from './imp_settings.repository.js';
 export { createImpReviewRepository } from './imp_review.repository.js';
 export { createImpPopupRepository } from './imp_popup.repository.js';
+export { createImpHomepageRepository } from './imp_homepage.repository.js';
 export { createImpRolePermissionsRepository } from './imp_role-permissions.repository.js';

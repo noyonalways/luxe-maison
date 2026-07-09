@@ -13,6 +13,7 @@ import { OrdersProvider } from '@/providers/orders-provider';
 import { RoleProvider } from '@/providers/role-provider';
 import { StaffProvider } from '@/providers/staff-provider';
 import { SettingsProvider } from '@/providers/settings-provider';
+import { HomepageProvider } from '@/providers/homepage-provider';
 import type { ReactNode } from 'react';
 
 export function AppProviders({ children }: { children: ReactNode }) {
@@ -30,9 +31,11 @@ export function AppProviders({ children }: { children: ReactNode }) {
                       <ProductsProvider>
                         <StaffProvider>
                           <SettingsProvider>
+                            <HomepageProvider>
                             <Toaster />
                             <Sonner />
                             {children}
+                            </HomepageProvider>
                           </SettingsProvider>
                         </StaffProvider>
                       </ProductsProvider>

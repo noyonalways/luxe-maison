@@ -22,6 +22,43 @@ export function newsletterRoutes(
 ) {
   const newsletter = createNewsletterService(newsletterRepository);
 
+  app.post('/api/newsletter/subscribe', async (c) => {
+    const body = await c.req.json<{ email?: string; name?: string }>();
+    const email = body.email?.trim().toLowerCase();
+    const name = body.name?.trim() || email?.split('@')[0] || 'Subscriber';
+
+    if (!email) {
+      return c.json({ status: 'error', message: 'email is required' }, 400);
+    }
+
+    if (!isValidEmail(email)) {
+      return c.json({ status: 'error', message: 'Invalid email address' }, 400);
+    }
+
+    const existing = await newsletter.getSubscriberByEmail(email);
+    if (existing) {
+      if (existing.status === 'active') {
+        return c.json({ status: 'ok', message: 'You are already subscribed' });
+      }
+      const reactivated = await newsletter.updateSubscriber(existing.id, {
+        status: 'active',
+        name,
+      });
+      return c.json(reactivated);
+    }
+
+    const subscriber: Subscriber = {
+      id: `sub-${Date.now()}`,
+      email,
+      name,
+      status: 'active',
+      subscribedAt: new Date().toISOString(),
+    };
+
+    const created = await newsletter.createSubscriber(subscriber);
+    return c.json(created, 201);
+  });
+
   app.get('/api/newsletter/subscribers', requireAuth, requireSection('newsletter', 'view'), async (c) => {
     const list = await newsletter.listSubscribers();
     return c.json(list);

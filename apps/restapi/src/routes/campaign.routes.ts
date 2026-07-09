@@ -38,6 +38,11 @@ export function campaignRoutes(
 ) {
   const campaigns = createCampaignService(campaignRepository);
 
+  app.get('/api/campaigns/active', async (c) => {
+    const list = await campaigns.listActive();
+    return c.json(list);
+  });
+
   app.get('/api/campaigns', requireAuth, requireSection('campaigns', 'view'), async (c) => {
     const activeOnly = c.req.query('active') === 'true';
     const list = activeOnly ? await campaigns.listActive() : await campaigns.list();

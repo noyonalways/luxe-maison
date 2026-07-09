@@ -1,6 +1,7 @@
 import type { Product, ProductSection } from '@luxe-maison/core';
+import { kidsCatalogProducts, womenCatalogProducts } from './catalog-sections.seed.js';
 
-export const products: Product[] = [
+const menCatalogProducts: Product[] = [
   {
     id: 'pnj-001',
     name: 'Royal Silk Punjabi',
@@ -376,6 +377,12 @@ export const products: Product[] = [
     rating: 4.8,
     reviews: 54,
   },
+];
+
+export const products: Product[] = [
+  ...menCatalogProducts,
+  ...womenCatalogProducts,
+  ...kidsCatalogProducts,
 ];
 
 export const sections = [

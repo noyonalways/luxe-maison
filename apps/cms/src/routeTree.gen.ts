@@ -34,6 +34,7 @@ import { Route as rolesAdminSettingsRouteImport } from './routes/(roles)/admin/s
 import { Route as rolesAdminPopupRouteImport } from './routes/(roles)/admin/popup'
 import { Route as rolesAdminOrdersRouteImport } from './routes/(roles)/admin/orders'
 import { Route as rolesAdminNewsletterRouteImport } from './routes/(roles)/admin/newsletter'
+import { Route as rolesAdminHomepageRouteImport } from './routes/(roles)/admin/homepage'
 import { Route as rolesAdminDiscountsRouteImport } from './routes/(roles)/admin/discounts'
 import { Route as rolesAdminDashboardRouteImport } from './routes/(roles)/admin/dashboard'
 import { Route as rolesAdminCustomersRouteImport } from './routes/(roles)/admin/customers'
@@ -169,6 +170,11 @@ const rolesAdminNewsletterRoute = rolesAdminNewsletterRouteImport.update({
   path: '/newsletter',
   getParentRoute: () => rolesAdminRouteRoute,
 } as any)
+const rolesAdminHomepageRoute = rolesAdminHomepageRouteImport.update({
+  id: '/homepage',
+  path: '/homepage',
+  getParentRoute: () => rolesAdminRouteRoute,
+} as any)
 const rolesAdminDiscountsRoute = rolesAdminDiscountsRouteImport.update({
   id: '/discounts',
   path: '/discounts',
@@ -235,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/admin/customers': typeof rolesAdminCustomersRoute
   '/admin/dashboard': typeof rolesAdminDashboardRoute
   '/admin/discounts': typeof rolesAdminDiscountsRoute
+  '/admin/homepage': typeof rolesAdminHomepageRoute
   '/admin/newsletter': typeof rolesAdminNewsletterRoute
   '/admin/orders': typeof rolesAdminOrdersRoute
   '/admin/popup': typeof rolesAdminPopupRoute
@@ -268,6 +275,7 @@ export interface FileRoutesByTo {
   '/admin/customers': typeof rolesAdminCustomersRoute
   '/admin/dashboard': typeof rolesAdminDashboardRoute
   '/admin/discounts': typeof rolesAdminDiscountsRoute
+  '/admin/homepage': typeof rolesAdminHomepageRoute
   '/admin/newsletter': typeof rolesAdminNewsletterRoute
   '/admin/orders': typeof rolesAdminOrdersRoute
   '/admin/popup': typeof rolesAdminPopupRoute
@@ -306,6 +314,7 @@ export interface FileRoutesById {
   '/(roles)/admin/customers': typeof rolesAdminCustomersRoute
   '/(roles)/admin/dashboard': typeof rolesAdminDashboardRoute
   '/(roles)/admin/discounts': typeof rolesAdminDiscountsRoute
+  '/(roles)/admin/homepage': typeof rolesAdminHomepageRoute
   '/(roles)/admin/newsletter': typeof rolesAdminNewsletterRoute
   '/(roles)/admin/orders': typeof rolesAdminOrdersRoute
   '/(roles)/admin/popup': typeof rolesAdminPopupRoute
@@ -344,6 +353,7 @@ export interface FileRouteTypes {
     | '/admin/customers'
     | '/admin/dashboard'
     | '/admin/discounts'
+    | '/admin/homepage'
     | '/admin/newsletter'
     | '/admin/orders'
     | '/admin/popup'
@@ -377,6 +387,7 @@ export interface FileRouteTypes {
     | '/admin/customers'
     | '/admin/dashboard'
     | '/admin/discounts'
+    | '/admin/homepage'
     | '/admin/newsletter'
     | '/admin/orders'
     | '/admin/popup'
@@ -414,6 +425,7 @@ export interface FileRouteTypes {
     | '/(roles)/admin/customers'
     | '/(roles)/admin/dashboard'
     | '/(roles)/admin/discounts'
+    | '/(roles)/admin/homepage'
     | '/(roles)/admin/newsletter'
     | '/(roles)/admin/orders'
     | '/(roles)/admin/popup'
@@ -623,6 +635,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof rolesAdminNewsletterRouteImport
       parentRoute: typeof rolesAdminRouteRoute
     }
+    '/(roles)/admin/homepage': {
+      id: '/(roles)/admin/homepage'
+      path: '/homepage'
+      fullPath: '/admin/homepage'
+      preLoaderRoute: typeof rolesAdminHomepageRouteImport
+      parentRoute: typeof rolesAdminRouteRoute
+    }
     '/(roles)/admin/discounts': {
       id: '/(roles)/admin/discounts'
       path: '/discounts'
@@ -717,6 +736,7 @@ interface rolesAdminRouteRouteChildren {
   rolesAdminCustomersRoute: typeof rolesAdminCustomersRoute
   rolesAdminDashboardRoute: typeof rolesAdminDashboardRoute
   rolesAdminDiscountsRoute: typeof rolesAdminDiscountsRoute
+  rolesAdminHomepageRoute: typeof rolesAdminHomepageRoute
   rolesAdminNewsletterRoute: typeof rolesAdminNewsletterRoute
   rolesAdminOrdersRoute: typeof rolesAdminOrdersRoute
   rolesAdminPopupRoute: typeof rolesAdminPopupRoute
@@ -735,6 +755,7 @@ const rolesAdminRouteRouteChildren: rolesAdminRouteRouteChildren = {
   rolesAdminCustomersRoute: rolesAdminCustomersRoute,
   rolesAdminDashboardRoute: rolesAdminDashboardRoute,
   rolesAdminDiscountsRoute: rolesAdminDiscountsRoute,
+  rolesAdminHomepageRoute: rolesAdminHomepageRoute,
   rolesAdminNewsletterRoute: rolesAdminNewsletterRoute,
   rolesAdminOrdersRoute: rolesAdminOrdersRoute,
   rolesAdminPopupRoute: rolesAdminPopupRoute,

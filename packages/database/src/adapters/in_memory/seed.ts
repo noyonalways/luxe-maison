@@ -13,16 +13,28 @@ import type {
 } from '@luxe-maison/core';
 import { products } from './catalog.seed.js';
 
-export const adminProducts: AdminProduct[] = products.map((p, i) => ({
-  ...p,
-  sku: `SKU-${p.id.toUpperCase()}`,
-  stock: Math.floor(Math.random() * 100) + 5,
-  tags: [p.category, p.fabric, p.fit, p.season],
-  seoTitle: `${p.name} | Premium ${p.category === 'punjabi' ? 'Traditional' : 'Contemporary'} Menswear — MAISON`,
-  seoDescription: p.description.slice(0, 155),
-  status: i < 6 ? 'active' : 'draft',
-  createdAt: new Date(2025, 8 + Math.floor(i / 3), 10 + i).toISOString(),
-}));
+export const adminProducts: AdminProduct[] = (() => {
+  const activeCountBySection: Record<string, number> = {};
+
+  return products.map((p) => {
+    const sectionCount = activeCountBySection[p.section] ?? 0;
+    activeCountBySection[p.section] = sectionCount + 1;
+
+    const sectionLabel =
+      p.section === 'women' ? "Women's" : p.section === 'kids' ? "Kids'" : "Men's";
+
+    return {
+      ...p,
+      sku: `SKU-${p.id.toUpperCase()}`,
+      stock: Math.floor(Math.random() * 100) + 5,
+      tags: [p.category, p.fabric, p.fit, p.season, p.section],
+      seoTitle: `${p.name} | Premium ${sectionLabel} ${p.category === 'punjabi' ? 'Traditional' : 'Contemporary'} — MAISON`,
+      seoDescription: p.description.slice(0, 155),
+      status: sectionCount < 4 ? 'active' : 'draft',
+      createdAt: new Date(2025, 8 + Math.floor(sectionCount / 2), 10 + sectionCount).toISOString(),
+    };
+  });
+})();
 
 export const mockOrders: Order[] = [
   {
@@ -134,25 +146,25 @@ export const mockDiscounts: Discount[] = [
 // Campaigns mock data
 export const mockCampaigns: Campaign[] = [
   {
-    id: 'camp-1', name: 'Spring Collection Launch', type: 'launch', status: 'active',
-    description: 'Grand launch of the Spring 2026 collection featuring lightweight linen and cotton pieces.',
-    startDate: '2026-03-01T00:00:00Z', endDate: '2026-03-31T23:59:59Z',
+    id: 'camp-1', name: 'Summer Collection Launch', type: 'launch', status: 'active',
+    description: 'Grand launch of the Summer 2026 collection featuring lightweight linen and cotton pieces.',
+    startDate: '2026-06-01T00:00:00Z', endDate: '2026-08-31T23:59:59Z',
     discountCode: 'SUMMER15', targetAudience: 'All subscribers', budget: 5000, revenue: 12400,
-    impressions: 45200, clicks: 3800, conversions: 156, createdAt: '2026-02-20T00:00:00Z',
+    impressions: 45200, clicks: 3800, conversions: 156, createdAt: '2026-05-20T00:00:00Z',
   },
   {
-    id: 'camp-2', name: 'Eid Flash Sale', type: 'flash', status: 'scheduled',
+    id: 'camp-2', name: 'Eid Flash Sale', type: 'flash', status: 'active',
     description: 'Limited-time flash sale on premium Punjabi collection for Eid celebrations.',
-    startDate: '2026-03-28T00:00:00Z', endDate: '2026-04-02T23:59:59Z',
-    discountCode: 'FLAT20', targetAudience: 'South Asia & Middle East', budget: 3000, revenue: 0,
-    impressions: 0, clicks: 0, conversions: 0, createdAt: '2026-03-05T00:00:00Z',
+    startDate: '2026-07-01T00:00:00Z', endDate: '2026-07-15T23:59:59Z',
+    discountCode: 'FLAT20', targetAudience: 'South Asia & Middle East', budget: 3000, revenue: 4200,
+    impressions: 18200, clicks: 1400, conversions: 68, createdAt: '2026-06-25T00:00:00Z',
   },
   {
-    id: 'camp-3', name: 'Summer Clearance', type: 'sale', status: 'scheduled',
-    description: 'End-of-season clearance with deep discounts on winter inventory.',
-    startDate: '2026-06-01T00:00:00Z', endDate: '2026-06-30T23:59:59Z',
-    targetAudience: 'All customers', budget: 2500, revenue: 0,
-    impressions: 0, clicks: 0, conversions: 0, createdAt: '2026-03-01T00:00:00Z',
+    id: 'camp-3', name: 'Women\'s Edit', type: 'seasonal', status: 'active',
+    description: 'Discover refined silhouettes and elevated essentials from our women\'s collection.',
+    startDate: '2026-07-01T00:00:00Z', endDate: '2026-09-30T23:59:59Z',
+    discountCode: 'WOMEN10', targetAudience: 'All customers', budget: 2500, revenue: 3100,
+    impressions: 22100, clicks: 1900, conversions: 84, createdAt: '2026-06-28T00:00:00Z',
   },
   {
     id: 'camp-4', name: 'Holiday Gift Guide', type: 'seasonal', status: 'ended',

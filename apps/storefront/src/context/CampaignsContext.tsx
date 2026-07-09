@@ -1,27 +1,28 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
-import { mockCampaigns } from '@/data/admin-mock';
-import type { Campaign, CampaignType, CampaignStatus } from '@/data/admin-types';
+import { createContext, useCallback, useContext, type ReactNode } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import type { Campaign } from '@luxe-maison/shared';
+import { campaignsApi } from '@/lib/api/campaigns.api';
+import { campaignKeys } from '@/hooks/campaigns/campaign-keys';
 
 interface CampaignsContextType {
   campaigns: Campaign[];
-  addCampaign: (c: Campaign) => void;
-  updateCampaign: (c: Campaign) => void;
-  deleteCampaign: (id: string) => void;
+  isLoading: boolean;
   getActiveCampaigns: () => Campaign[];
 }
 
 const CampaignsContext = createContext<CampaignsContextType | null>(null);
 
 export function CampaignsProvider({ children }: { children: ReactNode }) {
-  const [campaigns, setCampaigns] = useState<Campaign[]>(mockCampaigns);
+  const { data = [], isLoading } = useQuery({
+    queryKey: campaignKeys.active(),
+    queryFn: () => campaignsApi.listActive(),
+    staleTime: 60_000,
+  });
 
-  const addCampaign = (c: Campaign) => setCampaigns(prev => [c, ...prev]);
-  const updateCampaign = (c: Campaign) => setCampaigns(prev => prev.map(x => x.id === c.id ? c : x));
-  const deleteCampaign = (id: string) => setCampaigns(prev => prev.filter(c => c.id !== id));
-  const getActiveCampaigns = () => campaigns.filter(c => c.status === 'active');
+  const getActiveCampaigns = useCallback(() => data, [data]);
 
   return (
-    <CampaignsContext.Provider value={{ campaigns, addCampaign, updateCampaign, deleteCampaign, getActiveCampaigns }}>
+    <CampaignsContext.Provider value={{ campaigns: data, isLoading, getActiveCampaigns }}>
       {children}
     </CampaignsContext.Provider>
   );

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStaff, type StaffMember } from '@/contexts/staff-context';
-import { useRole } from '@/contexts/role-context';
+import { useRole, type StaffRole } from '@/contexts/role-context';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,11 +17,11 @@ export default function Team() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [memberRole, setMemberRole] = useState<'manager' | 'employee'>('employee');
+  const [memberRole, setMemberRole] = useState<StaffRole>('employee');
   const [search, setSearch] = useState('');
-  const [filterRole, setFilterRole] = useState<'all' | 'manager' | 'employee'>('all');
+  const [filterRole, setFilterRole] = useState<'all' | StaffRole>('all');
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editRole, setEditRole] = useState<'manager' | 'employee'>('employee');
+  const [editRole, setEditRole] = useState<StaffRole>('employee');
   const [deleteConfirm, setDeleteConfirm] = useState<StaffMember | null>(null);
 
   const canEditTeam = canEdit('team');
@@ -45,6 +45,7 @@ export default function Team() {
     return matchSearch && matchRole;
   });
 
+  const admins = members.filter((m) => m.role === 'admin').length;
   const managers = members.filter((m) => m.role === 'manager').length;
   const employees = members.filter((m) => m.role === 'employee').length;
 
@@ -85,7 +86,7 @@ export default function Team() {
   const startEdit = (member: StaffMember) => {
     if (member.role === 'admin') return;
     setEditingId(member.id);
-    setEditRole(member.role === 'manager' ? 'manager' : 'employee');
+    setEditRole(member.role);
   };
 
   const saveEdit = async (member: StaffMember) => {
@@ -118,7 +119,7 @@ export default function Team() {
         <div>
           <h1 className="font-heading text-2xl lg:text-3xl">Team Members</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {managers} manager{managers !== 1 ? 's' : ''}, {employees} employee{employees !== 1 ? 's' : ''}
+            {admins} admin{admins !== 1 ? 's' : ''}, {managers} manager{managers !== 1 ? 's' : ''}, {employees} employee{employees !== 1 ? 's' : ''}
           </p>
         </div>
         {canEditTeam && (
@@ -148,11 +149,12 @@ export default function Team() {
                 </div>
                 <div className="space-y-1.5">
                   <Label>Role</Label>
-                  <Select value={memberRole} onValueChange={(v: 'manager' | 'employee') => setMemberRole(v)}>
+                  <Select value={memberRole} onValueChange={(v: StaffRole) => setMemberRole(v)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
                       <SelectItem value="manager">Manager</SelectItem>
                       <SelectItem value="employee">Employee</SelectItem>
                     </SelectContent>
@@ -177,12 +179,13 @@ export default function Team() {
             className="pl-9"
           />
         </div>
-        <Select value={filterRole} onValueChange={(v: 'all' | 'manager' | 'employee') => setFilterRole(v)}>
+        <Select value={filterRole} onValueChange={(v: 'all' | StaffRole) => setFilterRole(v)}>
           <SelectTrigger className="w-full sm:w-40">
             <SelectValue placeholder="Filter by role" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Roles</SelectItem>
+            <SelectItem value="admin">Admins</SelectItem>
             <SelectItem value="manager">Managers</SelectItem>
             <SelectItem value="employee">Employees</SelectItem>
           </SelectContent>
@@ -208,11 +211,12 @@ export default function Team() {
                   <td className="px-5 py-3 text-muted-foreground">{member.email}</td>
                   <td className="px-5 py-3">
                     {editingId === member.id && member.role !== 'admin' ? (
-                      <Select value={editRole} onValueChange={(v: 'manager' | 'employee') => setEditRole(v)}>
+                      <Select value={editRole} onValueChange={(v: StaffRole) => setEditRole(v)}>
                         <SelectTrigger className="h-7 w-28 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="admin">Admin</SelectItem>
                           <SelectItem value="manager">Manager</SelectItem>
                           <SelectItem value="employee">Employee</SelectItem>
                         </SelectContent>

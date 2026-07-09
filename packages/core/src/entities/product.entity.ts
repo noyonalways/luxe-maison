@@ -5,6 +5,25 @@ export interface ProductColor {
 
 export type ProductSection = 'men' | 'women' | 'kids';
 
+export interface StorefrontProductFilters {
+  section?: ProductSection;
+  category?: Product['category'];
+  fit?: Product['fit'];
+  fabric?: Product['fabric'];
+}
+
+export function matchesStorefrontProductFilters(
+  product: Product,
+  filters?: StorefrontProductFilters,
+): boolean {
+  if (!filters) return true;
+  if (filters.section && product.section !== filters.section) return false;
+  if (filters.category && product.category !== filters.category) return false;
+  if (filters.fit && product.fit !== filters.fit) return false;
+  if (filters.fabric && product.fabric !== filters.fabric) return false;
+  return true;
+}
+
 export interface Product {
   id: string;
   name: string;

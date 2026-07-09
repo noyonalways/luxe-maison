@@ -34,9 +34,9 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { to: '/shop?section=men', label: 'Men', section: 'men' },
-    { to: '/shop?section=women', label: 'Women', section: 'women' },
-    { to: '/shop?section=kids', label: 'Kids', section: 'kids' },
+    { to: '/shop/men', label: 'Men', section: 'men' },
+    { to: '/shop/women', label: 'Women', section: 'women' },
+    { to: '/shop/kids', label: 'Kids', section: 'kids' },
     { to: '/shop', label: 'All' },
   ];
 

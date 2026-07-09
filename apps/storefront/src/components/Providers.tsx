@@ -9,6 +9,7 @@ import { ProductsProvider } from "@/context/ProductsContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { ReviewsProvider } from "@/context/ReviewsContext";
 import { CampaignsProvider } from "@/context/CampaignsContext";
+import { HomepageProvider } from "@/context/HomepageContext";
 import { PopupProvider } from "@/context/PopupContext";
 import { CustomerProvider } from "@/context/CustomerContext";
 import { AuthProvider } from "@/context/AuthContext";
@@ -22,6 +23,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <TooltipProvider>
         <AuthProvider>
           <ProductsProvider>
+          <HomepageProvider>
           <CartProvider>
             <WishlistProvider>
               <ReviewsProvider>
@@ -37,6 +39,7 @@ export function Providers({ children }: { children: ReactNode }) {
               </ReviewsProvider>
             </WishlistProvider>
           </CartProvider>
+          </HomepageProvider>
           </ProductsProvider>
         </AuthProvider>
       </TooltipProvider>

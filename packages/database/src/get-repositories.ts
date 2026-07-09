@@ -5,6 +5,7 @@ import type {
   NewsletterRepository,
   OrderRepository,
   PopupRepository,
+  HomepageRepository,
   ProductRepository,
   ReviewRepository,
   RolePermissionsRepository,
@@ -20,6 +21,7 @@ import {
   createImpNewsletterRepository,
   createImpOrderRepository,
   createImpPopupRepository,
+  createImpHomepageRepository,
   createImpProductRepository,
   createImpReviewRepository,
   createImpRolePermissionsRepository,
@@ -34,6 +36,7 @@ import {
   createImpNewsletterRepository as createMongooseNewsletterRepository,
   createImpOrderRepository as createMongooseOrderRepository,
   createImpPopupRepository as createMongoosePopupRepository,
+  createImpHomepageRepository as createMongooseHomepageRepository,
   createImpProductRepository as createMongooseProductRepository,
   createImpReviewRepository as createMongooseReviewRepository,
   createImpRolePermissionsRepository as createMongooseRolePermissionsRepository,
@@ -194,6 +197,17 @@ export function getPopupRepository(adapter?: DatabaseAdapter): PopupRepository {
       return createMongoosePopupRepository();
     default:
       return unsupported('popup', resolveAdapter(adapter));
+  }
+}
+
+export function getHomepageRepository(adapter?: DatabaseAdapter): HomepageRepository {
+  switch (resolveAdapter(adapter)) {
+    case 'in_memory':
+      return createImpHomepageRepository();
+    case 'mongoose':
+      return createMongooseHomepageRepository();
+    default:
+      return unsupported('homepage', resolveAdapter(adapter));
   }
 }
 

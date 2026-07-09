@@ -4,7 +4,7 @@ import { apiClient } from '@/lib/api/client';
 export interface CreateStaffPayload {
   name: string;
   email: string;
-  role: Extract<StaffRole, 'manager' | 'employee'>;
+  role: StaffRole;
   password: string;
   avatar?: string;
 }
@@ -12,7 +12,7 @@ export interface CreateStaffPayload {
 export interface UpdateStaffPayload {
   name?: string;
   email?: string;
-  role?: Extract<StaffRole, 'manager' | 'employee'>;
+  role?: StaffRole;
   password?: string;
   avatar?: string;
 }

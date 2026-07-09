@@ -8,6 +8,7 @@ import {
   getProductRepository,
   getReviewRepository,
   getSettingsRepository,
+  getHomepageRepository,
   getStaffRepository,
 } from '@luxe-maison/database';
 import { Hono } from 'hono';
@@ -28,6 +29,7 @@ import { popupRoutes } from './routes/popup.routes.js';
 import { productRoutes } from './routes/product.routes.js';
 import { reviewRoutes } from './routes/review.routes.js';
 import { settingsRoutes } from './routes/settings.routes.js';
+import { homepageRoutes } from './routes/homepage.routes.js';
 import { staffRoutes } from './routes/staff.routes.js';
 
 const productRepository = getProductRepository();
@@ -38,6 +40,7 @@ const discountRepository = getDiscountRepository();
 const newsletterRepository = getNewsletterRepository();
 const staffRepository = getStaffRepository();
 const settingsRepository = getSettingsRepository();
+const homepageRepository = getHomepageRepository();
 const reviewRepository = getReviewRepository();
 const popupRepository = getPopupRepository();
 
@@ -57,6 +60,7 @@ discountRoutes(app, { discountRepository });
 newsletterRoutes(app, { newsletterRepository });
 staffRoutes(app, { staffRepository });
 settingsRoutes(app, { settingsRepository });
+homepageRoutes(app, { homepageRepository });
 reviewRoutes(app, { reviewRepository });
 popupRoutes(app, { popupRepository });
 permissionsRoutes(app);

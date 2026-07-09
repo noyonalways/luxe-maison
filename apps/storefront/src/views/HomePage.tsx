@@ -1,63 +1,20 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, Star, Sparkles, Crown, TrendingUp } from 'lucide-react';
+import { ArrowRight, Star, Sparkles, Crown, TrendingUp, Loader2 } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
+import { toast } from 'sonner';
 import { useProducts } from '@/context/ProductsContext';
+import { useHomepage } from '@/context/HomepageContext';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { newsletterApi } from '@/lib/api/newsletter.api';
+import { resolveHeroImageUrl } from '@/lib/homepage-images';
 import { CampaignCards } from '@/components/CampaignBanner';
 import ProductCard from '@/components/ProductCard';
-import heroImg1 from '@/assets/hero-collection.jpg';
-import heroImg2 from '@/assets/hero-slide-2.jpg';
-import heroImg3 from '@/assets/hero-slide-3.jpg';
-import catPunjabi from '@/assets/category-punjabi.jpg';
-import catShirts from '@/assets/category-shirts.jpg';
-import catTshirts from '@/assets/category-tshirts.jpg';
-import catPants from '@/assets/category-pants.jpg';
-
-import type { StaticImageData } from 'next/image';
-
-const heroSlides = [
-  {
-    image: heroImg1.src,
-    season: 'Spring / Summer 2026',
-    title: <>The Art of<br />Refined Dressing</>,
-    description: 'Discover our curated collection of premium traditional and contemporary menswear, crafted with exceptional fabrics.',
-    cta: 'Explore Collection',
-  },
-  {
-    image: heroImg2.src,
-    season: 'Exclusive Collection',
-    title: <>Elegance in<br />Every Detail</>,
-    description: 'Handcrafted silhouettes that embody sophistication — from the finest silk kurtas to perfectly tailored ensembles.',
-    cta: 'Shop New Arrivals',
-  },
-  {
-    image: heroImg3.src,
-    season: 'The Gentleman\'s Edit',
-    title: <>Crafted for the<br />Modern Connoisseur</>,
-    description: 'Premium fabrics, meticulous stitching, and timeless accessories — curated for those who appreciate the finer things.',
-    cta: 'Discover More',
-  },
-];
 
 const SLIDE_DURATION = 6000;
-
-const categoryImages: Record<string, string> = {
-  punjabi: catPunjabi.src,
-  shirt: catShirts.src,
-  tshirt: catTshirts.src,
-  pants: catPants.src,
-};
-
-const categoryData = [
-  { id: 'punjabi', name: 'Punjabi', desc: 'Traditional elegance' },
-  { id: 'shirt', name: 'Shirts', desc: 'Refined essentials' },
-  { id: 'tshirt', name: 'T-Shirts', desc: 'Luxury basics' },
-  { id: 'pants', name: 'Pants', desc: 'Tailored perfection' },
-];
 
 /* ── New Arrivals Carousel ── */
 function NewArrivalsSection() {
@@ -393,29 +350,84 @@ function LuxuryShowcase() {
 }
 
 export default function HomePage() {
-  const { products, getProductById } = useProducts();
-  const featuredProducts = products.filter(p => p.badge).slice(0, 4);
+  const { products, getProductById, isLoading: productsLoading } = useProducts();
+  const { content: homepage, isLoading: homepageLoading } = useHomepage();
+  const featuredProducts = products.filter((product) => product.badge).slice(0, 4);
   const { viewedIds } = useRecentlyViewed();
-  const recentlyViewed = viewedIds.map(id => getProductById(id)).filter(Boolean).slice(0, 4);
+  const recentlyViewed = viewedIds.map((id) => getProductById(id)).filter(Boolean).slice(0, 4);
+
+  const heroSlides = useMemo(
+    () =>
+      (homepage?.heroSlides ?? [])
+        .filter((slide) => slide.enabled)
+        .sort((a, b) => a.sortOrder - b.sortOrder),
+    [homepage],
+  );
+
+  const categoryTiles = useMemo(
+    () =>
+      (homepage?.categoryTiles ?? [])
+        .filter((tile) => tile.enabled)
+        .sort((a, b) => a.sortOrder - b.sortOrder),
+    [homepage],
+  );
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
 
   const nextSlide = useCallback(() => {
-    setCurrentSlide(prev => (prev + 1) % heroSlides.length);
-  }, []);
+    if (heroSlides.length === 0) return;
+    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+  }, [heroSlides.length]);
 
   useEffect(() => {
-    if (isPaused) return;
+    setCurrentSlide(0);
+  }, [heroSlides.length]);
+
+  useEffect(() => {
+    if (isPaused || heroSlides.length === 0) return;
     const timer = setInterval(nextSlide, SLIDE_DURATION);
     return () => clearInterval(timer);
-  }, [isPaused, nextSlide]);
+  }, [isPaused, nextSlide, heroSlides.length]);
+
+  const handleNewsletterSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const email = newsletterEmail.trim();
+    if (!email) return;
+
+    setIsSubscribing(true);
+    try {
+      const result = await newsletterApi.subscribe({ email });
+      if ('message' in result) {
+        toast.success(result.message);
+      } else {
+        toast.success('Welcome to the inner circle.');
+      }
+      setNewsletterEmail('');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to subscribe right now.');
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
+  if (homepageLoading || productsLoading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center text-muted-foreground gap-2">
+        <Loader2 size={20} className="animate-spin" />
+        <span className="text-sm">Loading homepage…</span>
+      </main>
+    );
+  }
 
   const slide = heroSlides[currentSlide];
 
   return (
     <main>
       {/* Hero — Auto-fading Slideshow */}
+      {slide && (
       <section
         className="relative h-[90vh] lg:h-screen flex items-center overflow-hidden"
         onMouseEnter={() => setIsPaused(true)}
@@ -424,8 +436,8 @@ export default function HomePage() {
         <AnimatePresence mode="sync">
           <motion.img
             key={currentSlide}
-            src={slide.image}
-            alt={typeof slide.title === 'string' ? slide.title : 'Hero'}
+            src={resolveHeroImageUrl(slide)}
+            alt={slide.title}
             className="absolute inset-0 w-full h-full object-cover"
             initial={{ opacity: 0, scale: 1.05 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -444,12 +456,20 @@ export default function HomePage() {
               transition={{ duration: 0.6 }}
               className="max-w-lg"
             >
-              <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }} className="text-xs font-body font-medium letter-wider uppercase text-background/70 mb-4">{slide.season}</motion.p>
-              <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.4 }} className="font-heading text-4xl lg:text-6xl font-semibold text-background leading-tight mb-6">{slide.title}</motion.h1>
+              <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }} className="text-xs font-body font-medium letter-wider uppercase text-background/70 mb-4">{slide.eyebrow}</motion.p>
+              <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.4 }} className="font-heading text-4xl lg:text-6xl font-semibold text-background leading-tight mb-6">
+                {slide.title}
+                {slide.titleHighlight && (
+                  <>
+                    <br />
+                    {slide.titleHighlight}
+                  </>
+                )}
+              </motion.h1>
               <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.55 }} className="text-sm lg:text-base text-background/80 leading-relaxed mb-8 max-w-sm">{slide.description}</motion.p>
               <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.7 }}>
-                <Link href="/shop" className="inline-flex items-center gap-3 px-8 py-3.5 bg-primary text-primary-foreground text-sm font-medium letter-wide uppercase transition-smooth hover:opacity-90">
-                  {slide.cta} <ArrowRight size={16} />
+                <Link href={slide.ctaLink} className="inline-flex items-center gap-3 px-8 py-3.5 bg-primary text-primary-foreground text-sm font-medium letter-wide uppercase transition-smooth hover:opacity-90">
+                  {slide.ctaText} <ArrowRight size={16} />
                 </Link>
               </motion.div>
             </motion.div>
@@ -465,6 +485,7 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+      )}
 
       {/* Active Campaigns */}
       <CampaignCards />
@@ -473,21 +494,22 @@ export default function HomePage() {
       <NewArrivalsSection />
 
       {/* Categories */}
+      {categoryTiles.length > 0 && (
       <section className="py-20 lg:py-32">
         <div className="container mx-auto px-6 lg:px-12">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-            <p className="text-xs font-body font-medium letter-wider uppercase text-muted-foreground mb-3">Collections</p>
-            <h2 className="font-heading text-3xl lg:text-4xl">Shop by Category</h2>
+            <p className="text-xs font-body font-medium letter-wider uppercase text-muted-foreground mb-3">{homepage?.categoriesSection.eyebrow}</p>
+            <h2 className="font-heading text-3xl lg:text-4xl">{homepage?.categoriesSection.title}</h2>
           </motion.div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            {categoryData.map((cat, i) => (
+            {categoryTiles.map((cat, i) => (
               <motion.div key={cat.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
-                <Link href={`/shop?category=${cat.id}`} className="group block relative aspect-[3/4] overflow-hidden">
-                  <img src={categoryImages[cat.id]} alt={cat.name} className="w-full h-full object-cover transition-smooth group-hover:scale-105" loading="lazy" />
+                <Link href={cat.link} className="group block relative aspect-[3/4] overflow-hidden">
+                  <img src={cat.imageUrl} alt={cat.name} className="w-full h-full object-cover transition-smooth group-hover:scale-105" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-5">
                     <h3 className="font-heading text-lg text-background">{cat.name}</h3>
-                    <p className="text-xs text-background/70 mt-1">{cat.desc}</p>
+                    <p className="text-xs text-background/70 mt-1">{cat.description}</p>
                   </div>
                 </Link>
               </motion.div>
@@ -495,6 +517,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Top Selling */}
       <TopSellingSection />
@@ -543,40 +566,51 @@ export default function HomePage() {
       )}
 
       {/* Story banner */}
+      {homepage?.storySection && (
       <section className="py-20 lg:py-32">
         <div className="container mx-auto px-6 lg:px-12">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center max-w-2xl mx-auto">
-            <p className="text-xs font-body font-medium letter-wider uppercase text-muted-foreground mb-4">Our Philosophy</p>
-            <h2 className="font-heading text-3xl lg:text-4xl italic mb-6">"Where tradition meets contemporary craft"</h2>
+            <p className="text-xs font-body font-medium letter-wider uppercase text-muted-foreground mb-4">{homepage.storySection.eyebrow}</p>
+            <h2 className="font-heading text-3xl lg:text-4xl italic mb-6">{homepage.storySection.title}</h2>
             <p className="text-sm text-muted-foreground leading-relaxed mb-8">
-              Every piece in our collection is crafted with intention — premium fabrics, thoughtful construction, and timeless design that transcends seasons.
+              {homepage.storySection.description}
             </p>
-            <Link href="/shop" className="inline-flex items-center gap-2 text-sm font-medium text-foreground underline underline-offset-4 transition-smooth hover-gold">
-              Discover Our Story <ArrowRight size={14} />
+            <Link href={homepage.storySection.ctaLink} className="inline-flex items-center gap-2 text-sm font-medium text-foreground underline underline-offset-4 transition-smooth hover-gold">
+              {homepage.storySection.ctaText} <ArrowRight size={14} />
             </Link>
           </motion.div>
         </div>
       </section>
+      )}
 
       {/* Newsletter */}
+      {homepage?.newsletterSection && (
       <section className="py-20 lg:py-24 bg-foreground">
         <div className="container mx-auto px-6 lg:px-12 text-center">
-          <h2 className="font-heading text-2xl lg:text-3xl text-background mb-3">Join the Inner Circle</h2>
+          <h2 className="font-heading text-2xl lg:text-3xl text-background mb-3">{homepage.newsletterSection.title}</h2>
           <p className="text-sm text-background/60 mb-8 max-w-md mx-auto">
-            Be the first to access new collections, exclusive offers, and styling insights.
+            {homepage.newsletterSection.description}
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+          <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
             <input
               type="email"
-              placeholder="Your email address"
+              value={newsletterEmail}
+              onChange={(event) => setNewsletterEmail(event.target.value)}
+              placeholder={homepage.newsletterSection.placeholder}
+              required
               className="flex-1 px-5 py-3 bg-background/10 border border-background/20 text-background placeholder:text-background/40 text-sm focus:outline-none focus:border-primary"
             />
-            <button className="px-8 py-3 bg-primary text-primary-foreground text-sm font-medium letter-wide uppercase transition-smooth hover:opacity-90">
-              Subscribe
+            <button
+              type="submit"
+              disabled={isSubscribing}
+              className="px-8 py-3 bg-primary text-primary-foreground text-sm font-medium letter-wide uppercase transition-smooth hover:opacity-90 disabled:opacity-60"
+            >
+              {isSubscribing ? 'Subscribing…' : homepage.newsletterSection.buttonText}
             </button>
-          </div>
+          </form>
         </div>
       </section>
+      )}
     </main>
   );
 }

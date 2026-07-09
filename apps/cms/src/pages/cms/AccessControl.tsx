@@ -14,6 +14,7 @@ import {
   MessageSquare,
   Shield,
   Settings,
+  Home,
   RotateCcw,
   Loader2,
 } from 'lucide-react';
@@ -29,6 +30,7 @@ const sectionMeta: Record<Section, { label: string; icon: React.ElementType }> =
   discounts: { label: 'Discounts', icon: Percent },
   campaigns: { label: 'Campaigns', icon: Megaphone },
   popup: { label: 'Welcome Popup', icon: MessageSquare },
+  homepage: { label: 'Homepage', icon: Home },
   team: { label: 'Team', icon: Users },
   settings: { label: 'Settings', icon: Settings },
   'access-control': { label: 'Access Control', icon: Shield },

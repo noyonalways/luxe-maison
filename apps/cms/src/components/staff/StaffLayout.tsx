@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate, Outlet } from '@tanstack/react-router';
-import { LayoutDashboard, Package, ShoppingCart, BarChart3, ArrowLeft, Mail, Percent, Megaphone, Users, MessageSquare, ChevronDown, Shield, ShieldAlert, Settings, PanelLeftClose, PanelLeft, LogOut, Loader2 } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, BarChart3, ArrowLeft, Mail, Percent, Megaphone, Users, MessageSquare, ChevronDown, Shield, ShieldAlert, Settings, PanelLeftClose, PanelLeft, LogOut, Loader2, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRole, pathToSection, type StaffRole } from '@/contexts/role-context';
 import { useAuth, isStaffRole } from '@/contexts/auth-context';
@@ -28,6 +28,7 @@ const sectionLinks = [
   { path: 'discounts', icon: Percent, label: 'Discounts', section: 'discounts' as const },
   { path: 'campaigns', icon: Megaphone, label: 'Campaigns', section: 'campaigns' as const },
   { path: 'popup', icon: MessageSquare, label: 'Welcome Popup', section: 'popup' as const },
+  { path: 'homepage', icon: Home, label: 'Homepage', section: 'homepage' as const },
   { path: 'team', icon: Users, label: 'Team', section: 'team' as const },
   { path: 'access-control', icon: Shield, label: 'Access Control', section: 'access-control' as const },
 ];

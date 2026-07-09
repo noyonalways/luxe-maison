@@ -13,6 +13,8 @@ export {
   defaultPopups,
 } from './seed.js';
 
+export { defaultHomepageContent } from './homepage.seed.js';
+
 export {
   products,
   sections,

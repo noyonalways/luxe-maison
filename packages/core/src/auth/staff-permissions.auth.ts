@@ -12,6 +12,7 @@ export type CmsSection =
   | 'discounts'
   | 'campaigns'
   | 'popup'
+  | 'homepage'
   | 'access-control'
   | 'team'
   | 'settings';
@@ -62,6 +63,7 @@ const ADMIN_PERMISSIONS: Record<CmsSection, Permission> = {
   discounts: 'full',
   campaigns: 'full',
   popup: 'full',
+  homepage: 'full',
   'access-control': 'full',
   team: 'full',
   settings: 'full',
@@ -78,6 +80,7 @@ export const DEFAULT_PERMISSIONS: EditableRolePermissions = {
     discounts: 'full',
     campaigns: 'full',
     popup: 'none',
+    homepage: 'none',
     'access-control': 'none',
     team: 'none',
     settings: 'none',
@@ -92,6 +95,7 @@ export const DEFAULT_PERMISSIONS: EditableRolePermissions = {
     discounts: 'none',
     campaigns: 'none',
     popup: 'none',
+    homepage: 'none',
     'access-control': 'none',
     team: 'none',
     settings: 'none',
@@ -108,6 +112,7 @@ export const ALL_SECTIONS: CmsSection[] = [
   'discounts',
   'campaigns',
   'popup',
+  'homepage',
   'team',
   'settings',
   'access-control',
