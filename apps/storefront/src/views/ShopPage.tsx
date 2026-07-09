@@ -7,6 +7,7 @@ import { SlidersHorizontal, X, Loader2 } from 'lucide-react';
 import type { ProductSection } from '@luxe-maison/shared';
 import { useProducts } from '@/context/ProductsContext';
 import ProductCard from '@/components/ProductCard';
+import { PageBody, PageCenter, PageHero, PageMain } from '@/components/layout/PageShell';
 
 const fits = ['slim', 'regular', 'relaxed'] as const;
 const fabrics = ['silk', 'cotton', 'linen', 'blend'] as const;
@@ -116,12 +117,30 @@ export default function ShopPage({ defaultSection }: ShopPageProps = {}) {
 
   if (isLoading) {
     return (
-      <main className="pt-20 lg:pt-24 min-h-screen flex items-center justify-center text-muted-foreground gap-2">
-        <Loader2 size={20} className="animate-spin" />
-        <span className="text-sm">Loading collection…</span>
-      </main>
+      <PageCenter>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 size={20} className="animate-spin" />
+          <span className="text-sm">Loading collection…</span>
+        </div>
+      </PageCenter>
     );
   }
+
+  const shopTitle = activeBadge
+    ? activeBadge === 'New Arrival'
+      ? 'New Arrivals'
+      : activeBadge
+    : activeSort === 'popular'
+      ? 'Top Selling'
+      : activeSection
+        ? `${sections.find((section) => section.id === activeSection)?.name || 'Shop'}${
+            activeCategory
+              ? ` — ${categories.find((category) => category.id === activeCategory)?.name || ''}`
+              : ''
+          }`
+        : activeCategory
+          ? categories.find((category) => category.id === activeCategory)?.name || 'Shop'
+          : 'All Collections';
 
   const hasFilters =
     activeSection || activeCategory || activeBadge || activeFit || activeFabric || activePrice;
@@ -157,35 +176,14 @@ export default function ShopPage({ defaultSection }: ShopPageProps = {}) {
   );
 
   return (
-    <main className="pt-20 lg:pt-24 min-h-screen">
-      <div className="container mx-auto px-6 lg:px-12 py-8 lg:py-16">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-10"
-        >
-          <h1 className="font-heading text-3xl lg:text-4xl mb-2">
-            {activeBadge
-              ? activeBadge === 'New Arrival'
-                ? 'New Arrivals'
-                : activeBadge
-              : activeSort === 'popular'
-                ? 'Top Selling'
-                : activeSection
-                  ? `${sections.find((section) => section.id === activeSection)?.name || 'Shop'}${
-                      activeCategory
-                        ? ` — ${categories.find((category) => category.id === activeCategory)?.name || ''}`
-                        : ''
-                    }`
-                  : activeCategory
-                    ? categories.find((category) => category.id === activeCategory)?.name || 'Shop'
-                    : 'All Collections'}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {filtered.length} {filtered.length === 1 ? 'piece' : 'pieces'}
-          </p>
-        </motion.div>
+    <PageMain>
+      <PageHero
+        eyebrow="Shop"
+        title={shopTitle}
+        description={`${filtered.length} ${filtered.length === 1 ? 'piece' : 'pieces'}`}
+      />
 
+      <PageBody className="py-8 lg:py-12">
         <div className="flex items-center justify-between mb-6 lg:mb-10">
           <button
             onClick={() => setShowFilters(!showFilters)}
@@ -321,7 +319,7 @@ export default function ShopPage({ defaultSection }: ShopPageProps = {}) {
             )}
           </>
         )}
-      </div>
-    </main>
+      </PageBody>
+    </PageMain>
   );
 }

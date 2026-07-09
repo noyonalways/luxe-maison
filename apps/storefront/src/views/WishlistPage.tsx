@@ -6,6 +6,7 @@ import { Heart, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/context/CartContext';
 import type { Product } from '@/data/products';
+import { PageBody, PageCenter, PageHero, PageMain } from '@/components/layout/PageShell';
 
 export default function WishlistPage() {
   const { items, removeItem } = useWishlist();
@@ -17,39 +18,37 @@ export default function WishlistPage() {
 
   if (items.length === 0) {
     return (
-      <main className="pt-20 lg:pt-24 min-h-screen flex items-center justify-center">
+      <PageCenter>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center px-6">
           <Heart size={48} className="mx-auto mb-6 text-muted-foreground/30" />
-          <h1 className="font-heading text-2xl mb-3">Your Wishlist is Empty</h1>
+          <h1 className="font-heading text-2xl lg:text-3xl mb-3">Your wishlist is empty</h1>
           <p className="text-sm text-muted-foreground mb-8">Save pieces you love for later.</p>
           <Link
             href="/shop"
             className="inline-flex items-center gap-2 px-8 py-3 bg-primary text-primary-foreground text-sm font-medium letter-wide uppercase transition-smooth hover:opacity-90"
           >
-            Explore Collection <ArrowRight size={14} />
+            Explore collection <ArrowRight size={14} />
           </Link>
         </motion.div>
-      </main>
+      </PageCenter>
     );
   }
 
   return (
-    <main className="pt-20 lg:pt-24 min-h-screen">
-      <div className="container mx-auto px-6 lg:px-12 py-8 lg:py-16">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="font-heading text-3xl lg:text-4xl mb-2">Wishlist</h1>
-          <p className="text-sm text-muted-foreground mb-10">
-            {items.length} saved {items.length === 1 ? 'piece' : 'pieces'}
-          </p>
-        </motion.div>
+    <PageMain>
+      <PageHero
+        eyebrow="Saved pieces"
+        title="Wishlist"
+        description={`${items.length} saved ${items.length === 1 ? 'piece' : 'pieces'}`}
+      />
 
+      <PageBody className="py-10 lg:py-14">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {items.map((product, i) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
               transition={{ delay: i * 0.05 }}
             >
               <div className="group">
@@ -86,7 +85,7 @@ export default function WishlistPage() {
                     onClick={() => handleAddToCart(product)}
                     className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:bg-foreground hover:text-background"
                   >
-                    <ShoppingBag size={13} /> Add to Bag
+                    <ShoppingBag size={13} /> Add to bag
                   </button>
                   <button
                     onClick={() => removeItem(product.id)}
@@ -100,7 +99,7 @@ export default function WishlistPage() {
             </motion.div>
           ))}
         </div>
-      </div>
-    </main>
+      </PageBody>
+    </PageMain>
   );
 }

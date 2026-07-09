@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Eye, EyeOff, UserCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ForgotPasswordFlow from '@/components/auth/ForgotPasswordFlow';
+import { PageCenter } from '@/components/layout/PageShell';
 
 export default function CustomerLogin() {
   const router = useRouter();
@@ -68,7 +69,7 @@ export default function CustomerLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-secondary px-4">
+    <PageCenter>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -192,6 +193,6 @@ export default function CustomerLogin() {
           </AnimatePresence>
         </div>
       </motion.div>
-    </div>
+    </PageCenter>
   );
 }

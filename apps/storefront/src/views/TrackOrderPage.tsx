@@ -1,222 +1,326 @@
 "use client";
 
-import { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Search, Package, Truck, AlertCircle, Loader2 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import OrderTimeline from '@/components/account/OrderTimeline';
-import type { Order, OrderStatus } from '@luxe-maison/shared';
+import {
+  AlertCircle,
+  ArrowRight,
+  Loader2,
+  Mail,
+  Package,
+  Search,
+  UserCircle,
+} from 'lucide-react';
+import type { Order } from '@luxe-maison/shared';
+import { useAuth } from '@/context/AuthContext';
+import { useCustomer } from '@/context/CustomerContext';
 import { ordersApi } from '@/lib/api/orders.api';
 import { ApiError } from '@/lib/api/client';
+import OrderDetailView from '@/components/account/OrderDetailView';
+import OrderStatusBadge from '@/components/account/OrderStatusBadge';
+import { formatCurrency } from '@/components/account/account-utils';
+import { PageBody, PageHero, PageMain } from '@/components/layout/PageShell';
 
-const statusColor: Record<OrderStatus, string> = {
-  pending: 'bg-yellow-500/15 text-yellow-700 border-yellow-200',
-  processing: 'bg-blue-500/15 text-blue-700 border-blue-200',
-  shipped: 'bg-purple-500/15 text-purple-700 border-purple-200',
-  delivered: 'bg-green-500/15 text-green-700 border-green-200',
-  returned: 'bg-destructive/15 text-destructive border-destructive/20',
-};
+function TrackField({
+  label,
+  value,
+  onChange,
+  type = 'text',
+  placeholder,
+  icon: Icon,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: string;
+  placeholder?: string;
+  icon?: typeof Package;
+}) {
+  return (
+    <div>
+      <label className="block text-xs font-body font-medium letter-wide uppercase text-muted-foreground mb-1.5">
+        {label}
+      </label>
+      <div className="relative">
+        {Icon && (
+          <Icon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        )}
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          required
+          className={`w-full py-3 border border-border text-sm bg-background transition-smooth focus:outline-none focus:border-foreground ${
+            Icon ? 'pl-11 pr-4' : 'px-4'
+          }`}
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function TrackOrderPage() {
+  const searchParams = useSearchParams();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { orders: myOrders, isLoadingOrders } = useCustomer();
+
   const [orderId, setOrderId] = useState('');
   const [email, setEmail] = useState('');
   const [result, setResult] = useState<Order | null>(null);
   const [error, setError] = useState('');
-  const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
-  const handleTrack = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const trackOrder = useCallback(async (id: string, address: string) => {
+    const trimmedId = id.trim();
+    const trimmedEmail = address.trim();
+
+    if (!trimmedId || !trimmedEmail) {
+      setError('Please enter both your order ID and email address.');
+      return;
+    }
+
+    setLoading(true);
     setError('');
     setResult(null);
-    setSearched(true);
-    setLoading(true);
 
     try {
-      const order = await ordersApi.track(orderId.trim(), email.trim());
+      if (isAuthenticated && user?.email.toLowerCase() === trimmedEmail.toLowerCase()) {
+        const owned = myOrders.find(
+          (order) => order.id.toLowerCase() === trimmedId.toLowerCase(),
+        );
+        if (owned) {
+          setResult(owned);
+          setLoading(false);
+          return;
+        }
+      }
+
+      const order = await ordersApi.track(trimmedId, trimmedEmail);
       setResult(order);
     } catch (err) {
       setError(
         err instanceof ApiError
           ? err.message
-          : 'No order found. Please check your Order ID and email address.',
+          : 'No order found. Please check your order ID and email address.',
       );
     } finally {
       setLoading(false);
     }
+  }, [isAuthenticated, user?.email, myOrders]);
+
+  useEffect(() => {
+    if (user?.email && !email) {
+      setEmail(user.email);
+    }
+  }, [user?.email, email]);
+
+  useEffect(() => {
+    if (initialized) return;
+
+    const paramOrderId = searchParams.get('orderId') ?? searchParams.get('order');
+    const paramEmail = searchParams.get('email');
+
+    if (paramOrderId) setOrderId(paramOrderId);
+    if (paramEmail) setEmail(paramEmail);
+
+    const emailToUse = paramEmail ?? user?.email;
+
+    if (paramOrderId && emailToUse) {
+      void trackOrder(paramOrderId, emailToUse);
+      setInitialized(true);
+      return;
+    }
+
+    if (paramOrderId && !emailToUse && authLoading) {
+      return;
+    }
+
+    setInitialized(true);
+  }, [initialized, searchParams, user?.email, authLoading, trackOrder]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    void trackOrder(orderId, email);
   };
 
-  return (
-    <main className="min-h-screen pt-24 pb-16">
-      <div className="container mx-auto px-6 lg:px-12 max-w-2xl">
-        <div className="text-center mb-10">
-          <h1 className="font-heading text-3xl font-semibold mb-2">Track Your Order</h1>
-          <p className="text-muted-foreground text-sm">
-            Enter your order ID and email to check the status of your order.
-          </p>
-        </div>
+  const handleQuickTrack = (order: Order) => {
+    setOrderId(order.id);
+    setEmail(order.customerEmail);
+    setResult(order);
+    setError('');
+  };
 
-        <Card className="p-6 mb-8">
-          <form onSubmit={handleTrack} className="space-y-4">
-            <div>
-              <Label htmlFor="orderId">Order ID</Label>
-              <Input
-                id="orderId"
-                placeholder="e.g. ORD-1001"
-                value={orderId}
-                onChange={(e) => setOrderId(e.target.value)}
-                className="mt-1.5"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Email used for the order"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1.5"
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+  const handleBackToSearch = () => {
+    setResult(null);
+    setError('');
+  };
+
+  if (result) {
+    return (
+      <PageMain className="bg-cream/30">
+        <PageBody offset wide>
+          <OrderDetailView
+            order={result}
+            onBack={handleBackToSearch}
+            backLabel="Track another order"
+          />
+        </PageBody>
+      </PageMain>
+    );
+  }
+
+  return (
+    <PageMain>
+      <PageHero
+        align="center"
+        eyebrow="Order tracking"
+        title="Track your order"
+        description="Enter the order ID from your confirmation email along with the email used at checkout."
+      />
+
+      <PageBody narrow className="py-10 lg:py-12">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <TrackField
+              label="Order ID"
+              value={orderId}
+              onChange={setOrderId}
+              placeholder="e.g. ORD-1006"
+              icon={Package}
+            />
+            <TrackField
+              label="Email address"
+              value={email}
+              onChange={setEmail}
+              type="email"
+              placeholder="you@example.com"
+              icon={Mail}
+            />
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 bg-primary text-primary-foreground text-sm font-medium letter-wide uppercase transition-smooth hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
+            >
               {loading ? (
                 <>
-                  <Loader2 size={16} className="mr-2 animate-spin" /> Tracking...
+                  <Loader2 size={16} className="animate-spin" />
+                  Looking up your order…
                 </>
               ) : (
                 <>
-                  <Search size={16} className="mr-2" /> Track Order
+                  <Search size={16} />
+                  Track order
                 </>
               )}
-            </Button>
+            </button>
           </form>
-        </Card>
+
+          {isAuthenticated && (
+            <p className="mt-4 text-xs text-muted-foreground text-center">
+              Signed in as {user?.email}. Your email has been pre-filled.
+            </p>
+          )}
 
         <AnimatePresence mode="wait">
-          {error && searched && (
+          {error && (
             <motion.div
               key="error"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="flex items-center gap-3 p-4 rounded-lg border border-destructive/20 bg-destructive/5 text-sm text-destructive"
+              className="flex items-start gap-3 p-5 border border-destructive/20 bg-destructive/5 text-sm text-destructive mb-8"
             >
-              <AlertCircle size={18} />
-              {error}
-            </motion.div>
-          )}
-
-          {result && (
-            <motion.div
-              key="result"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="space-y-6"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="font-heading text-xl font-semibold">{result.id}</h2>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    Placed {format(new Date(result.createdAt), 'MMM d, yyyy · h:mm a')}
-                  </p>
-                </div>
-                <Badge className={statusColor[result.status]} variant="outline">
-                  {result.status}
-                </Badge>
+              <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium">We couldn&apos;t find that order</p>
+                <p className="mt-1 opacity-90">{error}</p>
               </div>
-
-              <Card className="p-6">
-                <h3 className="text-sm font-medium mb-4">Order Status</h3>
-                <OrderTimeline status={result.status} />
-                {result.trackingNumber && (
-                  <div className="mt-4 pt-4 border-t border-border flex items-center gap-2 text-sm text-muted-foreground">
-                    <Truck size={14} />
-                    <span>
-                      {result.carrier} — {result.trackingNumber}
-                    </span>
-                  </div>
-                )}
-              </Card>
-
-              <Card className="p-6">
-                <h3 className="text-sm font-medium mb-4">Items ({result.items.length})</h3>
-                <div className="space-y-4">
-                  {result.items.map((item, i) => (
-                    <div key={i} className="flex gap-4">
-                      <img
-                        src={item.image}
-                        alt={item.productName}
-                        className="w-16 h-20 object-cover rounded-md bg-muted"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">{item.productName}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {item.color} · {item.size} · Qty {item.quantity}
-                        </p>
-                      </div>
-                      <p className="text-sm font-medium">
-                        ${(item.price * item.quantity).toFixed(2)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-
-              <Card className="p-6">
-                <h3 className="text-sm font-medium mb-4">Order Summary</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Subtotal</span>
-                    <span>${result.subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Shipping</span>
-                    <span>{result.shipping === 0 ? 'Free' : `$${result.shipping.toFixed(2)}`}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Tax</span>
-                    <span>${result.tax.toFixed(2)}</span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between font-semibold text-base">
-                    <span>Total</span>
-                    <span>${result.total.toFixed(2)}</span>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-6">
-                <h3 className="text-sm font-medium mb-3">Shipping Address</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {result.shippingAddress}
-                </p>
-              </Card>
-            </motion.div>
-          )}
-
-          {!result && !error && searched && !loading && (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-12"
-            >
-              <Package size={40} className="mx-auto text-muted-foreground/40 mb-4" />
-              <p className="text-muted-foreground">Enter your details above to track an order</p>
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
-    </main>
+
+        {isAuthenticated && (
+          <section className="mb-8">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <UserCircle size={18} className="text-gold" />
+                <h2 className="font-heading text-xl">Your recent orders</h2>
+              </div>
+              <Link
+                href="/account"
+                className="text-xs font-medium text-muted-foreground transition-smooth hover-gold inline-flex items-center gap-1"
+              >
+                View account <ArrowRight size={14} />
+              </Link>
+            </div>
+
+            {isLoadingOrders ? (
+              <div className="flex items-center justify-center py-10 text-muted-foreground gap-2">
+                <Loader2 size={16} className="animate-spin" />
+                <span className="text-sm">Loading your orders…</span>
+              </div>
+            ) : myOrders.length === 0 ? (
+              <div className="border border-border px-6 py-10 text-center text-sm text-muted-foreground">
+                You don&apos;t have any orders yet.{' '}
+                <Link href="/shop" className="text-foreground underline underline-offset-4 hover:text-gold">
+                  Start shopping
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {myOrders.slice(0, 5).map((order) => (
+                  <button
+                    key={order.id}
+                    type="button"
+                    onClick={() => handleQuickTrack(order)}
+                    className="w-full text-left border border-border p-4 transition-smooth hover:border-foreground group"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-3 mb-1">
+                          <span className="text-sm font-medium">{order.id}</span>
+                          <OrderStatusBadge status={order.status} />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(order.createdAt), 'MMMM d, yyyy')}
+                          <span className="mx-2">·</span>
+                          {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3 sm:flex-col sm:items-end">
+                        <span className="font-heading text-lg">{formatCurrency(order.total)}</span>
+                        <span className="text-xs text-muted-foreground transition-smooth group-hover:text-gold">
+                          Track this order
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        <section className="border border-border bg-cream/40 p-6">
+          <h3 className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-3">
+            Need help?
+          </h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Your order ID appears in your confirmation email and on your receipt. Tracking updates
+            when your order is processed and shipped. For account holders, you can also manage orders
+            from{' '}
+            <Link href="/account" className="text-foreground underline underline-offset-4 hover:text-gold">
+              My Account
+            </Link>
+            .
+          </p>
+        </section>
+      </PageBody>
+    </PageMain>
   );
 }

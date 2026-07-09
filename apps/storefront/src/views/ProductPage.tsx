@@ -12,6 +12,7 @@ import { useReviewsForProduct } from '@/context/ReviewsContext';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import ProductCard from '@/components/ProductCard';
 import ReviewsSection from '@/components/product/ReviewsSection';
+import { PageBody, PageCenter, PageMain } from '@/components/layout/PageShell';
 
 export default function ProductPage({ id }: { id: string }) {
   const { getRelatedProducts } = useProducts();
@@ -36,23 +37,25 @@ export default function ProductPage({ id }: { id: string }) {
 
   if (isLoading) {
     return (
-      <main className="pt-20 min-h-screen flex items-center justify-center text-muted-foreground gap-2">
-        <Loader2 size={20} className="animate-spin" />
-        <span className="text-sm">Loading product…</span>
-      </main>
+      <PageCenter>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 size={20} className="animate-spin" />
+          <span className="text-sm">Loading product…</span>
+        </div>
+      </PageCenter>
     );
   }
 
   if (isError || !product) {
     return (
-      <main className="pt-20 min-h-screen flex items-center justify-center">
+      <PageCenter>
         <div className="text-center">
           <h1 className="font-heading text-2xl mb-4">Product Not Found</h1>
           <Link href="/shop" className="text-sm text-gold underline underline-offset-4">
             Back to Shop
           </Link>
         </div>
-      </main>
+      </PageCenter>
     );
   }
 
@@ -70,8 +73,8 @@ export default function ProductPage({ id }: { id: string }) {
   };
 
   return (
-    <main className="pt-20 lg:pt-24 min-h-screen">
-      <div className="container mx-auto px-6 lg:px-12 py-8">
+    <PageMain className="bg-cream/30">
+      <PageBody offset className="py-8">
         <Link
           href="/shop"
           className="inline-flex items-center gap-2 text-xs text-muted-foreground transition-smooth hover-gold mb-8"
@@ -241,7 +244,7 @@ export default function ProductPage({ id }: { id: string }) {
             </div>
           </section>
         )}
-      </div>
-    </main>
+      </PageBody>
+    </PageMain>
   );
 }

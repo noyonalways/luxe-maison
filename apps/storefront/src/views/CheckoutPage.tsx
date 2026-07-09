@@ -14,6 +14,7 @@ import { paymentsApi } from '@/lib/api/payments.api';
 import { discountsApi } from '@/lib/api/discounts.api';
 import { ApiError } from '@/lib/api/client';
 import { StripePaymentSection, type StripeCheckoutRef } from '@/components/checkout/StripePaymentSection';
+import { PageBody, PageCenter, PageHero, PageMain } from '@/components/layout/PageShell';
 
 const shippingSchema = z.object({
   firstName: z.string().trim().min(1, 'First name is required').max(50, 'Max 50 characters'),
@@ -172,21 +173,23 @@ export default function CheckoutPage() {
 
   if (totalItems === 0 && !orderPlaced) {
     return (
-      <main className="pt-20 min-h-screen flex items-center justify-center">
+      <PageCenter>
         <div className="text-center">
           <h1 className="font-heading text-2xl mb-4">Your bag is empty</h1>
-          <Link href="/shop" className="text-sm text-gold underline underline-offset-4">Continue Shopping</Link>
+          <Link href="/shop" className="text-sm text-gold underline underline-offset-4">
+            Continue Shopping
+          </Link>
         </div>
-      </main>
+      </PageCenter>
     );
   }
 
   if (orderPlaced) {
     return (
-      <main className="pt-20 min-h-screen pb-16">
-        <div className="container mx-auto px-6 lg:px-12 py-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto">
-            <div ref={receiptRef} className="border border-border p-8 lg:p-10">
+      <PageMain className="bg-cream/30">
+        <PageBody offset narrow className="py-8 lg:py-12">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <div ref={receiptRef} className="border border-border p-8 lg:p-10 bg-background">
               <div className="text-center mb-8">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
                   <Check size={28} className="text-gold" />
@@ -283,6 +286,12 @@ export default function CheckoutPage() {
                 <Printer size={14} /> Print Receipt
               </button>
               <Link
+                href={`/track-order?orderId=${encodeURIComponent(orderNumber)}&email=${encodeURIComponent(shipping.email)}`}
+                className="flex-1 py-3 border border-foreground text-sm font-medium letter-wide uppercase transition-smooth hover:bg-foreground hover:text-background text-center"
+              >
+                Track Order
+              </Link>
+              <Link
                 href="/shop"
                 className="flex-1 py-3 bg-primary text-primary-foreground text-sm font-medium letter-wide uppercase transition-smooth hover:opacity-90 text-center"
               >
@@ -290,8 +299,8 @@ export default function CheckoutPage() {
               </Link>
             </div>
           </motion.div>
-        </div>
-      </main>
+        </PageBody>
+      </PageMain>
     );
   }
 
@@ -395,13 +404,13 @@ export default function CheckoutPage() {
   );
 
   return (
-    <main className="pt-20 lg:pt-24 min-h-screen pb-16">
-      <div className="container mx-auto px-6 lg:px-12 py-8">
+    <PageMain>
+      <PageHero title="Checkout" description="Complete your order below." />
+
+      <PageBody className="py-8 lg:py-10">
         <Link href="/shop" className="inline-flex items-center gap-2 text-xs text-muted-foreground transition-smooth hover-gold mb-8">
           <ArrowLeft size={14} /> Back to Shop
         </Link>
-
-        <h1 className="font-heading text-3xl lg:text-4xl mb-10">Checkout</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
           <div className="lg:col-span-7 space-y-10">
@@ -616,7 +625,7 @@ export default function CheckoutPage() {
             </div>
           </div>
         </div>
-      </div>
-    </main>
+      </PageBody>
+    </PageMain>
   );
 }
