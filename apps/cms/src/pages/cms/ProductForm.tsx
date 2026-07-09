@@ -157,39 +157,58 @@ export default function ProductForm() {
     );
   }
 
-  const presetSizes = PRESET_SIZES[form.category] || PRESET_SIZES.shirt;
+  const presetSizes = PRESET_SIZES[form.category] ?? PRESET_SIZES.shirt;
 
   return (
-    <div className="max-w-4xl">
+    <div className="w-full">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <button onClick={() => navigate(productsRoute)} className="p-2 text-muted-foreground transition-smooth hover-gold">
-          <ArrowLeft size={18} />
-        </button>
-        <div className="flex-1">
-          <h1 className="font-heading text-2xl lg:text-3xl">{isEdit ? 'Edit Product' : 'Add Product'}</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">{isEdit ? `Editing ${form.name || 'product'}` : 'Fill in the details to create a new product'}</p>
-        </div>
-        <div className="flex gap-3">
-          {isEdit && (
-            <button onClick={() => setShowDeleteConfirm(true)}
-              className="px-4 py-2.5 border border-destructive/30 text-destructive text-xs font-medium letter-wide uppercase transition-smooth hover:bg-destructive hover:text-destructive-foreground flex items-center gap-1.5">
-              <Trash2 size={13} /> Delete
+      <div className="sticky top-0 z-20 -mx-6 lg:-mx-8 px-6 lg:px-8 py-4 mb-6 bg-secondary/95 backdrop-blur border-b border-border">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-3 min-w-0">
+            <button
+              onClick={() => navigate(productsRoute)}
+              className="mt-0.5 p-2 text-muted-foreground transition-smooth hover-gold shrink-0"
+            >
+              <ArrowLeft size={18} />
             </button>
-          )}
-          <button onClick={() => navigate(productsRoute)} className="px-5 py-2.5 border border-border text-xs font-medium letter-wide uppercase transition-smooth hover:border-foreground">
-            Cancel
-          </button>
-          <button onClick={handleSave} disabled={!form.name.trim() || isSaving}
-            className="px-5 py-2.5 bg-primary text-primary-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:opacity-90 disabled:opacity-50">
-            {isEdit ? 'Save Changes' : 'Create Product'}
-          </button>
+            <div className="min-w-0">
+              <h1 className="font-heading text-2xl lg:text-3xl truncate">
+                {isEdit ? 'Edit Product' : 'Add Product'}
+              </h1>
+              <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                {isEdit ? `Editing ${form.name || 'product'}` : 'Fill in the details to create a new product'}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 lg:gap-3 shrink-0">
+            {isEdit && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="px-4 py-2.5 border border-destructive/30 text-destructive text-xs font-medium letter-wide uppercase transition-smooth hover:bg-destructive hover:text-destructive-foreground flex items-center gap-1.5"
+              >
+                <Trash2 size={13} /> Delete
+              </button>
+            )}
+            <button
+              onClick={() => navigate(productsRoute)}
+              className="px-5 py-2.5 border border-border text-xs font-medium letter-wide uppercase transition-smooth hover:border-foreground"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={!form.name.trim() || isSaving}
+              className="px-5 py-2.5 bg-primary text-primary-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:opacity-90 disabled:opacity-50"
+            >
+              {isEdit ? 'Save Changes' : 'Create Product'}
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 xl:gap-8">
         {/* Main column */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="xl:col-span-8 space-y-6">
           {/* Basic Info */}
           <Section title="Basic Information">
             <Field label="Product Name" value={form.name} onChange={v => set('name', v)} placeholder="e.g. Royal Silk Punjabi" />
@@ -203,7 +222,7 @@ export default function ProductForm() {
           {/* Images */}
           <Section title="Images">
             {form.images.length > 0 && (
-              <div className="grid grid-cols-4 gap-3 mb-4">
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3 mb-4">
                 {form.images.map((img, i) => (
                   <div key={i} className="relative group aspect-square bg-secondary rounded overflow-hidden">
                     <img src={img} alt="" className="w-full h-full object-cover" />
@@ -320,10 +339,18 @@ export default function ProductForm() {
               </button>
             </div>
           </Section>
+
+          {/* SEO — main column on wide layouts */}
+          <Section title="SEO">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="SEO Title" value={form.seoTitle} onChange={v => set('seoTitle', v)} placeholder="Auto-generated if blank" />
+              <Field label="SEO Description" value={form.seoDescription} onChange={v => set('seoDescription', v)} multiline placeholder="Auto-generated if blank" />
+            </div>
+          </Section>
         </div>
 
         {/* Sidebar column */}
-        <div className="space-y-6">
+        <div className="xl:col-span-4 space-y-6 xl:sticky xl:top-28 xl:self-start">
           {/* Status & Visibility */}
           <Section title="Status">
             <div>
@@ -346,6 +373,15 @@ export default function ProductForm() {
           {/* Organization */}
           <Section title="Organization">
             <div>
+              <label className="block text-xs font-body font-medium letter-wide uppercase text-muted-foreground mb-1.5">Collection</label>
+              <select value={form.section} onChange={e => set('section', e.target.value as AdminProduct['section'])}
+                className="w-full px-3 py-2.5 border border-border text-sm bg-background focus:outline-none focus:border-foreground">
+                <option value="men">Men</option>
+                <option value="women">Women</option>
+                <option value="kids">Kids</option>
+              </select>
+            </div>
+            <div className="mt-4">
               <label className="block text-xs font-body font-medium letter-wide uppercase text-muted-foreground mb-1.5">Category</label>
               <select value={form.category} onChange={e => set('category', e.target.value as AdminProduct['category'])}
                 className="w-full px-3 py-2.5 border border-border text-sm bg-background focus:outline-none focus:border-foreground">
@@ -421,23 +457,15 @@ export default function ProductForm() {
               </button>
             </div>
           </Section>
-
-          {/* SEO */}
-          <Section title="SEO">
-            <Field label="SEO Title" value={form.seoTitle} onChange={v => set('seoTitle', v)} placeholder="Auto-generated if blank" />
-            <div className="mt-4">
-              <Field label="SEO Description" value={form.seoDescription} onChange={v => set('seoDescription', v)} multiline placeholder="Auto-generated if blank" />
-            </div>
-          </Section>
         </div>
       </div>
 
-      {/* Bottom save bar */}
-      <div className="sticky bottom-0 bg-background border-t border-border -mx-6 lg:-mx-8 px-6 lg:px-8 py-4 mt-8 flex justify-end gap-3">
+      {/* Bottom save bar — negate parent padding so no gap below */}
+      <div className="sticky bottom-0 z-20 bg-background/95 backdrop-blur border-t border-border -mx-6 lg:-mx-8 -mb-6 lg:-mb-8 px-6 lg:px-8 py-4 mt-8 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
         <button onClick={() => navigate(productsRoute)} className="px-5 py-2.5 border border-border text-xs font-medium letter-wide uppercase transition-smooth hover:border-foreground">
           Discard
         </button>
-        <button onClick={handleSave} disabled={!form.name.trim()}
+        <button onClick={handleSave} disabled={!form.name.trim() || isSaving}
           className="px-6 py-2.5 bg-primary text-primary-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:opacity-90 disabled:opacity-50">
           {isEdit ? 'Save Changes' : 'Create Product'}
         </button>
@@ -462,8 +490,10 @@ export default function ProductForm() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-background border border-border rounded p-5">
-      <h2 className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-4">{title}</h2>
+    <div className="bg-background border border-border rounded-lg p-5 lg:p-6 shadow-sm">
+      <h2 className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-4 pb-3 border-b border-border/60">
+        {title}
+      </h2>
       {children}
     </div>
   );

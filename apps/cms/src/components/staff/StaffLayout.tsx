@@ -250,11 +250,11 @@ export default function StaffLayout() {
   if (!hasCurrentAccess) {
     return (
       <div className="min-h-screen flex bg-secondary">
-        <aside className="w-60 bg-background border-r border-border flex flex-col flex-shrink-0 hidden lg:flex">
-          <div className="px-5 py-6 border-b border-border">
+        <aside className="w-60 bg-background border-r border-border flex flex-col flex-shrink-0 hidden lg:flex h-screen overflow-hidden">
+          <div className="px-5 py-6 border-b border-border flex-shrink-0">
             <h1 className="font-heading text-lg font-semibold">MAISON</h1>
           </div>
-          <nav className="flex-1 px-3 py-4 space-y-1">{renderNav(false)}</nav>
+          <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-1">{renderNav(false)}</nav>
         </aside>
         <main className="flex-1 flex items-center justify-center p-6">
           <motion.div
@@ -281,8 +281,8 @@ export default function StaffLayout() {
 
   return (
     <div className="min-h-screen flex bg-secondary">
-      <aside className={`${collapsed ? 'w-16' : 'w-60'} bg-background border-r border-border flex flex-col flex-shrink-0 hidden lg:flex sticky top-0 h-screen overflow-y-auto transition-all duration-300`}>
-        <div className={`${collapsed ? 'px-2' : 'px-5'} py-4 border-b border-border`}>
+      <aside className={`${collapsed ? 'w-16' : 'w-60'} bg-background border-r border-border flex flex-col flex-shrink-0 hidden lg:flex sticky top-0 h-screen overflow-hidden transition-all duration-300`}>
+        <div className={`${collapsed ? 'px-2' : 'px-5'} py-4 border-b border-border flex-shrink-0`}>
           <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
             {collapsed ? (
               <button
@@ -334,10 +334,10 @@ export default function StaffLayout() {
             </div>
           )}
         </div>
-        <nav className={`flex-1 ${collapsed ? 'px-1.5' : 'px-3'} py-4 space-y-1`}>
+        <nav className={`flex-1 min-h-0 overflow-y-auto ${collapsed ? 'px-1.5' : 'px-3'} py-4 space-y-1`}>
           {renderNav(collapsed)}
         </nav>
-        <div className={`${collapsed ? 'px-1.5' : 'px-3'} py-4 border-t border-border space-y-1`}>
+        <div className={`${collapsed ? 'px-1.5' : 'px-3'} py-4 border-t border-border space-y-1 flex-shrink-0`}>
           {hasAccess('settings') && (
             <NavLink
               item={{ path: 'settings', icon: Settings, label: 'Settings', section: 'settings' }}
