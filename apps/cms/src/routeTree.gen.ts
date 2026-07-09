@@ -23,12 +23,10 @@ import { Route as rolesManagerOrdersRouteImport } from './routes/(roles)/manager
 import { Route as rolesManagerNewsletterRouteImport } from './routes/(roles)/manager/newsletter'
 import { Route as rolesManagerDiscountsRouteImport } from './routes/(roles)/manager/discounts'
 import { Route as rolesManagerDashboardRouteImport } from './routes/(roles)/manager/dashboard'
-import { Route as rolesManagerCustomersRouteImport } from './routes/(roles)/manager/customers'
 import { Route as rolesManagerCampaignsRouteImport } from './routes/(roles)/manager/campaigns'
 import { Route as rolesManagerAnalyticsRouteImport } from './routes/(roles)/manager/analytics'
 import { Route as rolesEmployeeOrdersRouteImport } from './routes/(roles)/employee/orders'
 import { Route as rolesEmployeeDashboardRouteImport } from './routes/(roles)/employee/dashboard'
-import { Route as rolesEmployeeCustomersRouteImport } from './routes/(roles)/employee/customers'
 import { Route as rolesAdminTeamRouteImport } from './routes/(roles)/admin/team'
 import { Route as rolesAdminSettingsRouteImport } from './routes/(roles)/admin/settings'
 import { Route as rolesAdminPopupRouteImport } from './routes/(roles)/admin/popup'
@@ -37,14 +35,19 @@ import { Route as rolesAdminNewsletterRouteImport } from './routes/(roles)/admin
 import { Route as rolesAdminHomepageRouteImport } from './routes/(roles)/admin/homepage'
 import { Route as rolesAdminDiscountsRouteImport } from './routes/(roles)/admin/discounts'
 import { Route as rolesAdminDashboardRouteImport } from './routes/(roles)/admin/dashboard'
-import { Route as rolesAdminCustomersRouteImport } from './routes/(roles)/admin/customers'
 import { Route as rolesAdminCampaignsRouteImport } from './routes/(roles)/admin/campaigns'
 import { Route as rolesAdminAnalyticsRouteImport } from './routes/(roles)/admin/analytics'
 import { Route as rolesAdminAccessControlRouteImport } from './routes/(roles)/admin/access-control'
+import { Route as rolesManagerCustomersIndexRouteImport } from './routes/(roles)/manager/customers/index'
 import { Route as rolesEmployeeProductsIndexRouteImport } from './routes/(roles)/employee/products/index'
+import { Route as rolesEmployeeCustomersIndexRouteImport } from './routes/(roles)/employee/customers/index'
 import { Route as rolesAdminProductsIndexRouteImport } from './routes/(roles)/admin/products/index'
+import { Route as rolesAdminCustomersIndexRouteImport } from './routes/(roles)/admin/customers/index'
+import { Route as rolesManagerCustomersIdRouteImport } from './routes/(roles)/manager/customers/$id'
+import { Route as rolesEmployeeCustomersIdRouteImport } from './routes/(roles)/employee/customers/$id'
 import { Route as rolesAdminProductsNewRouteImport } from './routes/(roles)/admin/products/new'
 import { Route as rolesAdminPagesSlugRouteImport } from './routes/(roles)/admin/pages/$slug'
+import { Route as rolesAdminCustomersIdRouteImport } from './routes/(roles)/admin/customers/$id'
 import { Route as rolesAdminProductsIdEditRouteImport } from './routes/(roles)/admin/products/$id.edit'
 
 const authRouteRoute = authRouteRouteImport.update({
@@ -116,11 +119,6 @@ const rolesManagerDashboardRoute = rolesManagerDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rolesManagerRouteRoute,
 } as any)
-const rolesManagerCustomersRoute = rolesManagerCustomersRouteImport.update({
-  id: '/customers',
-  path: '/customers',
-  getParentRoute: () => rolesManagerRouteRoute,
-} as any)
 const rolesManagerCampaignsRoute = rolesManagerCampaignsRouteImport.update({
   id: '/campaigns',
   path: '/campaigns',
@@ -139,11 +137,6 @@ const rolesEmployeeOrdersRoute = rolesEmployeeOrdersRouteImport.update({
 const rolesEmployeeDashboardRoute = rolesEmployeeDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
-  getParentRoute: () => rolesEmployeeRouteRoute,
-} as any)
-const rolesEmployeeCustomersRoute = rolesEmployeeCustomersRouteImport.update({
-  id: '/customers',
-  path: '/customers',
   getParentRoute: () => rolesEmployeeRouteRoute,
 } as any)
 const rolesAdminTeamRoute = rolesAdminTeamRouteImport.update({
@@ -186,11 +179,6 @@ const rolesAdminDashboardRoute = rolesAdminDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rolesAdminRouteRoute,
 } as any)
-const rolesAdminCustomersRoute = rolesAdminCustomersRouteImport.update({
-  id: '/customers',
-  path: '/customers',
-  getParentRoute: () => rolesAdminRouteRoute,
-} as any)
 const rolesAdminCampaignsRoute = rolesAdminCampaignsRouteImport.update({
   id: '/campaigns',
   path: '/campaigns',
@@ -206,10 +194,22 @@ const rolesAdminAccessControlRoute = rolesAdminAccessControlRouteImport.update({
   path: '/access-control',
   getParentRoute: () => rolesAdminRouteRoute,
 } as any)
+const rolesManagerCustomersIndexRoute =
+  rolesManagerCustomersIndexRouteImport.update({
+    id: '/customers/',
+    path: '/customers/',
+    getParentRoute: () => rolesManagerRouteRoute,
+  } as any)
 const rolesEmployeeProductsIndexRoute =
   rolesEmployeeProductsIndexRouteImport.update({
     id: '/products/',
     path: '/products/',
+    getParentRoute: () => rolesEmployeeRouteRoute,
+  } as any)
+const rolesEmployeeCustomersIndexRoute =
+  rolesEmployeeCustomersIndexRouteImport.update({
+    id: '/customers/',
+    path: '/customers/',
     getParentRoute: () => rolesEmployeeRouteRoute,
   } as any)
 const rolesAdminProductsIndexRoute = rolesAdminProductsIndexRouteImport.update({
@@ -217,6 +217,23 @@ const rolesAdminProductsIndexRoute = rolesAdminProductsIndexRouteImport.update({
   path: '/products/',
   getParentRoute: () => rolesAdminRouteRoute,
 } as any)
+const rolesAdminCustomersIndexRoute =
+  rolesAdminCustomersIndexRouteImport.update({
+    id: '/customers/',
+    path: '/customers/',
+    getParentRoute: () => rolesAdminRouteRoute,
+  } as any)
+const rolesManagerCustomersIdRoute = rolesManagerCustomersIdRouteImport.update({
+  id: '/customers/$id',
+  path: '/customers/$id',
+  getParentRoute: () => rolesManagerRouteRoute,
+} as any)
+const rolesEmployeeCustomersIdRoute =
+  rolesEmployeeCustomersIdRouteImport.update({
+    id: '/customers/$id',
+    path: '/customers/$id',
+    getParentRoute: () => rolesEmployeeRouteRoute,
+  } as any)
 const rolesAdminProductsNewRoute = rolesAdminProductsNewRouteImport.update({
   id: '/products/new',
   path: '/products/new',
@@ -225,6 +242,11 @@ const rolesAdminProductsNewRoute = rolesAdminProductsNewRouteImport.update({
 const rolesAdminPagesSlugRoute = rolesAdminPagesSlugRouteImport.update({
   id: '/pages/$slug',
   path: '/pages/$slug',
+  getParentRoute: () => rolesAdminRouteRoute,
+} as any)
+const rolesAdminCustomersIdRoute = rolesAdminCustomersIdRouteImport.update({
+  id: '/customers/$id',
+  path: '/customers/$id',
   getParentRoute: () => rolesAdminRouteRoute,
 } as any)
 const rolesAdminProductsIdEditRoute =
@@ -244,7 +266,6 @@ export interface FileRoutesByFullPath {
   '/admin/access-control': typeof rolesAdminAccessControlRoute
   '/admin/analytics': typeof rolesAdminAnalyticsRoute
   '/admin/campaigns': typeof rolesAdminCampaignsRoute
-  '/admin/customers': typeof rolesAdminCustomersRoute
   '/admin/dashboard': typeof rolesAdminDashboardRoute
   '/admin/discounts': typeof rolesAdminDiscountsRoute
   '/admin/homepage': typeof rolesAdminHomepageRoute
@@ -253,12 +274,10 @@ export interface FileRoutesByFullPath {
   '/admin/popup': typeof rolesAdminPopupRoute
   '/admin/settings': typeof rolesAdminSettingsRoute
   '/admin/team': typeof rolesAdminTeamRoute
-  '/employee/customers': typeof rolesEmployeeCustomersRoute
   '/employee/dashboard': typeof rolesEmployeeDashboardRoute
   '/employee/orders': typeof rolesEmployeeOrdersRoute
   '/manager/analytics': typeof rolesManagerAnalyticsRoute
   '/manager/campaigns': typeof rolesManagerCampaignsRoute
-  '/manager/customers': typeof rolesManagerCustomersRoute
   '/manager/dashboard': typeof rolesManagerDashboardRoute
   '/manager/discounts': typeof rolesManagerDiscountsRoute
   '/manager/newsletter': typeof rolesManagerNewsletterRoute
@@ -266,10 +285,16 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof rolesAdminIndexRoute
   '/employee/': typeof rolesEmployeeIndexRoute
   '/manager/': typeof rolesManagerIndexRoute
+  '/admin/customers/$id': typeof rolesAdminCustomersIdRoute
   '/admin/pages/$slug': typeof rolesAdminPagesSlugRoute
   '/admin/products/new': typeof rolesAdminProductsNewRoute
+  '/employee/customers/$id': typeof rolesEmployeeCustomersIdRoute
+  '/manager/customers/$id': typeof rolesManagerCustomersIdRoute
+  '/admin/customers/': typeof rolesAdminCustomersIndexRoute
   '/admin/products/': typeof rolesAdminProductsIndexRoute
+  '/employee/customers/': typeof rolesEmployeeCustomersIndexRoute
   '/employee/products/': typeof rolesEmployeeProductsIndexRoute
+  '/manager/customers/': typeof rolesManagerCustomersIndexRoute
   '/admin/products/$id/edit': typeof rolesAdminProductsIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -279,7 +304,6 @@ export interface FileRoutesByTo {
   '/admin/access-control': typeof rolesAdminAccessControlRoute
   '/admin/analytics': typeof rolesAdminAnalyticsRoute
   '/admin/campaigns': typeof rolesAdminCampaignsRoute
-  '/admin/customers': typeof rolesAdminCustomersRoute
   '/admin/dashboard': typeof rolesAdminDashboardRoute
   '/admin/discounts': typeof rolesAdminDiscountsRoute
   '/admin/homepage': typeof rolesAdminHomepageRoute
@@ -288,12 +312,10 @@ export interface FileRoutesByTo {
   '/admin/popup': typeof rolesAdminPopupRoute
   '/admin/settings': typeof rolesAdminSettingsRoute
   '/admin/team': typeof rolesAdminTeamRoute
-  '/employee/customers': typeof rolesEmployeeCustomersRoute
   '/employee/dashboard': typeof rolesEmployeeDashboardRoute
   '/employee/orders': typeof rolesEmployeeOrdersRoute
   '/manager/analytics': typeof rolesManagerAnalyticsRoute
   '/manager/campaigns': typeof rolesManagerCampaignsRoute
-  '/manager/customers': typeof rolesManagerCustomersRoute
   '/manager/dashboard': typeof rolesManagerDashboardRoute
   '/manager/discounts': typeof rolesManagerDiscountsRoute
   '/manager/newsletter': typeof rolesManagerNewsletterRoute
@@ -301,10 +323,16 @@ export interface FileRoutesByTo {
   '/admin': typeof rolesAdminIndexRoute
   '/employee': typeof rolesEmployeeIndexRoute
   '/manager': typeof rolesManagerIndexRoute
+  '/admin/customers/$id': typeof rolesAdminCustomersIdRoute
   '/admin/pages/$slug': typeof rolesAdminPagesSlugRoute
   '/admin/products/new': typeof rolesAdminProductsNewRoute
+  '/employee/customers/$id': typeof rolesEmployeeCustomersIdRoute
+  '/manager/customers/$id': typeof rolesManagerCustomersIdRoute
+  '/admin/customers': typeof rolesAdminCustomersIndexRoute
   '/admin/products': typeof rolesAdminProductsIndexRoute
+  '/employee/customers': typeof rolesEmployeeCustomersIndexRoute
   '/employee/products': typeof rolesEmployeeProductsIndexRoute
+  '/manager/customers': typeof rolesManagerCustomersIndexRoute
   '/admin/products/$id/edit': typeof rolesAdminProductsIdEditRoute
 }
 export interface FileRoutesById {
@@ -319,7 +347,6 @@ export interface FileRoutesById {
   '/(roles)/admin/access-control': typeof rolesAdminAccessControlRoute
   '/(roles)/admin/analytics': typeof rolesAdminAnalyticsRoute
   '/(roles)/admin/campaigns': typeof rolesAdminCampaignsRoute
-  '/(roles)/admin/customers': typeof rolesAdminCustomersRoute
   '/(roles)/admin/dashboard': typeof rolesAdminDashboardRoute
   '/(roles)/admin/discounts': typeof rolesAdminDiscountsRoute
   '/(roles)/admin/homepage': typeof rolesAdminHomepageRoute
@@ -328,12 +355,10 @@ export interface FileRoutesById {
   '/(roles)/admin/popup': typeof rolesAdminPopupRoute
   '/(roles)/admin/settings': typeof rolesAdminSettingsRoute
   '/(roles)/admin/team': typeof rolesAdminTeamRoute
-  '/(roles)/employee/customers': typeof rolesEmployeeCustomersRoute
   '/(roles)/employee/dashboard': typeof rolesEmployeeDashboardRoute
   '/(roles)/employee/orders': typeof rolesEmployeeOrdersRoute
   '/(roles)/manager/analytics': typeof rolesManagerAnalyticsRoute
   '/(roles)/manager/campaigns': typeof rolesManagerCampaignsRoute
-  '/(roles)/manager/customers': typeof rolesManagerCustomersRoute
   '/(roles)/manager/dashboard': typeof rolesManagerDashboardRoute
   '/(roles)/manager/discounts': typeof rolesManagerDiscountsRoute
   '/(roles)/manager/newsletter': typeof rolesManagerNewsletterRoute
@@ -341,10 +366,16 @@ export interface FileRoutesById {
   '/(roles)/admin/': typeof rolesAdminIndexRoute
   '/(roles)/employee/': typeof rolesEmployeeIndexRoute
   '/(roles)/manager/': typeof rolesManagerIndexRoute
+  '/(roles)/admin/customers/$id': typeof rolesAdminCustomersIdRoute
   '/(roles)/admin/pages/$slug': typeof rolesAdminPagesSlugRoute
   '/(roles)/admin/products/new': typeof rolesAdminProductsNewRoute
+  '/(roles)/employee/customers/$id': typeof rolesEmployeeCustomersIdRoute
+  '/(roles)/manager/customers/$id': typeof rolesManagerCustomersIdRoute
+  '/(roles)/admin/customers/': typeof rolesAdminCustomersIndexRoute
   '/(roles)/admin/products/': typeof rolesAdminProductsIndexRoute
+  '/(roles)/employee/customers/': typeof rolesEmployeeCustomersIndexRoute
   '/(roles)/employee/products/': typeof rolesEmployeeProductsIndexRoute
+  '/(roles)/manager/customers/': typeof rolesManagerCustomersIndexRoute
   '/(roles)/admin/products/$id/edit': typeof rolesAdminProductsIdEditRoute
 }
 export interface FileRouteTypes {
@@ -359,7 +390,6 @@ export interface FileRouteTypes {
     | '/admin/access-control'
     | '/admin/analytics'
     | '/admin/campaigns'
-    | '/admin/customers'
     | '/admin/dashboard'
     | '/admin/discounts'
     | '/admin/homepage'
@@ -368,12 +398,10 @@ export interface FileRouteTypes {
     | '/admin/popup'
     | '/admin/settings'
     | '/admin/team'
-    | '/employee/customers'
     | '/employee/dashboard'
     | '/employee/orders'
     | '/manager/analytics'
     | '/manager/campaigns'
-    | '/manager/customers'
     | '/manager/dashboard'
     | '/manager/discounts'
     | '/manager/newsletter'
@@ -381,10 +409,16 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/employee/'
     | '/manager/'
+    | '/admin/customers/$id'
     | '/admin/pages/$slug'
     | '/admin/products/new'
+    | '/employee/customers/$id'
+    | '/manager/customers/$id'
+    | '/admin/customers/'
     | '/admin/products/'
+    | '/employee/customers/'
     | '/employee/products/'
+    | '/manager/customers/'
     | '/admin/products/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -394,7 +428,6 @@ export interface FileRouteTypes {
     | '/admin/access-control'
     | '/admin/analytics'
     | '/admin/campaigns'
-    | '/admin/customers'
     | '/admin/dashboard'
     | '/admin/discounts'
     | '/admin/homepage'
@@ -403,12 +436,10 @@ export interface FileRouteTypes {
     | '/admin/popup'
     | '/admin/settings'
     | '/admin/team'
-    | '/employee/customers'
     | '/employee/dashboard'
     | '/employee/orders'
     | '/manager/analytics'
     | '/manager/campaigns'
-    | '/manager/customers'
     | '/manager/dashboard'
     | '/manager/discounts'
     | '/manager/newsletter'
@@ -416,10 +447,16 @@ export interface FileRouteTypes {
     | '/admin'
     | '/employee'
     | '/manager'
+    | '/admin/customers/$id'
     | '/admin/pages/$slug'
     | '/admin/products/new'
+    | '/employee/customers/$id'
+    | '/manager/customers/$id'
+    | '/admin/customers'
     | '/admin/products'
+    | '/employee/customers'
     | '/employee/products'
+    | '/manager/customers'
     | '/admin/products/$id/edit'
   id:
     | '__root__'
@@ -433,7 +470,6 @@ export interface FileRouteTypes {
     | '/(roles)/admin/access-control'
     | '/(roles)/admin/analytics'
     | '/(roles)/admin/campaigns'
-    | '/(roles)/admin/customers'
     | '/(roles)/admin/dashboard'
     | '/(roles)/admin/discounts'
     | '/(roles)/admin/homepage'
@@ -442,12 +478,10 @@ export interface FileRouteTypes {
     | '/(roles)/admin/popup'
     | '/(roles)/admin/settings'
     | '/(roles)/admin/team'
-    | '/(roles)/employee/customers'
     | '/(roles)/employee/dashboard'
     | '/(roles)/employee/orders'
     | '/(roles)/manager/analytics'
     | '/(roles)/manager/campaigns'
-    | '/(roles)/manager/customers'
     | '/(roles)/manager/dashboard'
     | '/(roles)/manager/discounts'
     | '/(roles)/manager/newsletter'
@@ -455,10 +489,16 @@ export interface FileRouteTypes {
     | '/(roles)/admin/'
     | '/(roles)/employee/'
     | '/(roles)/manager/'
+    | '/(roles)/admin/customers/$id'
     | '/(roles)/admin/pages/$slug'
     | '/(roles)/admin/products/new'
+    | '/(roles)/employee/customers/$id'
+    | '/(roles)/manager/customers/$id'
+    | '/(roles)/admin/customers/'
     | '/(roles)/admin/products/'
+    | '/(roles)/employee/customers/'
     | '/(roles)/employee/products/'
+    | '/(roles)/manager/customers/'
     | '/(roles)/admin/products/$id/edit'
   fileRoutesById: FileRoutesById
 }
@@ -570,13 +610,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof rolesManagerDashboardRouteImport
       parentRoute: typeof rolesManagerRouteRoute
     }
-    '/(roles)/manager/customers': {
-      id: '/(roles)/manager/customers'
-      path: '/customers'
-      fullPath: '/manager/customers'
-      preLoaderRoute: typeof rolesManagerCustomersRouteImport
-      parentRoute: typeof rolesManagerRouteRoute
-    }
     '/(roles)/manager/campaigns': {
       id: '/(roles)/manager/campaigns'
       path: '/campaigns'
@@ -603,13 +636,6 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/employee/dashboard'
       preLoaderRoute: typeof rolesEmployeeDashboardRouteImport
-      parentRoute: typeof rolesEmployeeRouteRoute
-    }
-    '/(roles)/employee/customers': {
-      id: '/(roles)/employee/customers'
-      path: '/customers'
-      fullPath: '/employee/customers'
-      preLoaderRoute: typeof rolesEmployeeCustomersRouteImport
       parentRoute: typeof rolesEmployeeRouteRoute
     }
     '/(roles)/admin/team': {
@@ -668,13 +694,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof rolesAdminDashboardRouteImport
       parentRoute: typeof rolesAdminRouteRoute
     }
-    '/(roles)/admin/customers': {
-      id: '/(roles)/admin/customers'
-      path: '/customers'
-      fullPath: '/admin/customers'
-      preLoaderRoute: typeof rolesAdminCustomersRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
-    }
     '/(roles)/admin/campaigns': {
       id: '/(roles)/admin/campaigns'
       path: '/campaigns'
@@ -696,11 +715,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof rolesAdminAccessControlRouteImport
       parentRoute: typeof rolesAdminRouteRoute
     }
+    '/(roles)/manager/customers/': {
+      id: '/(roles)/manager/customers/'
+      path: '/customers'
+      fullPath: '/manager/customers/'
+      preLoaderRoute: typeof rolesManagerCustomersIndexRouteImport
+      parentRoute: typeof rolesManagerRouteRoute
+    }
     '/(roles)/employee/products/': {
       id: '/(roles)/employee/products/'
       path: '/products'
       fullPath: '/employee/products/'
       preLoaderRoute: typeof rolesEmployeeProductsIndexRouteImport
+      parentRoute: typeof rolesEmployeeRouteRoute
+    }
+    '/(roles)/employee/customers/': {
+      id: '/(roles)/employee/customers/'
+      path: '/customers'
+      fullPath: '/employee/customers/'
+      preLoaderRoute: typeof rolesEmployeeCustomersIndexRouteImport
       parentRoute: typeof rolesEmployeeRouteRoute
     }
     '/(roles)/admin/products/': {
@@ -709,6 +742,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/products/'
       preLoaderRoute: typeof rolesAdminProductsIndexRouteImport
       parentRoute: typeof rolesAdminRouteRoute
+    }
+    '/(roles)/admin/customers/': {
+      id: '/(roles)/admin/customers/'
+      path: '/customers'
+      fullPath: '/admin/customers/'
+      preLoaderRoute: typeof rolesAdminCustomersIndexRouteImport
+      parentRoute: typeof rolesAdminRouteRoute
+    }
+    '/(roles)/manager/customers/$id': {
+      id: '/(roles)/manager/customers/$id'
+      path: '/customers/$id'
+      fullPath: '/manager/customers/$id'
+      preLoaderRoute: typeof rolesManagerCustomersIdRouteImport
+      parentRoute: typeof rolesManagerRouteRoute
+    }
+    '/(roles)/employee/customers/$id': {
+      id: '/(roles)/employee/customers/$id'
+      path: '/customers/$id'
+      fullPath: '/employee/customers/$id'
+      preLoaderRoute: typeof rolesEmployeeCustomersIdRouteImport
+      parentRoute: typeof rolesEmployeeRouteRoute
     }
     '/(roles)/admin/products/new': {
       id: '/(roles)/admin/products/new'
@@ -722,6 +776,13 @@ declare module '@tanstack/react-router' {
       path: '/pages/$slug'
       fullPath: '/admin/pages/$slug'
       preLoaderRoute: typeof rolesAdminPagesSlugRouteImport
+      parentRoute: typeof rolesAdminRouteRoute
+    }
+    '/(roles)/admin/customers/$id': {
+      id: '/(roles)/admin/customers/$id'
+      path: '/customers/$id'
+      fullPath: '/admin/customers/$id'
+      preLoaderRoute: typeof rolesAdminCustomersIdRouteImport
       parentRoute: typeof rolesAdminRouteRoute
     }
     '/(roles)/admin/products/$id/edit': {
@@ -752,7 +813,6 @@ interface rolesAdminRouteRouteChildren {
   rolesAdminAccessControlRoute: typeof rolesAdminAccessControlRoute
   rolesAdminAnalyticsRoute: typeof rolesAdminAnalyticsRoute
   rolesAdminCampaignsRoute: typeof rolesAdminCampaignsRoute
-  rolesAdminCustomersRoute: typeof rolesAdminCustomersRoute
   rolesAdminDashboardRoute: typeof rolesAdminDashboardRoute
   rolesAdminDiscountsRoute: typeof rolesAdminDiscountsRoute
   rolesAdminHomepageRoute: typeof rolesAdminHomepageRoute
@@ -762,8 +822,10 @@ interface rolesAdminRouteRouteChildren {
   rolesAdminSettingsRoute: typeof rolesAdminSettingsRoute
   rolesAdminTeamRoute: typeof rolesAdminTeamRoute
   rolesAdminIndexRoute: typeof rolesAdminIndexRoute
+  rolesAdminCustomersIdRoute: typeof rolesAdminCustomersIdRoute
   rolesAdminPagesSlugRoute: typeof rolesAdminPagesSlugRoute
   rolesAdminProductsNewRoute: typeof rolesAdminProductsNewRoute
+  rolesAdminCustomersIndexRoute: typeof rolesAdminCustomersIndexRoute
   rolesAdminProductsIndexRoute: typeof rolesAdminProductsIndexRoute
   rolesAdminProductsIdEditRoute: typeof rolesAdminProductsIdEditRoute
 }
@@ -772,7 +834,6 @@ const rolesAdminRouteRouteChildren: rolesAdminRouteRouteChildren = {
   rolesAdminAccessControlRoute: rolesAdminAccessControlRoute,
   rolesAdminAnalyticsRoute: rolesAdminAnalyticsRoute,
   rolesAdminCampaignsRoute: rolesAdminCampaignsRoute,
-  rolesAdminCustomersRoute: rolesAdminCustomersRoute,
   rolesAdminDashboardRoute: rolesAdminDashboardRoute,
   rolesAdminDiscountsRoute: rolesAdminDiscountsRoute,
   rolesAdminHomepageRoute: rolesAdminHomepageRoute,
@@ -782,8 +843,10 @@ const rolesAdminRouteRouteChildren: rolesAdminRouteRouteChildren = {
   rolesAdminSettingsRoute: rolesAdminSettingsRoute,
   rolesAdminTeamRoute: rolesAdminTeamRoute,
   rolesAdminIndexRoute: rolesAdminIndexRoute,
+  rolesAdminCustomersIdRoute: rolesAdminCustomersIdRoute,
   rolesAdminPagesSlugRoute: rolesAdminPagesSlugRoute,
   rolesAdminProductsNewRoute: rolesAdminProductsNewRoute,
+  rolesAdminCustomersIndexRoute: rolesAdminCustomersIndexRoute,
   rolesAdminProductsIndexRoute: rolesAdminProductsIndexRoute,
   rolesAdminProductsIdEditRoute: rolesAdminProductsIdEditRoute,
 }
@@ -793,18 +856,20 @@ const rolesAdminRouteRouteWithChildren = rolesAdminRouteRoute._addFileChildren(
 )
 
 interface rolesEmployeeRouteRouteChildren {
-  rolesEmployeeCustomersRoute: typeof rolesEmployeeCustomersRoute
   rolesEmployeeDashboardRoute: typeof rolesEmployeeDashboardRoute
   rolesEmployeeOrdersRoute: typeof rolesEmployeeOrdersRoute
   rolesEmployeeIndexRoute: typeof rolesEmployeeIndexRoute
+  rolesEmployeeCustomersIdRoute: typeof rolesEmployeeCustomersIdRoute
+  rolesEmployeeCustomersIndexRoute: typeof rolesEmployeeCustomersIndexRoute
   rolesEmployeeProductsIndexRoute: typeof rolesEmployeeProductsIndexRoute
 }
 
 const rolesEmployeeRouteRouteChildren: rolesEmployeeRouteRouteChildren = {
-  rolesEmployeeCustomersRoute: rolesEmployeeCustomersRoute,
   rolesEmployeeDashboardRoute: rolesEmployeeDashboardRoute,
   rolesEmployeeOrdersRoute: rolesEmployeeOrdersRoute,
   rolesEmployeeIndexRoute: rolesEmployeeIndexRoute,
+  rolesEmployeeCustomersIdRoute: rolesEmployeeCustomersIdRoute,
+  rolesEmployeeCustomersIndexRoute: rolesEmployeeCustomersIndexRoute,
   rolesEmployeeProductsIndexRoute: rolesEmployeeProductsIndexRoute,
 }
 
@@ -814,23 +879,25 @@ const rolesEmployeeRouteRouteWithChildren =
 interface rolesManagerRouteRouteChildren {
   rolesManagerAnalyticsRoute: typeof rolesManagerAnalyticsRoute
   rolesManagerCampaignsRoute: typeof rolesManagerCampaignsRoute
-  rolesManagerCustomersRoute: typeof rolesManagerCustomersRoute
   rolesManagerDashboardRoute: typeof rolesManagerDashboardRoute
   rolesManagerDiscountsRoute: typeof rolesManagerDiscountsRoute
   rolesManagerNewsletterRoute: typeof rolesManagerNewsletterRoute
   rolesManagerOrdersRoute: typeof rolesManagerOrdersRoute
   rolesManagerIndexRoute: typeof rolesManagerIndexRoute
+  rolesManagerCustomersIdRoute: typeof rolesManagerCustomersIdRoute
+  rolesManagerCustomersIndexRoute: typeof rolesManagerCustomersIndexRoute
 }
 
 const rolesManagerRouteRouteChildren: rolesManagerRouteRouteChildren = {
   rolesManagerAnalyticsRoute: rolesManagerAnalyticsRoute,
   rolesManagerCampaignsRoute: rolesManagerCampaignsRoute,
-  rolesManagerCustomersRoute: rolesManagerCustomersRoute,
   rolesManagerDashboardRoute: rolesManagerDashboardRoute,
   rolesManagerDiscountsRoute: rolesManagerDiscountsRoute,
   rolesManagerNewsletterRoute: rolesManagerNewsletterRoute,
   rolesManagerOrdersRoute: rolesManagerOrdersRoute,
   rolesManagerIndexRoute: rolesManagerIndexRoute,
+  rolesManagerCustomersIdRoute: rolesManagerCustomersIdRoute,
+  rolesManagerCustomersIndexRoute: rolesManagerCustomersIndexRoute,
 }
 
 const rolesManagerRouteRouteWithChildren =

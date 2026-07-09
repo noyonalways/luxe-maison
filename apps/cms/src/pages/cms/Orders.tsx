@@ -156,7 +156,7 @@ export default function Orders() {
   }
 
   return (
-    <div>
+    <div className="w-full">
       <h1 className="font-heading text-2xl lg:text-3xl mb-8">Orders</h1>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">

@@ -224,7 +224,7 @@ export default function PopupSettings() {
   }
 
   return (
-    <div>
+    <div className="w-full">
       <div className="mb-8">
         <h1 className="font-heading text-2xl lg:text-3xl">Popup Management</h1>
         <p className="text-sm text-muted-foreground mt-1">

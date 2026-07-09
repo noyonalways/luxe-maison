@@ -49,7 +49,7 @@ export default function Analytics() {
   const regionMax = salesByRegion[0]?.revenue ?? 1;
 
   return (
-    <div>
+    <div className="w-full">
       <h1 className="font-heading text-2xl lg:text-3xl mb-8">Analytics</h1>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">

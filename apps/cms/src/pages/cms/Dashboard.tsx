@@ -88,7 +88,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div>
+    <div className="w-full">
       <h1 className="font-heading text-2xl lg:text-3xl mb-8">Dashboard</h1>
 
       {analyticsError && canViewAnalytics && (

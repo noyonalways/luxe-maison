@@ -87,7 +87,7 @@ export default function ContentPageEditor({ slug }: ContentPageEditorProps) {
   const isSaving = updateMutation.isPending || resetMutation.isPending;
 
   return (
-    <div className="max-w-4xl">
+    <div className="w-full">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
         <div>
           <p className="text-xs font-body font-medium letter-wider uppercase text-gold mb-1">Pages</p>

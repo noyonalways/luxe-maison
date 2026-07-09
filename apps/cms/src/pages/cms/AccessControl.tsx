@@ -77,7 +77,7 @@ export default function AccessControl() {
   }
 
   return (
-    <div>
+    <div className="w-full">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-heading font-bold">Access Control</h1>

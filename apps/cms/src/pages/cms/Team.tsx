@@ -114,7 +114,7 @@ export default function Team() {
   }
 
   return (
-    <div>
+    <div className="w-full">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-heading text-2xl lg:text-3xl">Team Members</h1>

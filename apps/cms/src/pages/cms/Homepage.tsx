@@ -106,7 +106,7 @@ export default function HomepagePage() {
   };
 
   return (
-    <div>
+    <div className="w-full">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-heading text-2xl lg:text-3xl">Homepage</h1>

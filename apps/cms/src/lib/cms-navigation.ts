@@ -90,3 +90,13 @@ export function cmsProductEdit(role: StaffRole, id: string) {
 export function cmsDashboard(role: StaffRole) {
   return { to: DASHBOARD_ROUTES[role] };
 }
+
+export function cmsCustomerDetail(role: StaffRole, id: string) {
+  if (role === 'admin') {
+    return { to: '/admin/customers/$id' as const, params: { id } };
+  }
+  if (role === 'manager') {
+    return { to: '/manager/customers/$id' as const, params: { id } };
+  }
+  return { to: '/employee/customers/$id' as const, params: { id } };
+}

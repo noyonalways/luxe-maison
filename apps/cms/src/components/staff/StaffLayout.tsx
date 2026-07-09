@@ -393,8 +393,8 @@ export default function StaffLayout() {
         })}
       </div>
 
-      <main className="flex-1 overflow-auto pt-14 lg:pt-0 pb-20 lg:pb-0">
-        <div className="p-6 lg:p-8">
+      <main className="flex-1 overflow-auto pt-14 lg:pt-0 pb-20 lg:pb-0 min-w-0">
+        <div className="w-full min-w-0 p-6 lg:p-8">
           <Outlet />
         </div>
       </main>

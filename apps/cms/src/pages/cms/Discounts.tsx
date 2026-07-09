@@ -142,7 +142,7 @@ export default function Discounts() {
   }
 
   return (
-    <div>
+    <div className="w-full">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <h1 className="font-heading text-2xl lg:text-3xl">Discounts</h1>
         {canEditDiscounts && (

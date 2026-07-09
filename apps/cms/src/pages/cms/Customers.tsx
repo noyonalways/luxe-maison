@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
+import { Link } from '@tanstack/react-router';
 import type { Customer } from '@/data/cms-types';
 import { useCustomers } from '@/contexts/customers-context';
 import { useRole } from '@/contexts/role-context';
-import { useOrdersList } from '@/hooks/orders/use-orders-list';
+import { cmsCustomerDetail } from '@/lib/cms-navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +18,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Search, Download, Eye, ShieldBan, ShieldCheck, Users, ShoppingCart, DollarSign, Calendar, TrendingUp, UserCheck, BarChart3, Package, Truck, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Plus, Loader2 } from 'lucide-react';
+import { Search, Download, Eye, ShieldBan, ShieldCheck, Users, ShoppingCart, DollarSign, TrendingUp, UserCheck, BarChart3, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Plus, Loader2 } from 'lucide-react';
 import { format, parseISO, startOfMonth } from 'date-fns';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -93,7 +94,7 @@ function CustomerAnalytics({ customers }: { customers: Customer[] }) {
   const repeatRate = customers.length ? Math.round((customers.filter(c => c.totalOrders > 1).length / customers.length) * 100) : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="w-full space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { icon: DollarSign, label: 'Avg. Lifetime Value', value: `$${avgSpent.toLocaleString()}` },
@@ -193,7 +194,7 @@ function CustomerAnalytics({ customers }: { customers: Customer[] }) {
 
 // --- Main page ---
 export default function Customers() {
-  const { canEdit, canDelete } = useRole();
+  const { role, canEdit, canDelete } = useRole();
   const canEditCustomers = canEdit('customers');
   const canDeleteCustomers = canDelete('customers');
   const {
@@ -203,7 +204,6 @@ export default function Customers() {
     isLoading,
     isSaving,
   } = useCustomers();
-  const { data: orders = [] } = useOrdersList(true);
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -211,7 +211,6 @@ export default function Customers() {
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(5);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [toggleCustomer, setToggleCustomer] = useState<Customer | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', phone: '', address: '' });
@@ -315,7 +314,7 @@ export default function Customers() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="w-full space-y-6">
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -418,7 +417,12 @@ export default function Customers() {
                           {c.name.split(' ').map(n => n[0]).join('')}
                         </div>
                         <div>
-                          <p className="font-medium text-sm">{c.name}</p>
+                          <Link
+                            {...cmsCustomerDetail(role, c.id)}
+                            className="font-medium text-sm hover:text-gold transition-smooth"
+                          >
+                            {c.name}
+                          </Link>
                           <p className="text-xs text-muted-foreground">{c.email}</p>
                         </div>
                       </div>
@@ -436,8 +440,16 @@ export default function Customers() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelectedCustomer(c)}>
-                          <Eye size={14} />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          title="View customer"
+                          asChild
+                        >
+                          <Link {...cmsCustomerDetail(role, c.id)}>
+                            <Eye size={14} />
+                          </Link>
                         </Button>
                         {canDeleteCustomers && (
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setToggleCustomer(c)}>
@@ -511,112 +523,6 @@ export default function Customers() {
           <CustomerAnalytics customers={customers} />
         </TabsContent>
       </Tabs>
-
-      {/* View Customer Dialog */}
-      <Dialog open={!!selectedCustomer} onOpenChange={() => setSelectedCustomer(null)}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-heading">Customer Profile</DialogTitle>
-            <DialogDescription>Full details, lifetime stats & order history</DialogDescription>
-          </DialogHeader>
-          {selectedCustomer && (() => {
-            const customerOrders = orders.filter(
-              o => o.customerEmail.toLowerCase() === selectedCustomer.email.toLowerCase()
-            );
-            const statusColors: Record<string, string> = {
-              pending: 'bg-yellow-100 text-yellow-800',
-              processing: 'bg-blue-100 text-blue-800',
-              shipped: 'bg-purple-100 text-purple-800',
-              delivered: 'bg-green-100 text-green-800',
-              returned: 'bg-red-100 text-red-800',
-            };
-            return (
-              <div className="space-y-5">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center text-lg font-semibold text-muted-foreground">
-                    {selectedCustomer.name.split(' ').map(n => n[0]).join('')}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">{selectedCustomer.name}</h3>
-                    <p className="text-sm text-muted-foreground">{selectedCustomer.email}</p>
-                    <Badge variant={selectedCustomer.status === 'active' ? 'default' : 'destructive'} className="mt-1 text-[10px]">
-                      {selectedCustomer.status}
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { icon: ShoppingCart, label: 'Total Orders', value: selectedCustomer.totalOrders },
-                    { icon: DollarSign, label: 'Total Spent', value: `$${selectedCustomer.totalSpent.toLocaleString()}` },
-                    { icon: Calendar, label: 'Joined', value: format(new Date(selectedCustomer.joinedAt), 'MMM d, yyyy') },
-                    { icon: Calendar, label: 'Last Order', value: format(new Date(selectedCustomer.lastOrderAt), 'MMM d, yyyy') },
-                  ].map(s => (
-                    <div key={s.label} className="border border-border rounded-lg p-3">
-                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                        <s.icon size={12} />
-                        <span className="text-[10px] uppercase tracking-wider">{s.label}</span>
-                      </div>
-                      <p className="text-sm font-semibold">{s.value}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="space-y-2 text-sm">
-                  <p className="text-muted-foreground text-xs uppercase tracking-wider">Contact & Address</p>
-                  <p>{selectedCustomer.phone}</p>
-                  <p className="text-muted-foreground">{selectedCustomer.address}</p>
-                </div>
-
-                {/* Order History */}
-                <div className="space-y-3">
-                  <p className="text-muted-foreground text-xs uppercase tracking-wider">Order History</p>
-                  {customerOrders.length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-4 text-center">No orders found in recent records.</p>
-                  ) : (
-                    customerOrders.map(order => (
-                      <div key={order.id} className="border border-border rounded-lg p-4 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Package size={14} className="text-muted-foreground" />
-                            <span className="text-sm font-semibold">{order.id}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusColors[order.status] ?? ''}`}>
-                              {order.status}
-                            </span>
-                            <span className="text-xs text-muted-foreground">{format(new Date(order.createdAt), 'MMM d, yyyy')}</span>
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          {order.items.map((item, idx) => (
-                            <div key={idx} className="flex items-center gap-3">
-                              <img src={item.image} alt={item.productName} className="w-10 h-10 rounded object-cover bg-secondary" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium truncate">{item.productName}</p>
-                                <p className="text-[11px] text-muted-foreground">{item.size} · {item.color} · Qty {item.quantity}</p>
-                              </div>
-                              <p className="text-sm font-medium">${(item.price * item.quantity).toLocaleString()}</p>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="flex items-center justify-between pt-2 border-t border-border">
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            {order.trackingNumber && (
-                              <span className="flex items-center gap-1"><Truck size={11} /> {order.carrier} · {order.trackingNumber}</span>
-                            )}
-                          </div>
-                          <p className="text-sm font-semibold">${order.total.toLocaleString()}</p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            );
-          })()}
-        </DialogContent>
-      </Dialog>
 
       {/* Block/Unblock Confirmation */}
       <AlertDialog open={!!toggleCustomer} onOpenChange={() => setToggleCustomer(null)}>
