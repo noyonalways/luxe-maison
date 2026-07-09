@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
-import type { HomepageContent } from '@luxe-maison/shared';
+import type { HeroSlide, HomepageContent } from '@luxe-maison/shared';
 import { useHomepage } from '@/contexts/homepage-context';
 import { useRole } from '@/contexts/role-context';
+import { HeroSlidePreview } from '@/components/homepage/HeroSlidePreview';
+import { createHeroSlide } from '@/components/homepage/hero-slide-utils';
+import { resolveStorefrontAssetUrl } from '@/lib/homepage-preview';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Home, Loader2, RotateCcw, Save } from 'lucide-react';
+import { Home, Loader2, Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { toApiError } from '@/lib/api/errors';
 
@@ -16,9 +19,16 @@ export default function HomepagePage() {
   const { hasAccess, canEdit, canDelete } = useRole();
   const { content, isLoading, updateHomepage, resetHomepage, isSaving } = useHomepage();
   const [draft, setDraft] = useState<HomepageContent | null>(null);
+  const [activeHeroSlideId, setActiveHeroSlideId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (content) setDraft(structuredClone(content));
+    if (content) {
+      setDraft(structuredClone(content));
+      setActiveHeroSlideId((current) => {
+        if (current && content.heroSlides.some((slide) => slide.id === current)) return current;
+        return content.heroSlides[0]?.id ?? null;
+      });
+    }
   }, [content]);
 
   if (!hasAccess('homepage')) {
@@ -63,6 +73,38 @@ export default function HomepagePage() {
     }
   };
 
+  const updateHeroSlide = (index: number, updates: Partial<HeroSlide>) => {
+    if (!draft) return;
+    const heroSlides = [...draft.heroSlides];
+    heroSlides[index] = { ...heroSlides[index]!, ...updates };
+    setDraft({ ...draft, heroSlides });
+  };
+
+  const handleAddHeroSlide = () => {
+    if (!draft || !canModify) return;
+    const nextSortOrder =
+      draft.heroSlides.reduce((max, slide) => Math.max(max, slide.sortOrder), -1) + 1;
+    const slide = createHeroSlide(nextSortOrder);
+    setDraft({ ...draft, heroSlides: [...draft.heroSlides, slide] });
+    setActiveHeroSlideId(slide.id);
+    toast.success('New slide added');
+  };
+
+  const handleRemoveHeroSlide = (slideId: string) => {
+    if (!draft || !canDelete) return;
+    if (draft.heroSlides.length <= 1) {
+      toast.error('At least one hero slide is required');
+      return;
+    }
+
+    const heroSlides = draft.heroSlides.filter((slide) => slide.id !== slideId);
+    setDraft({ ...draft, heroSlides });
+    if (activeHeroSlideId === slideId) {
+      setActiveHeroSlideId(heroSlides[0]?.id ?? null);
+    }
+    toast.success('Slide removed');
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -94,113 +136,163 @@ export default function HomepagePage() {
           <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="hero" className="space-y-4">
-          {draft.heroSlides.map((slide, index) => (
-            <section key={slide.id} className="bg-background border border-border rounded p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-medium">Slide {index + 1}</h3>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor={`hero-enabled-${slide.id}`}>Enabled</Label>
-                  <Switch
-                    id={`hero-enabled-${slide.id}`}
-                    checked={slide.enabled}
-                    disabled={!canModify}
-                    onCheckedChange={(enabled) => {
-                      const heroSlides = [...draft.heroSlides];
-                      heroSlides[index] = { ...slide, enabled };
-                      setDraft({ ...draft, heroSlides });
-                    }}
-                  />
+        <TabsContent value="hero" className="space-y-6">
+          <HeroSlidePreview
+            slides={draft.heroSlides}
+            activeSlideId={activeHeroSlideId}
+            onActiveSlideChange={setActiveHeroSlideId}
+          />
+
+          {canModify && (
+            <div className="flex justify-end">
+              <Button type="button" variant="outline" onClick={handleAddHeroSlide} className="gap-1.5">
+                <Plus size={14} />
+                Add Slide
+              </Button>
+            </div>
+          )}
+
+          {draft.heroSlides.map((slide, index) => {
+            const previewSrc = resolveStorefrontAssetUrl(slide.imageUrl);
+            const isActive = slide.id === activeHeroSlideId;
+
+            return (
+              <section
+                key={slide.id}
+                className={`bg-background border rounded p-5 space-y-4 transition-colors ${
+                  isActive ? 'border-foreground' : 'border-border'
+                }`}
+              >
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="flex items-start gap-4 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => setActiveHeroSlideId(slide.id)}
+                      className="h-20 w-32 flex-none overflow-hidden rounded border border-border bg-muted"
+                    >
+                      {previewSrc ? (
+                        <img src={previewSrc} alt={slide.title} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground px-2 text-center">
+                          No image
+                        </div>
+                      )}
+                    </button>
+                    <div className="min-w-0">
+                      <h3 className="font-medium">Slide {index + 1}</h3>
+                      <p className="text-xs text-muted-foreground mt-1 truncate">
+                        {slide.title}
+                        {slide.titleHighlight ? ` — ${slide.titleHighlight}` : ''}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor={`hero-enabled-${slide.id}`}>Enabled</Label>
+                      <Switch
+                        id={`hero-enabled-${slide.id}`}
+                        checked={slide.enabled}
+                        disabled={!canModify}
+                        onCheckedChange={(enabled) => updateHeroSlide(index, { enabled })}
+                      />
+                    </div>
+                    {canDelete && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-destructive"
+                        onClick={() => handleRemoveHeroSlide(slide.id)}
+                        aria-label={`Remove slide ${index + 1}`}
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Eyebrow</Label>
-                  <Input
-                    value={slide.eyebrow}
-                    disabled={!canModify}
-                    onChange={(event) => {
-                      const heroSlides = [...draft.heroSlides];
-                      heroSlides[index] = { ...slide, eyebrow: event.target.value };
-                      setDraft({ ...draft, heroSlides });
-                    }}
-                  />
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Eyebrow</Label>
+                    <Input
+                      value={slide.eyebrow}
+                      disabled={!canModify}
+                      onFocus={() => setActiveHeroSlideId(slide.id)}
+                      onChange={(event) => updateHeroSlide(index, { eyebrow: event.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Image URL</Label>
+                    <Input
+                      value={slide.imageUrl}
+                      disabled={!canModify}
+                      onFocus={() => setActiveHeroSlideId(slide.id)}
+                      onChange={(event) => updateHeroSlide(index, { imageUrl: event.target.value })}
+                      placeholder="/images/hero/hero-collection.jpg"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Title</Label>
+                    <Input
+                      value={slide.title}
+                      disabled={!canModify}
+                      onFocus={() => setActiveHeroSlideId(slide.id)}
+                      onChange={(event) => updateHeroSlide(index, { title: event.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Title Highlight</Label>
+                    <Input
+                      value={slide.titleHighlight ?? ''}
+                      disabled={!canModify}
+                      onFocus={() => setActiveHeroSlideId(slide.id)}
+                      onChange={(event) => updateHeroSlide(index, { titleHighlight: event.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Description</Label>
+                    <Textarea
+                      value={slide.description}
+                      disabled={!canModify}
+                      onFocus={() => setActiveHeroSlideId(slide.id)}
+                      onChange={(event) => updateHeroSlide(index, { description: event.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>CTA Text</Label>
+                    <Input
+                      value={slide.ctaText}
+                      disabled={!canModify}
+                      onFocus={() => setActiveHeroSlideId(slide.id)}
+                      onChange={(event) => updateHeroSlide(index, { ctaText: event.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>CTA Link</Label>
+                    <Input
+                      value={slide.ctaLink}
+                      disabled={!canModify}
+                      onFocus={() => setActiveHeroSlideId(slide.id)}
+                      onChange={(event) => updateHeroSlide(index, { ctaLink: event.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Sort Order</Label>
+                    <Input
+                      type="number"
+                      value={slide.sortOrder}
+                      disabled={!canModify}
+                      onFocus={() => setActiveHeroSlideId(slide.id)}
+                      onChange={(event) =>
+                        updateHeroSlide(index, { sortOrder: Number(event.target.value) || 0 })
+                      }
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Image URL</Label>
-                  <Input
-                    value={slide.imageUrl}
-                    disabled={!canModify}
-                    onChange={(event) => {
-                      const heroSlides = [...draft.heroSlides];
-                      heroSlides[index] = { ...slide, imageUrl: event.target.value };
-                      setDraft({ ...draft, heroSlides });
-                    }}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Title</Label>
-                  <Input
-                    value={slide.title}
-                    disabled={!canModify}
-                    onChange={(event) => {
-                      const heroSlides = [...draft.heroSlides];
-                      heroSlides[index] = { ...slide, title: event.target.value };
-                      setDraft({ ...draft, heroSlides });
-                    }}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Title Highlight</Label>
-                  <Input
-                    value={slide.titleHighlight ?? ''}
-                    disabled={!canModify}
-                    onChange={(event) => {
-                      const heroSlides = [...draft.heroSlides];
-                      heroSlides[index] = { ...slide, titleHighlight: event.target.value };
-                      setDraft({ ...draft, heroSlides });
-                    }}
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label>Description</Label>
-                  <Textarea
-                    value={slide.description}
-                    disabled={!canModify}
-                    onChange={(event) => {
-                      const heroSlides = [...draft.heroSlides];
-                      heroSlides[index] = { ...slide, description: event.target.value };
-                      setDraft({ ...draft, heroSlides });
-                    }}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>CTA Text</Label>
-                  <Input
-                    value={slide.ctaText}
-                    disabled={!canModify}
-                    onChange={(event) => {
-                      const heroSlides = [...draft.heroSlides];
-                      heroSlides[index] = { ...slide, ctaText: event.target.value };
-                      setDraft({ ...draft, heroSlides });
-                    }}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>CTA Link</Label>
-                  <Input
-                    value={slide.ctaLink}
-                    disabled={!canModify}
-                    onChange={(event) => {
-                      const heroSlides = [...draft.heroSlides];
-                      heroSlides[index] = { ...slide, ctaLink: event.target.value };
-                      setDraft({ ...draft, heroSlides });
-                    }}
-                  />
-                </div>
-              </div>
-            </section>
-          ))}
+              </section>
+            );
+          })}
         </TabsContent>
 
         <TabsContent value="categories" className="space-y-6">
