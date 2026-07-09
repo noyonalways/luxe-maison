@@ -1,6 +1,6 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Plus, Search, Edit, Archive, Eye, AlertTriangle, Upload, Download, X, Check, FileSpreadsheet, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Search, Edit, Archive, Eye, AlertTriangle, Upload, Trash2, Loader2 } from 'lucide-react';
 import { useProducts } from '@/contexts/products-context';
 import type { AdminProduct } from '@/data/cms-types';
 import { useTableSort, useTablePagination, SortableHeader, PaginationControls } from '@/components/staff/TableControls';
@@ -8,16 +8,7 @@ import { useRole } from '@/contexts/role-context';
 import { cmsProductEdit, cmsProductNew } from '@/lib/cms-navigation';
 import { toApiError } from '@/lib/api/errors';
 import { toast } from 'sonner';
-import Papa from 'papaparse';
-import * as XLSX from 'xlsx';
-
-interface ImportRow {
-  name: string; price: string; sku: string; stock: string; category: string; fabric: string; fit: string; description: string; tags?: string;
-}
-
-const CSV_TEMPLATE = `name,sku,price,stock,category,fabric,fit,description,tags
-"Premium Silk Kurta",SKU-NEW-001,199,50,punjabi,silk,regular,"Handcrafted silk kurta with intricate embroidery","punjabi,silk,festive"
-"Classic Oxford Shirt",SKU-NEW-002,129,75,shirt,cotton,slim,"Timeless oxford weave cotton shirt","shirt,cotton,formal"`;
+import { ProductBulkImportFlow } from '@/components/products/ProductBulkImportFlow';
 
 export default function Products() {
   const { roleSlug, canEdit: canEditFn, canDelete: canDeleteFn } = useRole();
@@ -28,11 +19,6 @@ export default function Products() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const [showImport, setShowImport] = useState(false);
-  const [importData, setImportData] = useState<ImportRow[]>([]);
-  const [importErrors, setImportErrors] = useState<string[]>([]);
-  const [isImporting, setIsImporting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { sortField, sortDir, handleSort, sortData } = useTableSort<AdminProduct>('name' as keyof AdminProduct, 'asc');
 
@@ -48,78 +34,8 @@ export default function Products() {
   const pagination = useTablePagination(filtered.length, 10);
   const paginated = pagination.paginateData(filtered);
 
-  // File handling
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const extension = file.name.split('.').pop()?.toLowerCase();
-    if (extension === 'csv') {
-      Papa.parse<ImportRow>(file, { header: true, skipEmptyLines: true, complete: (results) => processImportData(results.data), error: () => setImportErrors(['Failed to parse CSV file']) });
-    } else if (extension === 'xlsx' || extension === 'xls') {
-      const reader = new FileReader();
-      reader.onload = (evt) => { const data = evt.target?.result; const workbook = XLSX.read(data, { type: 'binary' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; processImportData(XLSX.utils.sheet_to_json<ImportRow>(sheet)); };
-      reader.readAsBinaryString(file);
-    } else { setImportErrors(['Please upload a CSV or Excel file']); }
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const processImportData = (data: ImportRow[]) => {
-    const errors: string[] = []; const validRows: ImportRow[] = [];
-    data.forEach((row, idx) => {
-      const rowNum = idx + 2;
-      if (!row.name?.trim()) { errors.push(`Row ${rowNum}: Name is required`); return; }
-      if (!row.sku?.trim()) { errors.push(`Row ${rowNum}: SKU is required`); return; }
-      if (!row.price || isNaN(Number(row.price)) || Number(row.price) <= 0) { errors.push(`Row ${rowNum}: Valid price is required`); return; }
-      if (products.some(p => p.sku.toLowerCase() === row.sku.trim().toLowerCase())) { errors.push(`Row ${rowNum}: SKU "${row.sku}" already exists`); return; }
-      if (validRows.some(r => r.sku.toLowerCase() === row.sku.trim().toLowerCase())) { errors.push(`Row ${rowNum}: Duplicate SKU "${row.sku}" in import`); return; }
-      validRows.push(row);
-    });
-    setImportData(validRows); setImportErrors(errors); setShowImport(true);
-  };
-
-  const confirmImport = async () => {
-    setIsImporting(true);
-    try {
-      const newProducts: AdminProduct[] = importData.map((row, idx) => ({
-        id: `import-${Date.now()}-${idx}`,
-        name: row.name.trim(),
-        price: Number(row.price),
-        category: (row.category?.trim().toLowerCase() || 'shirt') as AdminProduct['category'],
-        fit: (row.fit?.trim().toLowerCase() || 'regular') as AdminProduct['fit'],
-        fabric: (row.fabric?.trim().toLowerCase() || 'cotton') as AdminProduct['fabric'],
-        season: 'all-season' as const,
-        colors: [{ name: 'Default', hex: '#333333' }],
-        sizes: ['S', 'M', 'L', 'XL'],
-        images: ['https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80'],
-        description: row.description?.trim() || '',
-        details: [],
-        rating: 0,
-        reviews: 0,
-        section: 'men' as const,
-        sku: row.sku.trim(),
-        stock: Number(row.stock) || 0,
-        tags: row.tags?.split(',').map((t) => t.trim()).filter(Boolean) || [],
-        seoTitle: `${row.name.trim()} — MAISON`,
-        seoDescription: row.description?.slice(0, 155) || '',
-        status: 'draft' as const,
-        createdAt: new Date().toISOString(),
-      }));
-
-      await Promise.all(newProducts.map((product) => addProduct(product)));
-      toast.success(`Imported ${newProducts.length} product${newProducts.length > 1 ? 's' : ''}`);
-      setShowImport(false);
-      setImportData([]);
-      setImportErrors([]);
-    } catch (error) {
-      toast.error(toApiError(error).message);
-    } finally {
-      setIsImporting(false);
-    }
-  };
-
-  const downloadTemplate = () => {
-    const blob = new Blob([CSV_TEMPLATE], { type: 'text/csv' }); const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'product-import-template.csv'; a.click(); URL.revokeObjectURL(url);
+  const handleBulkImport = async (newProducts: AdminProduct[]) => {
+    await Promise.all(newProducts.map((product) => addProduct(product)));
   };
 
   if (isLoading) {
@@ -136,10 +52,19 @@ export default function Products() {
         <h1 className="font-heading text-2xl lg:text-3xl">Products</h1>
         {canEditProducts && (
         <div className="flex gap-2">
-          <label className="flex items-center gap-2 px-4 py-2.5 border border-border text-xs font-medium letter-wide uppercase transition-smooth hover:border-foreground cursor-pointer">
-            <Upload size={14} /> Import
-            <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleFileSelect} className="hidden" />
-          </label>
+          <ProductBulkImportFlow
+            products={products}
+            onImport={handleBulkImport}
+            trigger={(open) => (
+              <button
+                type="button"
+                onClick={open}
+                className="flex items-center gap-2 px-4 py-2.5 border border-border text-xs font-medium letter-wide uppercase transition-smooth hover:border-foreground"
+              >
+                <Upload size={14} /> Import
+              </button>
+            )}
+          />
           <button onClick={() => navigate(cmsProductNew(roleSlug))} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:opacity-90">
             <Plus size={14} /> Add Product
           </button>
@@ -243,59 +168,6 @@ export default function Products() {
       </div>
 
       <PaginationControls {...pagination} totalItems={filtered.length} />
-
-      {/* Import Modal */}
-      {showImport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30" onClick={() => { setShowImport(false); setImportData([]); setImportErrors([]); }}>
-          <div className="bg-background w-full max-w-3xl max-h-[85vh] overflow-y-auto m-4 shadow-elevated" onClick={e => e.stopPropagation()}>
-            <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <FileSpreadsheet size={20} className="text-primary" />
-                <div><h2 className="font-heading text-lg">Import Products</h2><p className="text-xs text-muted-foreground">Review data before importing</p></div>
-              </div>
-              <button onClick={() => { setShowImport(false); setImportData([]); setImportErrors([]); }} className="text-muted-foreground transition-smooth hover-gold"><X size={18} /></button>
-            </div>
-            <div className="px-6 py-6">
-              {importErrors.length > 0 && (
-                <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded">
-                  <p className="text-sm font-medium text-destructive mb-2">{importErrors.length} error{importErrors.length > 1 ? 's' : ''} found:</p>
-                  <ul className="text-xs text-destructive space-y-1 max-h-24 overflow-y-auto">{importErrors.map((err, i) => <li key={i}>• {err}</li>)}</ul>
-                </div>
-              )}
-              {importData.length > 0 ? (
-                <>
-                  <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm font-medium"><Check size={14} className="inline mr-1 text-emerald-600" />{importData.length} product{importData.length > 1 ? 's' : ''} ready to import</p>
-                  </div>
-                  <div className="border border-border rounded overflow-x-auto max-h-64">
-                    <table className="w-full text-xs">
-                      <thead><tr className="border-b border-border bg-secondary"><th className="px-3 py-2 text-left font-semibold">Name</th><th className="px-3 py-2 text-left font-semibold">SKU</th><th className="px-3 py-2 text-left font-semibold">Price</th><th className="px-3 py-2 text-left font-semibold">Stock</th><th className="px-3 py-2 text-left font-semibold">Category</th></tr></thead>
-                      <tbody>{importData.map((row, i) => (<tr key={i} className="border-b border-border last:border-0"><td className="px-3 py-2 font-medium">{row.name}</td><td className="px-3 py-2 font-mono text-muted-foreground">{row.sku}</td><td className="px-3 py-2">${row.price}</td><td className="px-3 py-2">{row.stock || 0}</td><td className="px-3 py-2">{row.category || 'shirt'}</td></tr>))}</tbody>
-                    </table>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-3">Products will be imported as "Draft" status.</p>
-                </>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-sm text-muted-foreground mb-4">No valid products to import.</p>
-                  <button onClick={downloadTemplate} className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-2"><Download size={14} /> Download CSV template</button>
-                </div>
-              )}
-            </div>
-            <div className="px-6 py-4 border-t border-border flex items-center justify-between">
-              <button onClick={downloadTemplate} className="flex items-center gap-2 text-xs text-muted-foreground transition-smooth hover-gold"><Download size={12} /> Download template</button>
-              <div className="flex gap-3">
-                <button onClick={() => { setShowImport(false); setImportData([]); setImportErrors([]); }} className="px-5 py-2.5 border border-border text-xs font-medium letter-wide uppercase transition-smooth hover:border-foreground">Cancel</button>
-                {importData.length > 0 && (
-                  <button onClick={confirmImport} disabled={isImporting} className="px-5 py-2.5 bg-primary text-primary-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:opacity-90 disabled:opacity-60">
-                    {isImporting ? 'Importing...' : `Import ${importData.length} Product${importData.length > 1 ? 's' : ''}`}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Delete Confirmation */}
       {deleteConfirm && (
