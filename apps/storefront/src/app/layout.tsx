@@ -14,8 +14,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "MAISON — Premium Menswear",
-  description: "Discover curated premium traditional and contemporary menswear.",
+  title: "MAISON — Premium Fashion",
+  description: "Discover curated premium fashion for men, women, and kids.",
 };
 
 export default function RootLayout({

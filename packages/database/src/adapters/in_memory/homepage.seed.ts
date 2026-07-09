@@ -1,4 +1,4 @@
-import type { HomepageContent } from '@luxe-maison/core';
+import type { HomepageContent, HeroSlide } from '@luxe-maison/core';
 
 export const defaultHomepageContent: HomepageContent = {
   heroSlides: [
@@ -9,7 +9,7 @@ export const defaultHomepageContent: HomepageContent = {
       title: 'The Art of',
       titleHighlight: 'Refined Dressing',
       description:
-        'Discover our curated collection of premium traditional and contemporary menswear, crafted with exceptional fabrics.',
+        'Discover curated premium fashion for men, women, and kids — traditional and contemporary pieces crafted with exceptional fabrics.',
       ctaText: 'Explore Collection',
       ctaLink: '/shop',
       enabled: true,
@@ -22,7 +22,7 @@ export const defaultHomepageContent: HomepageContent = {
       title: 'Elegance in',
       titleHighlight: 'Every Detail',
       description:
-        'Handcrafted silhouettes that embody sophistication — from the finest silk kurtas to perfectly tailored ensembles.',
+        'Handcrafted silhouettes that embody sophistication — from elegant Punjabi to perfectly tailored everyday essentials.',
       ctaText: 'Shop New Arrivals',
       ctaLink: '/shop?badge=New+Arrival',
       enabled: true,
@@ -31,13 +31,13 @@ export const defaultHomepageContent: HomepageContent = {
     {
       id: 'hero-3',
       imageUrl: '/images/hero/hero-slide-3.jpg',
-      eyebrow: "The Gentleman's Edit",
-      title: 'Crafted for the',
-      titleHighlight: 'Modern Connoisseur',
+      eyebrow: 'All Collections',
+      title: 'Crafted for',
+      titleHighlight: 'Men, Women & Kids',
       description:
-        'Premium fabrics, meticulous stitching, and timeless accessories — curated for those who appreciate the finer things.',
+        'Premium fabrics, meticulous stitching, and timeless design — curated for every member of the family.',
       ctaText: 'Discover More',
-      ctaLink: '/shop/men',
+      ctaLink: '/shop',
       enabled: true,
       sortOrder: 2,
     },
@@ -105,24 +105,63 @@ export const defaultHomepageContent: HomepageContent = {
   },
 };
 
-const SEED_HERO_IMAGE_BY_ID = Object.fromEntries(
-  defaultHomepageContent.heroSlides.map((slide) => [slide.id, slide.imageUrl]),
-) as Record<string, string>;
+const SEED_HERO_BY_ID = Object.fromEntries(
+  defaultHomepageContent.heroSlides.map((slide) => [slide.id, slide]),
+) as Record<string, (typeof defaultHomepageContent.heroSlides)[number]>;
+
+const LEGACY_HERO_TEXT: Record<string, Partial<HeroSlide>> = {
+  'hero-1': {
+    description:
+      'Discover our curated collection of premium traditional and contemporary menswear, crafted with exceptional fabrics.',
+  },
+  'hero-2': {
+    description:
+      'Handcrafted silhouettes that embody sophistication — from the finest silk kurtas to perfectly tailored ensembles.',
+  },
+  'hero-3': {
+    eyebrow: "The Gentleman's Edit",
+    title: 'Crafted for the',
+    titleHighlight: 'Modern Connoisseur',
+    description:
+      'Premium fabrics, meticulous stitching, and timeless accessories — curated for those who appreciate the finer things.',
+    ctaLink: '/shop/men',
+  },
+};
+
+function migrateHeroSlide(slide: HeroSlide): { slide: HeroSlide; changed: boolean } {
+  const seedSlide = SEED_HERO_BY_ID[slide.id];
+  let next = { ...slide };
+  let changed = false;
+
+  if (seedSlide) {
+    const usesLegacyRemoteImage =
+      slide.imageUrl.includes('unsplash.com') || slide.imageUrl.includes('images.unsplash.com');
+    if (usesLegacyRemoteImage && slide.imageUrl !== seedSlide.imageUrl) {
+      next.imageUrl = seedSlide.imageUrl;
+      changed = true;
+    }
+
+    const legacy = LEGACY_HERO_TEXT[slide.id];
+    if (legacy) {
+      for (const key of Object.keys(legacy) as (keyof HeroSlide)[]) {
+        if (legacy[key] !== undefined && slide[key] === legacy[key] && slide[key] !== seedSlide[key]) {
+          next = { ...next, [key]: seedSlide[key] };
+          changed = true;
+        }
+      }
+    }
+  }
+
+  return { slide: next, changed };
+}
 
 export function migrateHomepageContent(content: HomepageContent): HomepageContent {
   let changed = false;
 
   const heroSlides = content.heroSlides.map((slide) => {
-    const seedImageUrl = SEED_HERO_IMAGE_BY_ID[slide.id];
-    const usesLegacyRemoteImage =
-      slide.imageUrl.includes('unsplash.com') || slide.imageUrl.includes('images.unsplash.com');
-
-    if (seedImageUrl && usesLegacyRemoteImage && slide.imageUrl !== seedImageUrl) {
-      changed = true;
-      return { ...slide, imageUrl: seedImageUrl };
-    }
-
-    return slide;
+    const result = migrateHeroSlide(slide);
+    if (result.changed) changed = true;
+    return result.slide;
   });
 
   if (!changed) return content;

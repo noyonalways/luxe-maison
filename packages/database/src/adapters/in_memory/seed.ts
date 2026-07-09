@@ -128,7 +128,7 @@ export const mockSubscribers: Subscriber[] = [
 ];
 
 export const mockNewsletterEmails: NewsletterEmail[] = [
-  { id: 'nl-1', subject: 'Welcome to MAISON — Your Style Journey Begins', body: 'Thank you for joining MAISON. Discover our curated collection of premium menswear...', audience: 'all', recipientCount: 6, openRate: 72, sentAt: '2026-01-10T09:00:00Z' },
+  { id: 'nl-1', subject: 'Welcome to MAISON — Your Style Journey Begins', body: 'Thank you for joining MAISON. Discover our curated collections for men, women, and kids...', audience: 'all', recipientCount: 6, openRate: 72, sentAt: '2026-01-10T09:00:00Z' },
   { id: 'nl-2', subject: 'New Arrivals: Spring Collection 2026', body: 'Explore the latest additions to our Spring lineup. Fresh fabrics, bold silhouettes...', audience: 'active', recipientCount: 5, openRate: 58, sentAt: '2026-02-15T10:00:00Z' },
   { id: 'nl-3', subject: 'Exclusive: 15% Off This Weekend Only', body: 'Use code WEEKEND15 at checkout for 15% off your entire order. Hurry — this offer expires Sunday...', audience: 'active', recipientCount: 6, openRate: 64, sentAt: '2026-03-01T08:00:00Z' },
 ];
@@ -147,14 +147,14 @@ export const mockDiscounts: Discount[] = [
 export const mockCampaigns: Campaign[] = [
   {
     id: 'camp-1', name: 'Summer Collection Launch', type: 'launch', status: 'active',
-    description: 'Grand launch of the Summer 2026 collection featuring lightweight linen and cotton pieces.',
+    description: 'Grand launch of the Summer 2026 collection for men, women, and kids — featuring lightweight linen and cotton pieces.',
     startDate: '2026-06-01T00:00:00Z', endDate: '2026-08-31T23:59:59Z',
     discountCode: 'SUMMER15', targetAudience: 'All subscribers', budget: 5000, revenue: 12400,
     impressions: 45200, clicks: 3800, conversions: 156, createdAt: '2026-05-20T00:00:00Z',
   },
   {
     id: 'camp-2', name: 'Eid Flash Sale', type: 'flash', status: 'active',
-    description: 'Limited-time flash sale on premium Punjabi collection for Eid celebrations.',
+    description: 'Limited-time flash sale on our premium Punjabi collection for men, women, and kids.',
     startDate: '2026-07-01T00:00:00Z', endDate: '2026-07-15T23:59:59Z',
     discountCode: 'FLAT20', targetAudience: 'South Asia & Middle East', budget: 3000, revenue: 4200,
     impressions: 18200, clicks: 1400, conversions: 68, createdAt: '2026-06-25T00:00:00Z',
@@ -179,6 +179,13 @@ export const mockCampaigns: Campaign[] = [
     startDate: '2026-01-15T00:00:00Z', endDate: '2026-02-15T23:59:59Z',
     discountCode: 'VIP25', targetAudience: 'VIP members', budget: 1500, revenue: 8900,
     impressions: 12000, clicks: 1800, conversions: 89, createdAt: '2026-01-10T00:00:00Z',
+  },
+  {
+    id: 'camp-6', name: 'Kids\' Summer Edit', type: 'seasonal', status: 'active',
+    description: 'Playful, comfortable styles for kids — durable fabrics and easy-care finishes for everyday wear.',
+    startDate: '2026-07-01T00:00:00Z', endDate: '2026-09-30T23:59:59Z',
+    discountCode: 'KIDS10', targetAudience: 'All customers', budget: 2000, revenue: 1800,
+    impressions: 15400, clicks: 1200, conversions: 52, createdAt: '2026-06-30T00:00:00Z',
   },
 ];
 

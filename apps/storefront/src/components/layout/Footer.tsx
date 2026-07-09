@@ -8,15 +8,20 @@ export default function Footer() {
           <div>
             <h3 className="font-heading text-2xl font-semibold mb-4">MAISON</h3>
             <p className="text-sm opacity-60 leading-relaxed max-w-xs">
-              Curating the finest traditional and contemporary menswear since 2020.
+              Curating premium fashion for men, women, and kids since 2020.
             </p>
           </div>
           <div>
             <h4 className="text-xs font-body font-semibold letter-wide uppercase mb-4 opacity-80">Shop</h4>
             <div className="flex flex-col gap-2.5">
-              {['Punjabi', 'Shirts', 'T-Shirts', 'Pants', 'New Arrivals'].map(item => (
-                <Link key={item} href="/shop" className="text-sm opacity-60 transition-smooth hover:opacity-100">
-                  {item}
+              {[
+                { label: 'Men', href: '/shop/men' },
+                { label: 'Women', href: '/shop/women' },
+                { label: 'Kids', href: '/shop/kids' },
+                { label: 'New Arrivals', href: '/shop?badge=New+Arrival' },
+              ].map((item) => (
+                <Link key={item.label} href={item.href} className="text-sm opacity-60 transition-smooth hover:opacity-100">
+                  {item.label}
                 </Link>
               ))}
             </div>

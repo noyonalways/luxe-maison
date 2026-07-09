@@ -35,12 +35,10 @@ export function createImpHomepageRepository(
 
       const raw = stripId(doc);
       const content = migrateHomepageContent(raw);
-      const needsPersist = raw.heroSlides.some(
-        (slide, index) => slide.imageUrl !== content.heroSlides[index]?.imageUrl,
-      );
+      const needsPersist = JSON.stringify(content) !== JSON.stringify(raw);
 
       if (needsPersist) {
-        await model.findOneAndUpdate({ id: HOMEPAGE_ID }, { $set: { heroSlides: content.heroSlides } });
+        await model.findOneAndUpdate({ id: HOMEPAGE_ID }, { $set: content });
       }
 
       return content;
