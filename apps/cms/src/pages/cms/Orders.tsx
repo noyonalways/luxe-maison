@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Search, Truck, MessageSquare, Loader2, CreditCard } from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
+import { Search, Truck, MessageSquare, Loader2, CreditCard, ExternalLink, Package } from 'lucide-react';
 import type { Order, OrderStatus, PaymentMethod, PaymentStatus } from '@/data/cms-types';
 import { StatusBadge } from '@/components/staff/StatusBadge';
 import { useTableSort, useTablePagination, SortableHeader, PaginationControls } from '@/components/staff/TableControls';
@@ -50,6 +50,10 @@ function PaymentBadge({ method, status }: { method: PaymentMethod; status: Payme
 
 type OrderSortKey = 'id' | 'customerName' | 'total' | 'createdAt' | 'status';
 
+const STOREFRONT_URL = import.meta.env.VITE_STOREFRONT_URL || 'http://localhost:3000';
+
+const CARRIER_OPTIONS = ['FedEx', 'UPS', 'DHL', 'USPS', 'Aramex', 'Local Courier'];
+
 export default function Orders() {
   const { canEdit, canDelete } = useRole();
   const { orders, isLoading, advanceStatus, updateTracking, addNote, isSaving } = useOrders();
@@ -67,6 +71,12 @@ export default function Orders() {
     () => orders.find((o) => o.id === selectedOrderId) ?? null,
     [orders, selectedOrderId],
   );
+
+  useEffect(() => {
+    if (!selectedOrder) return;
+    setTrackingInput(selectedOrder.trackingNumber || '');
+    setCarrierInput(selectedOrder.carrier || '');
+  }, [selectedOrder]);
 
   const { sortField, sortDir, handleSort, sortData } = useTableSort<Record<OrderSortKey, unknown>>(
     'createdAt' as OrderSortKey,
@@ -111,17 +121,24 @@ export default function Orders() {
     }
   };
 
-  const handleUpdateTracking = async (orderId: string) => {
+  const handleUpdateTracking = async (order: Order) => {
     if (!trackingInput.trim()) return;
     try {
-      await updateTracking(orderId, trackingInput.trim(), carrierInput.trim());
-      setTrackingInput('');
-      setCarrierInput('');
+      await updateTracking(order.id, trackingInput.trim(), carrierInput.trim());
+      if (
+        canEditOrders &&
+        (order.status === 'pending' || order.status === 'processing')
+      ) {
+        await advanceStatus(order.id, 'shipped');
+      }
       toast.success('Tracking updated');
     } catch (err) {
       toast.error(toApiError(err).message);
     }
   };
+
+  const trackOrderUrl = (order: Order) =>
+    `${STOREFRONT_URL}/track-order?orderId=${encodeURIComponent(order.id)}&email=${encodeURIComponent(order.customerEmail)}`;
 
   const openOrder = (order: Order) => {
     setSelectedOrderId(order.id);
@@ -188,6 +205,9 @@ export default function Orders() {
                 <SortableHeader field="status" label="Status" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
               </th>
               <th className="px-5 py-3 text-xs font-body font-semibold letter-wide uppercase text-muted-foreground">
+                Tracking
+              </th>
+              <th className="px-5 py-3 text-xs font-body font-semibold letter-wide uppercase text-muted-foreground">
                 <SortableHeader field="createdAt" label="Date" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
               </th>
               <th className="px-5 py-3 text-xs font-body font-semibold letter-wide uppercase text-muted-foreground text-right">
@@ -217,6 +237,19 @@ export default function Orders() {
                 </td>
                 <td className="px-5 py-3">
                   <StatusBadge status={order.status} />
+                </td>
+                <td className="px-5 py-3 text-xs text-muted-foreground max-w-[140px]">
+                  {order.trackingNumber ? (
+                    <div className="truncate" title={`${order.carrier ? `${order.carrier} · ` : ''}${order.trackingNumber}`}>
+                      <span className="flex items-center gap-1 text-foreground">
+                        <Truck size={12} className="shrink-0 text-gold" />
+                        <span className="truncate font-mono">{order.trackingNumber}</span>
+                      </span>
+                      {order.carrier && <span className="truncate block mt-0.5">{order.carrier}</span>}
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground/60">—</span>
+                  )}
                 </td>
                 <td className="px-5 py-3 text-muted-foreground text-xs">
                   {new Date(order.createdAt).toLocaleDateString()}
@@ -352,36 +385,86 @@ export default function Orders() {
                   </div>
                 </div>
               </div>
-              {canDeleteOrders && (
-                <div>
-                  <p className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-2 flex items-center gap-1.5">
-                    <Truck size={12} /> Tracking
-                  </p>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={trackingInput}
-                      onChange={(e) => setTrackingInput(e.target.value.slice(0, 50))}
-                      placeholder="Tracking number"
-                      className="flex-1 px-3 py-2 border border-border text-sm bg-background focus:outline-none focus:border-foreground transition-smooth"
-                    />
-                    <input
-                      type="text"
-                      value={carrierInput}
-                      onChange={(e) => setCarrierInput(e.target.value.slice(0, 30))}
-                      placeholder="Carrier"
-                      className="w-28 px-3 py-2 border border-border text-sm bg-background focus:outline-none focus:border-foreground transition-smooth"
-                    />
-                    <button
-                      onClick={() => void handleUpdateTracking(selectedOrder.id)}
-                      disabled={isSaving}
-                      className="px-3 py-2 bg-foreground text-background text-xs font-medium transition-smooth hover:opacity-90 disabled:opacity-50"
-                    >
-                      Save
-                    </button>
+
+              {/* Shipment tracking */}
+              <div className="rounded-lg border border-border bg-secondary/30 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
+                  <div>
+                    <p className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-1 flex items-center gap-1.5">
+                      <Truck size={12} /> Shipment tracking
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Customers see this on the storefront track-order page.
+                    </p>
                   </div>
+                  <a
+                    href={trackOrderUrl(selectedOrder)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground underline underline-offset-4 hover:text-gold shrink-0"
+                  >
+                    Preview customer view
+                    <ExternalLink size={12} />
+                  </a>
                 </div>
-              )}
+
+                {selectedOrder.trackingNumber ? (
+                  <div className="mb-4 rounded border border-border bg-background px-4 py-3">
+                    <p className="text-[10px] font-semibold letter-wide uppercase text-muted-foreground mb-1">
+                      Current tracking
+                    </p>
+                    <p className="font-mono text-sm font-medium">{selectedOrder.trackingNumber}</p>
+                    {selectedOrder.carrier && (
+                      <p className="text-xs text-muted-foreground mt-1">Carrier: {selectedOrder.carrier}</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="mb-4 flex items-center gap-2 rounded border border-dashed border-border bg-background px-4 py-3 text-xs text-muted-foreground">
+                    <Package size={14} />
+                    No tracking number yet — add one below so customers can follow their shipment.
+                  </div>
+                )}
+
+                {canEditOrders && (
+                  <div className="space-y-3">
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="text"
+                        value={trackingInput}
+                        onChange={(e) => setTrackingInput(e.target.value.slice(0, 50))}
+                        placeholder="Tracking number"
+                        className="flex-1 px-3 py-2 border border-border text-sm bg-background focus:outline-none focus:border-foreground transition-smooth font-mono"
+                      />
+                      <input
+                        type="text"
+                        value={carrierInput}
+                        onChange={(e) => setCarrierInput(e.target.value.slice(0, 30))}
+                        placeholder="Carrier"
+                        list="carrier-options"
+                        className="sm:w-36 px-3 py-2 border border-border text-sm bg-background focus:outline-none focus:border-foreground transition-smooth"
+                      />
+                      <datalist id="carrier-options">
+                        {CARRIER_OPTIONS.map((carrier) => (
+                          <option key={carrier} value={carrier} />
+                        ))}
+                      </datalist>
+                      <button
+                        onClick={() => void handleUpdateTracking(selectedOrder)}
+                        disabled={isSaving || !trackingInput.trim()}
+                        className="px-4 py-2 bg-primary text-primary-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:opacity-90 disabled:opacity-50"
+                      >
+                        {selectedOrder.trackingNumber ? 'Update' : 'Add tracking'}
+                      </button>
+                    </div>
+                    {(selectedOrder.status === 'pending' || selectedOrder.status === 'processing') && (
+                      <p className="text-[10px] text-muted-foreground">
+                        Saving tracking will also mark this order as <strong className="text-foreground">shipped</strong>.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {canDeleteOrders && (
                 <div>
                   <p className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-2 flex items-center gap-1.5">
