@@ -66,7 +66,12 @@ homepageRoutes(app, { homepageRepository });
 reviewRoutes(app, { reviewRepository });
 popupRoutes(app, { popupRepository });
 permissionsRoutes(app);
-analyticsRoutes(app);
+analyticsRoutes(app, {
+  orderRepository,
+  productRepository,
+  customerRepository,
+  campaignRepository,
+});
 
 app.notFound((c) => c.json({ status: 'error', message: 'Not Found' }, 404));
 

@@ -100,6 +100,7 @@ export const mockOrders: Order[] = [
 
 export const analyticsData: AnalyticsData = {
   totalRevenue: 48750, totalOrders: 312, avgOrderValue: 156.25, conversionRate: 3.8, cartAbandonmentRate: 68.2,
+  periodChanges: { revenue: 12.4, orders: 8.2, avgOrder: 3.1, conversion: 0.5 },
   revenueByMonth: [
     { month: 'Sep', revenue: 5200, orders: 34 }, { month: 'Oct', revenue: 7800, orders: 48 },
     { month: 'Nov', revenue: 9400, orders: 62 }, { month: 'Dec', revenue: 12100, orders: 78 },

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ordersApi } from '@/lib/api/orders.api';
 import { orderKeys } from '@/hooks/orders/order-keys';
+import { analyticsKeys } from '@/hooks/analytics/analytics-keys';
 import type { OrderStatus } from '@luxe-maison/shared';
 import type { UpdateOrderPayload } from '@/lib/api/orders.api';
 
@@ -13,6 +14,7 @@ export function useUpdateOrderStatusMutation() {
     onSuccess: (updated) => {
       queryClient.setQueryData(orderKeys.detail(updated.id), updated);
       void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      void queryClient.invalidateQueries({ queryKey: analyticsKeys.all });
     },
   });
 }
@@ -26,6 +28,7 @@ export function useUpdateOrderMutation() {
     onSuccess: (updated) => {
       queryClient.setQueryData(orderKeys.detail(updated.id), updated);
       void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      void queryClient.invalidateQueries({ queryKey: analyticsKeys.all });
     },
   });
 }
@@ -38,6 +41,7 @@ export function useAddOrderNoteMutation() {
     onSuccess: (updated) => {
       queryClient.setQueryData(orderKeys.detail(updated.id), updated);
       void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      void queryClient.invalidateQueries({ queryKey: analyticsKeys.all });
     },
   });
 }
