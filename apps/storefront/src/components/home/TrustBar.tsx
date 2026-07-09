@@ -4,7 +4,7 @@ const items = [
   { icon: Truck, label: 'Complimentary shipping', detail: 'On orders over $150' },
   { icon: RefreshCw, label: 'Easy returns', detail: '30-day hassle-free' },
   { icon: ShieldCheck, label: 'Secure checkout', detail: 'Protected payments' },
-  { icon: Headphones, label: 'Style support', detail: 'Mon–Fri, 9am–6pm' },
+  { icon: Headphones, label: 'Style support', detail: 'Mon-Fri, 9am-6pm' },
 ];
 
 export function TrustBar() {

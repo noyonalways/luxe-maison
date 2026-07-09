@@ -11,8 +11,14 @@ function stripMongoId(doc: ContentPageDocument): ContentPage {
 
 async function ensureSeeded(model: Model<ContentPageDocument>) {
   const count = await model.countDocuments();
-  if (count > 0) return;
-  await model.insertMany(defaultContentPages);
+  if (count === 0) {
+    await model.insertMany(defaultContentPages);
+    return;
+  }
+
+  for (const page of defaultContentPages) {
+    await model.updateOne({ slug: page.slug }, { $setOnInsert: page }, { upsert: true });
+  }
 }
 
 export function createImpContentPageRepository(

@@ -21,6 +21,13 @@ import {
   Home,
   FileText,
   Cookie,
+  BookOpen,
+  Gem,
+  Leaf,
+  Briefcase,
+  Ruler,
+  Truck,
+  Shirt,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -74,6 +81,14 @@ const pagesNavGroup: NavGroup = {
     { path: 'pages/privacy', icon: Shield, label: 'Privacy', section: 'pages' },
     { path: 'pages/terms', icon: FileText, label: 'Terms', section: 'pages' },
     { path: 'pages/cookies', icon: Cookie, label: 'Cookies', section: 'pages' },
+    { path: 'pages/our-story', icon: BookOpen, label: 'Our Story', section: 'pages' },
+    { path: 'pages/craftsmanship', icon: Gem, label: 'Craftsmanship', section: 'pages' },
+    { path: 'pages/sustainability', icon: Leaf, label: 'Sustainability', section: 'pages' },
+    { path: 'pages/careers', icon: Briefcase, label: 'Careers', section: 'pages' },
+    { path: 'pages/sizing-guide', icon: Ruler, label: 'Sizing Guide', section: 'pages' },
+    { path: 'pages/shipping-returns', icon: Truck, label: 'Shipping & Returns', section: 'pages' },
+    { path: 'pages/care-instructions', icon: Shirt, label: 'Care Instructions', section: 'pages' },
+    { path: 'pages/contact', icon: Mail, label: 'Contact', section: 'pages' },
   ],
 };
 
