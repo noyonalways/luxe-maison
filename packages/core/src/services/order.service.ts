@@ -1,5 +1,6 @@
-import type { Order, OrderItem, OrderStatus } from '../entities/order.entity.js';
+import type { Order, OrderItem, OrderStatus, PaymentMethod, PaymentStatus } from '../entities/order.entity.js';
 import type { OrderRepository } from '../repositories/order.repository.js';
+import type { CheckoutTotals } from './checkout.service.js';
 
 export type CreateOrderInput = {
   items: OrderItem[];
@@ -7,15 +8,16 @@ export type CreateOrderInput = {
   customerEmail: string;
   phone: string;
   shippingAddress: string;
-  subtotal: number;
-  shipping: number;
-  tax: number;
-  total: number;
-  promoCode?: string;
+  totals: CheckoutTotals;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  stripePaymentIntentId?: string;
+  giftWrap?: boolean;
+  giftMessage?: string;
 };
 
 export type UpdateOrderInput = Partial<
-  Pick<Order, 'status' | 'trackingNumber' | 'carrier' | 'notes'>
+  Pick<Order, 'status' | 'trackingNumber' | 'carrier' | 'notes' | 'paymentStatus'>
 >;
 
 async function generateOrderId(repository: OrderRepository): Promise<string> {
@@ -28,6 +30,20 @@ async function generateOrderId(repository: OrderRepository): Promise<string> {
     }
   }
   return `ORD-${max + 1}`;
+}
+
+function buildOrderNotes(input: CreateOrderInput): string[] {
+  const notes: string[] = [];
+  if (input.totals.promoCode) {
+    notes.push(`Promo code applied: ${input.totals.promoCode}`);
+  }
+  if (input.giftWrap && input.giftMessage?.trim()) {
+    notes.push(`Gift message: ${input.giftMessage.trim()}`);
+  }
+  if (input.paymentMethod === 'paypal') {
+    notes.push('PayPal payment pending — follow up with customer if unpaid.');
+  }
+  return notes;
 }
 
 export function createOrderService(repository: OrderRepository) {
@@ -59,11 +75,20 @@ export function createOrderService(repository: OrderRepository) {
         shippingAddress: input.shippingAddress.trim(),
         status: 'pending',
         items: input.items,
-        subtotal: input.subtotal,
-        shipping: input.shipping,
-        tax: input.tax,
-        total: input.total,
-        notes: input.promoCode ? [`Promo code applied: ${input.promoCode.trim().toUpperCase()}`] : [],
+        subtotal: input.totals.subtotal,
+        shipping: input.totals.shipping,
+        tax: input.totals.tax,
+        total: input.totals.total,
+        paymentMethod: input.paymentMethod,
+        paymentStatus: input.paymentStatus,
+        stripePaymentIntentId: input.stripePaymentIntentId,
+        promoCode: input.totals.promoCode,
+        discountAmount: input.totals.discountAmount,
+        giftWrap: Boolean(input.giftWrap),
+        giftWrapAmount: input.totals.giftWrapAmount,
+        codFee: input.totals.codFee,
+        giftMessage: input.giftMessage?.trim() || undefined,
+        notes: buildOrderNotes(input),
         createdAt: now,
         updatedAt: now,
       };

@@ -55,7 +55,7 @@ export function createImpOrderRepository(model: Model<Order> = OrderModel): Orde
       return toPlain(doc);
     },
 
-    async update(id: string, updates: Partial<Pick<Order, 'status' | 'trackingNumber' | 'carrier' | 'notes'>>) {
+    async update(id: string, updates: Partial<Pick<Order, 'status' | 'trackingNumber' | 'carrier' | 'notes' | 'paymentStatus'>>) {
       const doc = await model
         .findOneAndUpdate(
           { id },

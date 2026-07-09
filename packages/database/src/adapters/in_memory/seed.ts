@@ -44,7 +44,9 @@ export const mockOrders: Order[] = [
       { productId: 'pnj-001', productName: 'Royal Silk Punjabi', size: 'L', color: 'Ivory', quantity: 1, price: 189, image: products[0].images[0] },
       { productId: 'pnt-001', productName: 'Tailored Wool Trousers', size: '32', color: 'Charcoal', quantity: 1, price: 179, image: products[6].images[0] },
     ],
-    subtotal: 368, shipping: 0, tax: 29.44, total: 397.44, trackingNumber: 'TRK-9876543210', carrier: 'FedEx',
+    subtotal: 368, shipping: 0, tax: 29.44, total: 397.44,
+    paymentMethod: 'stripe', paymentStatus: 'paid', discountAmount: 0, giftWrap: false, giftWrapAmount: 0, codFee: 0,
+    trackingNumber: 'TRK-9876543210', carrier: 'FedEx',
     notes: ['VIP customer — expedited shipping applied.'], createdAt: '2026-02-15T10:30:00Z', updatedAt: '2026-02-19T14:20:00Z',
   },
   {
@@ -53,7 +55,9 @@ export const mockOrders: Order[] = [
     items: [
       { productId: 'sht-001', productName: 'Riviera Linen Shirt', size: 'M', color: 'White', quantity: 2, price: 149, image: products[2].images[0] },
     ],
-    subtotal: 298, shipping: 0, tax: 23.84, total: 321.84, trackingNumber: 'TRK-1234567890', carrier: 'UPS',
+    subtotal: 298, shipping: 0, tax: 23.84, total: 321.84,
+    paymentMethod: 'stripe', paymentStatus: 'paid', discountAmount: 0, giftWrap: false, giftWrapAmount: 0, codFee: 0,
+    trackingNumber: 'TRK-1234567890', carrier: 'UPS',
     notes: [], createdAt: '2026-03-01T09:15:00Z', updatedAt: '2026-03-04T11:00:00Z',
   },
   {
@@ -63,7 +67,9 @@ export const mockOrders: Order[] = [
       { productId: 'tsh-001', productName: 'Pima Crew Tee', size: 'M', color: 'Black', quantity: 3, price: 69, image: products[4].images[0] },
       { productId: 'pnj-002', productName: 'Heritage Cotton Punjabi', size: 'L', color: 'White', quantity: 1, price: 129, image: products[1].images[0] },
     ],
-    subtotal: 336, shipping: 12, tax: 27.84, total: 375.84, notes: ['Customer requested gift wrapping.'],
+    subtotal: 336, shipping: 12, tax: 27.84, total: 375.84,
+    paymentMethod: 'cod', paymentStatus: 'pending_collection', discountAmount: 0, giftWrap: true, giftWrapAmount: 8, codFee: 5,
+    notes: ['Customer requested gift wrapping.'],
     createdAt: '2026-03-05T16:45:00Z', updatedAt: '2026-03-06T08:30:00Z',
   },
   {
@@ -72,7 +78,9 @@ export const mockOrders: Order[] = [
     items: [
       { productId: 'pnt-002', productName: 'Relaxed Linen Pants', size: '30', color: 'Sand', quantity: 1, price: 139, image: products[7].images[0] },
     ],
-    subtotal: 139, shipping: 12, tax: 12.08, total: 163.08, notes: [],
+    subtotal: 139, shipping: 12, tax: 12.08, total: 163.08,
+    paymentMethod: 'paypal', paymentStatus: 'pending', discountAmount: 0, giftWrap: false, giftWrapAmount: 0, codFee: 0,
+    notes: ['PayPal payment pending — follow up with customer if unpaid.'],
     createdAt: '2026-03-07T21:00:00Z', updatedAt: '2026-03-07T21:00:00Z',
   },
   {
@@ -83,7 +91,9 @@ export const mockOrders: Order[] = [
       { productId: 'sht-002', productName: 'Oxford Classic Shirt', size: 'L', color: 'Light Blue', quantity: 2, price: 119, image: products[3].images[0] },
       { productId: 'tsh-002', productName: 'Merino Henley', size: 'L', color: 'Burgundy', quantity: 1, price: 89, image: products[5].images[0] },
     ],
-    subtotal: 516, shipping: 0, tax: 41.28, total: 557.28, notes: ['International order — customs documentation required.'],
+    subtotal: 516, shipping: 0, tax: 41.28, total: 557.28,
+    paymentMethod: 'cod', paymentStatus: 'pending_collection', discountAmount: 0, giftWrap: false, giftWrapAmount: 0, codFee: 0,
+    notes: ['International order — customs documentation required.'],
     createdAt: '2026-03-08T06:30:00Z', updatedAt: '2026-03-08T06:30:00Z',
   },
 ];

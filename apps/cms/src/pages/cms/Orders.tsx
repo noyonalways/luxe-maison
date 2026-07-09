@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Search, Truck, MessageSquare, Loader2 } from 'lucide-react';
-import type { Order, OrderStatus } from '@/data/cms-types';
+import { Search, Truck, MessageSquare, Loader2, CreditCard } from 'lucide-react';
+import type { Order, OrderStatus, PaymentMethod, PaymentStatus } from '@/data/cms-types';
 import { StatusBadge } from '@/components/staff/StatusBadge';
 import { useTableSort, useTablePagination, SortableHeader, PaginationControls } from '@/components/staff/TableControls';
 import { useRole } from '@/contexts/role-context';
@@ -9,6 +9,44 @@ import { toast } from 'sonner';
 import { toApiError } from '@/lib/api/errors';
 
 const statusFlow: OrderStatus[] = ['pending', 'processing', 'shipped', 'delivered'];
+
+const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  cod: 'Cash on Delivery',
+  stripe: 'Card (Stripe)',
+  paypal: 'PayPal',
+};
+
+const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
+  pending: 'Pending',
+  pending_collection: 'Awaiting COD',
+  paid: 'Paid',
+  failed: 'Failed',
+  refunded: 'Refunded',
+};
+
+function PaymentBadge({ method, status }: { method: PaymentMethod; status: PaymentStatus }) {
+  const paid = status === 'paid';
+  const pending = status === 'pending' || status === 'pending_collection';
+  return (
+    <div className="space-y-1">
+      <span className="inline-flex items-center gap-1 text-xs font-medium">
+        <CreditCard size={12} />
+        {PAYMENT_METHOD_LABELS[method] ?? method}
+      </span>
+      <span
+        className={`inline-block text-[10px] font-semibold letter-wide uppercase px-2 py-0.5 rounded ${
+          paid
+            ? 'bg-emerald-100 text-emerald-800'
+            : pending
+              ? 'bg-amber-100 text-amber-800'
+              : 'bg-secondary text-muted-foreground'
+        }`}
+      >
+        {PAYMENT_STATUS_LABELS[status] ?? status}
+      </span>
+    </div>
+  );
+}
 
 type OrderSortKey = 'id' | 'customerName' | 'total' | 'createdAt' | 'status';
 
@@ -145,6 +183,7 @@ export default function Orders() {
                 <SortableHeader field="customerName" label="Customer" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
               </th>
               <th className="px-5 py-3 text-xs font-body font-semibold letter-wide uppercase text-muted-foreground">Items</th>
+              <th className="px-5 py-3 text-xs font-body font-semibold letter-wide uppercase text-muted-foreground">Payment</th>
               <th className="px-5 py-3 text-xs font-body font-semibold letter-wide uppercase text-muted-foreground">
                 <SortableHeader field="status" label="Status" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
               </th>
@@ -172,6 +211,9 @@ export default function Orders() {
                 </td>
                 <td className="px-5 py-3 text-muted-foreground">
                   {order.items.reduce((s, i) => s + i.quantity, 0)} items
+                </td>
+                <td className="px-5 py-3">
+                  <PaymentBadge method={order.paymentMethod ?? 'cod'} status={order.paymentStatus ?? 'pending_collection'} />
                 </td>
                 <td className="px-5 py-3">
                   <StatusBadge status={order.status} />
@@ -215,18 +257,27 @@ export default function Orders() {
               </button>
             </div>
             <div className="px-6 py-6 space-y-6">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-2">
                     Status
                   </p>
                   <StatusBadge status={selectedOrder.status} />
                 </div>
+                <div>
+                  <p className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-2">
+                    Payment
+                  </p>
+                  <PaymentBadge
+                    method={selectedOrder.paymentMethod ?? 'cod'}
+                    status={selectedOrder.paymentStatus ?? 'pending_collection'}
+                  />
+                </div>
                 {canEditOrders && statusFlow.indexOf(selectedOrder.status) < statusFlow.length - 1 && (
                   <button
                     onClick={() => void handleAdvanceStatus(selectedOrder)}
                     disabled={isSaving}
-                    className="px-4 py-2 bg-primary text-primary-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:opacity-90 disabled:opacity-50"
+                    className="px-4 py-2 bg-primary text-primary-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:opacity-90 disabled:opacity-50 sm:self-end"
                   >
                     Mark as {statusFlow[statusFlow.indexOf(selectedOrder.status) + 1]}
                   </button>
@@ -273,6 +324,24 @@ export default function Orders() {
                     <span>Shipping</span>
                     <span>${selectedOrder.shipping.toFixed(2)}</span>
                   </div>
+                  {(selectedOrder.giftWrapAmount ?? 0) > 0 && (
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Gift Wrap</span>
+                      <span>${selectedOrder.giftWrapAmount!.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {(selectedOrder.codFee ?? 0) > 0 && (
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>COD Fee</span>
+                      <span>${selectedOrder.codFee!.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {(selectedOrder.discountAmount ?? 0) > 0 && (
+                    <div className="flex justify-between text-gold">
+                      <span>Discount{selectedOrder.promoCode ? ` (${selectedOrder.promoCode})` : ''}</span>
+                      <span>-${selectedOrder.discountAmount!.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-muted-foreground">
                     <span>Tax</span>
                     <span>${selectedOrder.tax.toFixed(2)}</span>

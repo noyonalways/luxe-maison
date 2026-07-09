@@ -20,3 +20,12 @@ export {
   calculateDiscount,
   promoCodes,
 } from './services/promo.service.js';
+export {
+  CHECKOUT_CONFIG,
+  buildCheckoutQuote,
+  totalsToCents,
+  type CheckoutLineItemInput,
+  type CheckoutQuoteInput,
+  type CheckoutTotals,
+  type ProductLookup,
+} from './services/checkout.service.js';

@@ -1,15 +1,19 @@
-"use client";
+'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CreditCard, Banknote, Check, Lock, Tag, Printer } from 'lucide-react';
+import { ArrowLeft, CreditCard, Banknote, Check, Lock, Tag, Printer, Wallet } from 'lucide-react';
 import { z } from 'zod';
+import { useQuery } from '@tanstack/react-query';
+import { CHECKOUT_CONFIG, type PaymentMethod } from '@luxe-maison/shared';
 import { useCart, CartItem } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { ordersApi } from '@/lib/api/orders.api';
+import { paymentsApi } from '@/lib/api/payments.api';
 import { discountsApi } from '@/lib/api/discounts.api';
 import { ApiError } from '@/lib/api/client';
+import { StripePaymentSection, type StripeCheckoutRef } from '@/components/checkout/StripePaymentSection';
 
 const shippingSchema = z.object({
   firstName: z.string().trim().min(1, 'First name is required').max(50, 'Max 50 characters'),
@@ -23,36 +27,8 @@ const shippingSchema = z.object({
   country: z.string().trim().min(1, 'Country is required').max(100, 'Max 100 characters'),
 });
 
-const paymentSchema = z.object({
-  method: z.enum(['card', 'cod'], { required_error: 'Select a payment method' }),
-  cardNumber: z.string().optional(),
-  cardExpiry: z.string().optional(),
-  cardCvc: z.string().optional(),
-  cardName: z.string().optional(),
-}).superRefine((data, ctx) => {
-  if (data.method === 'card') {
-    if (!data.cardNumber || data.cardNumber.replace(/\s/g, '').length < 13) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Valid card number required', path: ['cardNumber'] });
-    }
-    if (!data.cardExpiry || !/^\d{2}\/\d{2}$/.test(data.cardExpiry)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'MM/YY format required', path: ['cardExpiry'] });
-    }
-    if (!data.cardCvc || data.cardCvc.length < 3) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Valid CVC required', path: ['cardCvc'] });
-    }
-    if (!data.cardName || data.cardName.trim().length < 2) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Cardholder name required', path: ['cardName'] });
-    }
-  }
-});
-
 type ShippingData = z.infer<typeof shippingSchema>;
-type PaymentData = z.infer<typeof paymentSchema>;
 type FieldErrors = Record<string, string>;
-
-const SHIPPING_RATE = 12;
-const FREE_SHIPPING_THRESHOLD = 200;
-const TAX_RATE = 0.08;
 
 type AppliedPromo = {
   code: string;
@@ -60,17 +36,66 @@ type AppliedPromo = {
   description?: string;
 };
 
+type OrderTotals = {
+  subtotal: number;
+  shipping: number;
+  giftWrap: number;
+  codFee: number;
+  discount: number;
+  tax: number;
+  total: number;
+};
+
+const PAYMENT_LABELS: Record<PaymentMethod, string> = {
+  cod: 'Cash on Delivery',
+  stripe: 'Credit / Debit Card',
+  paypal: 'PayPal',
+};
+
+function buildLineItems(items: CartItem[]) {
+  return items.map((item) => ({
+    productId: item.product.id,
+    size: item.selectedSize,
+    color: item.selectedColor,
+    quantity: item.quantity,
+  }));
+}
+
+function calculateLocalTotals(
+  subtotal: number,
+  paymentMethod: PaymentMethod,
+  giftWrap: boolean,
+  discount: number,
+): OrderTotals {
+  const shipping =
+    subtotal >= CHECKOUT_CONFIG.FREE_SHIPPING_THRESHOLD ? 0 : CHECKOUT_CONFIG.SHIPPING_RATE;
+  const giftWrapAmount = giftWrap ? CHECKOUT_CONFIG.GIFT_WRAP_COST : 0;
+  const codFee = paymentMethod === 'cod' ? CHECKOUT_CONFIG.COD_FEE : 0;
+  const taxableBase = Math.max(0, subtotal + shipping + giftWrapAmount + codFee - discount);
+  const tax = Math.round(taxableBase * CHECKOUT_CONFIG.TAX_RATE * 100) / 100;
+  const total = Math.round((taxableBase + tax) * 100) / 100;
+
+  return {
+    subtotal,
+    shipping,
+    giftWrap: giftWrapAmount,
+    codFee,
+    discount,
+    tax,
+    total,
+  };
+}
+
 export default function CheckoutPage() {
   const { items, totalPrice, totalItems, clearCart } = useCart();
   const { user } = useAuth();
+  const stripeRef = useRef<StripeCheckoutRef | null>(null);
 
   const [shipping, setShipping] = useState<ShippingData>({
     firstName: '', lastName: '', email: '', phone: '',
     address: '', city: '', state: '', zip: '', country: '',
   });
-  const [payment, setPayment] = useState<PaymentData>({
-    method: 'card', cardNumber: '', cardExpiry: '', cardCvc: '', cardName: '',
-  });
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod');
   const [shippingErrors, setShippingErrors] = useState<FieldErrors>({});
   const [paymentErrors, setPaymentErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,26 +103,36 @@ export default function CheckoutPage() {
   const [giftWrap, setGiftWrap] = useState(false);
   const [giftMessage, setGiftMessage] = useState('');
 
-  // Promo code state
   const [promoInput, setPromoInput] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
   const [promoError, setPromoError] = useState('');
-  const [promoSuccess, setPromoSuccess] = useState('');
 
-  // Order confirmation state
   const [orderNumber, setOrderNumber] = useState('');
   const [orderDate, setOrderDate] = useState('');
+  const [confirmedPaymentLabel, setConfirmedPaymentLabel] = useState('');
   const [orderItems, setOrderItems] = useState<CartItem[]>([]);
-  const [orderTotals, setOrderTotals] = useState({ subtotal: 0, shipping: 0, giftWrap: 0, discount: 0, tax: 0, total: 0 });
+  const [orderTotals, setOrderTotals] = useState<OrderTotals>({
+    subtotal: 0, shipping: 0, giftWrap: 0, codFee: 0, discount: 0, tax: 0, total: 0,
+  });
 
   const receiptRef = useRef<HTMLDivElement>(null);
-
-  const shippingCost = totalPrice >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_RATE;
-  const giftWrapCost = giftWrap ? 8 : 0;
+  const lineItems = useMemo(() => buildLineItems(items), [items]);
   const discount = appliedPromo?.discountAmount ?? 0;
-  const taxableSubtotal = totalPrice + shippingCost + giftWrapCost - discount;
-  const tax = taxableSubtotal * TAX_RATE;
-  const grandTotal = taxableSubtotal + tax;
+  const totals = calculateLocalTotals(totalPrice, paymentMethod, giftWrap, discount);
+
+  const { data: paymentConfig } = useQuery({
+    queryKey: ['payments', 'config'],
+    queryFn: () => paymentsApi.getConfig(),
+    staleTime: 60_000,
+  });
+
+  const availableMethods = paymentConfig?.methods ?? ['cod', 'paypal'];
+
+  useEffect(() => {
+    if (!availableMethods.includes(paymentMethod)) {
+      setPaymentMethod(availableMethods[0] ?? 'cod');
+    }
+  }, [availableMethods, paymentMethod]);
 
   useEffect(() => {
     if (!user) return;
@@ -111,7 +146,6 @@ export default function CheckoutPage() {
 
   const handleApplyPromo = async () => {
     setPromoError('');
-    setPromoSuccess('');
     if (!promoInput.trim()) {
       setPromoError('Please enter a promo code');
       return;
@@ -123,7 +157,6 @@ export default function CheckoutPage() {
         discountAmount: result.discountAmount,
         description: result.promo.description,
       });
-      setPromoSuccess(result.promo.description);
       setPromoError('');
     } catch (err) {
       setPromoError(err instanceof ApiError ? err.message : 'Invalid code');
@@ -134,7 +167,6 @@ export default function CheckoutPage() {
   const handleRemovePromo = () => {
     setAppliedPromo(null);
     setPromoInput('');
-    setPromoSuccess('');
     setPromoError('');
   };
 
@@ -154,7 +186,6 @@ export default function CheckoutPage() {
       <main className="pt-20 min-h-screen pb-16">
         <div className="container mx-auto px-6 lg:px-12 py-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto">
-            {/* Receipt */}
             <div ref={receiptRef} className="border border-border p-8 lg:p-10">
               <div className="text-center mb-8">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
@@ -179,11 +210,10 @@ export default function CheckoutPage() {
                 </div>
                 <div>
                   <p className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-1">Payment</p>
-                  <p className="text-sm font-medium">{payment.method === 'card' ? `Card ending ${(payment.cardNumber || '').slice(-4)}` : 'Cash on Delivery'}</p>
+                  <p className="text-sm font-medium">{confirmedPaymentLabel}</p>
                 </div>
               </div>
 
-              {/* Shipping address */}
               <div className="mb-8 pb-6 border-b border-border">
                 <p className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-2">Shipping To</p>
                 <p className="text-sm">{shipping.firstName} {shipping.lastName}</p>
@@ -192,11 +222,10 @@ export default function CheckoutPage() {
                 <p className="text-sm text-muted-foreground">{shipping.country}</p>
               </div>
 
-              {/* Items */}
               <div className="mb-8 pb-6 border-b border-border">
                 <p className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-4">Items Ordered</p>
                 <div className="space-y-3">
-                  {orderItems.map(item => (
+                  {orderItems.map((item) => (
                     <div key={`${item.product.id}-${item.selectedSize}-${item.selectedColor}`} className="flex justify-between items-start">
                       <div>
                         <p className="text-sm font-medium">{item.product.name}</p>
@@ -208,7 +237,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Totals */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
@@ -222,6 +250,12 @@ export default function CheckoutPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Gift Wrap</span>
                     <span>${orderTotals.giftWrap.toFixed(2)}</span>
+                  </div>
+                )}
+                {orderTotals.codFee > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">COD Fee</span>
+                    <span>${orderTotals.codFee.toFixed(2)}</span>
                   </div>
                 )}
                 {orderTotals.discount > 0 && (
@@ -241,7 +275,6 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-3 mt-6">
               <button
                 onClick={() => window.print()}
@@ -263,84 +296,57 @@ export default function CheckoutPage() {
   }
 
   const updateShipping = (field: keyof ShippingData, value: string) => {
-    setShipping(prev => ({ ...prev, [field]: value }));
+    setShipping((prev) => ({ ...prev, [field]: value }));
     if (shippingErrors[field]) {
-      setShippingErrors(prev => { const n = { ...prev }; delete n[field]; return n; });
+      setShippingErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
     }
-  };
-
-  const updatePayment = (field: keyof PaymentData, value: string) => {
-    setPayment(prev => ({ ...prev, [field]: value }));
-    if (paymentErrors[field]) {
-      setPaymentErrors(prev => { const n = { ...prev }; delete n[field]; return n; });
-    }
-  };
-
-  const formatCardNumber = (val: string) => {
-    const digits = val.replace(/\D/g, '').slice(0, 16);
-    return digits.replace(/(.{4})/g, '$1 ').trim();
-  };
-
-  const formatExpiry = (val: string) => {
-    const digits = val.replace(/\D/g, '').slice(0, 4);
-    if (digits.length >= 3) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-    return digits;
   };
 
   const handleSubmit = async () => {
     const shipResult = shippingSchema.safeParse(shipping);
-    const payResult = paymentSchema.safeParse(payment);
-
     const sErrors: FieldErrors = {};
-    const pErrors: FieldErrors = {};
 
     if (!shipResult.success) {
-      shipResult.error.issues.forEach((i) => {
-        sErrors[i.path[0] as string] = i.message;
-      });
-    }
-    if (!payResult.success) {
-      payResult.error.issues.forEach((i) => {
-        pErrors[i.path[0] as string] = i.message;
+      shipResult.error.issues.forEach((issue) => {
+        sErrors[issue.path[0] as string] = issue.message;
       });
     }
 
     setShippingErrors(sErrors);
-    setPaymentErrors(pErrors);
+    setPaymentErrors({});
 
-    if (Object.keys(sErrors).length > 0 || Object.keys(pErrors).length > 0) return;
+    if (Object.keys(sErrors).length > 0) return;
 
     setIsSubmitting(true);
     const savedItems = [...items];
-    const savedTotals = {
-      subtotal: totalPrice,
-      shipping: shippingCost + giftWrapCost,
-      giftWrap: giftWrapCost,
-      discount,
-      tax,
-      total: grandTotal,
-    };
+    const savedTotals = { ...totals };
 
     try {
+      let stripePaymentIntentId: string | undefined;
+
+      if (paymentMethod === 'stripe') {
+        if (!stripeRef.current) {
+          throw new Error('Card payment is not ready yet');
+        }
+        const payment = await stripeRef.current.confirmPayment();
+        stripePaymentIntentId = payment.paymentIntentId;
+      }
+
       const order = await ordersApi.create({
-        items: items.map((item) => ({
-          productId: item.product.id,
-          productName: item.product.name,
-          size: item.selectedSize,
-          color: item.selectedColor,
-          quantity: item.quantity,
-          price: item.product.price,
-          image: item.product.images[0] ?? '',
-        })),
+        items: lineItems,
         customerName: `${shipping.firstName} ${shipping.lastName}`.trim(),
         customerEmail: shipping.email,
         phone: shipping.phone,
         shippingAddress: `${shipping.address}, ${shipping.city}, ${shipping.state} ${shipping.zip}, ${shipping.country}`,
-        subtotal: totalPrice,
-        shipping: shippingCost + giftWrapCost,
-        tax,
-        total: grandTotal,
+        paymentMethod,
+        stripePaymentIntentId,
         promoCode: appliedPromo?.code,
+        giftWrap,
+        giftMessage: giftWrap ? giftMessage : undefined,
       });
 
       clearCart();
@@ -350,17 +356,25 @@ export default function CheckoutPage() {
         month: 'long',
         day: 'numeric',
       }));
+      setConfirmedPaymentLabel(PAYMENT_LABELS[paymentMethod]);
       setOrderItems(savedItems);
       setOrderTotals(savedTotals);
       setOrderPlaced(true);
     } catch (err) {
       setPaymentErrors({
-        method: err instanceof ApiError ? err.message : 'Unable to place order. Please try again.',
+        method: err instanceof ApiError || err instanceof Error ? err.message : 'Unable to place order. Please try again.',
       });
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const paymentOptions = ([
+    { id: 'cod' as const, label: 'Cash on Delivery', icon: Banknote },
+    { id: 'stripe' as const, label: 'Credit / Debit Card', icon: CreditCard },
+    { id: 'paypal' as const, label: 'PayPal', icon: Wallet },
+  ] satisfies { id: PaymentMethod; label: string; icon: typeof CreditCard }[])
+    .filter((option) => availableMethods.includes(option.id));
 
   const Input = ({ label, field, value, onChange, error, type = 'text', placeholder = '' }: {
     label: string; field: string; value: string; onChange: (v: string) => void; error?: string; type?: string; placeholder?: string;
@@ -370,7 +384,7 @@ export default function CheckoutPage() {
       <input
         type={type}
         value={value}
-        onChange={e => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={`w-full px-4 py-3 border text-sm bg-background transition-smooth focus:outline-none focus:border-foreground ${
           error ? 'border-destructive' : 'border-border'
@@ -390,27 +404,24 @@ export default function CheckoutPage() {
         <h1 className="font-heading text-3xl lg:text-4xl mb-10">Checkout</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
-          {/* Left — Forms */}
           <div className="lg:col-span-7 space-y-10">
-            {/* Shipping */}
             <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <h2 className="font-heading text-xl mb-6">Shipping Address</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input label="First Name" field="firstName" value={shipping.firstName} onChange={v => updateShipping('firstName', v)} error={shippingErrors.firstName} />
-                <Input label="Last Name" field="lastName" value={shipping.lastName} onChange={v => updateShipping('lastName', v)} error={shippingErrors.lastName} />
-                <Input label="Email" field="email" value={shipping.email} onChange={v => updateShipping('email', v)} error={shippingErrors.email} type="email" placeholder="you@example.com" />
-                <Input label="Phone" field="phone" value={shipping.phone} onChange={v => updateShipping('phone', v)} error={shippingErrors.phone} type="tel" />
+                <Input label="First Name" field="firstName" value={shipping.firstName} onChange={(v) => updateShipping('firstName', v)} error={shippingErrors.firstName} />
+                <Input label="Last Name" field="lastName" value={shipping.lastName} onChange={(v) => updateShipping('lastName', v)} error={shippingErrors.lastName} />
+                <Input label="Email" field="email" value={shipping.email} onChange={(v) => updateShipping('email', v)} error={shippingErrors.email} type="email" placeholder="you@example.com" />
+                <Input label="Phone" field="phone" value={shipping.phone} onChange={(v) => updateShipping('phone', v)} error={shippingErrors.phone} type="tel" />
                 <div className="sm:col-span-2">
-                  <Input label="Address" field="address" value={shipping.address} onChange={v => updateShipping('address', v)} error={shippingErrors.address} />
+                  <Input label="Address" field="address" value={shipping.address} onChange={(v) => updateShipping('address', v)} error={shippingErrors.address} />
                 </div>
-                <Input label="City" field="city" value={shipping.city} onChange={v => updateShipping('city', v)} error={shippingErrors.city} />
-                <Input label="State / Province" field="state" value={shipping.state} onChange={v => updateShipping('state', v)} error={shippingErrors.state} />
-                <Input label="Postal Code" field="zip" value={shipping.zip} onChange={v => updateShipping('zip', v)} error={shippingErrors.zip} />
-                <Input label="Country" field="country" value={shipping.country} onChange={v => updateShipping('country', v)} error={shippingErrors.country} />
+                <Input label="City" field="city" value={shipping.city} onChange={(v) => updateShipping('city', v)} error={shippingErrors.city} />
+                <Input label="State / Province" field="state" value={shipping.state} onChange={(v) => updateShipping('state', v)} error={shippingErrors.state} />
+                <Input label="Postal Code" field="zip" value={shipping.zip} onChange={(v) => updateShipping('zip', v)} error={shippingErrors.zip} />
+                <Input label="Country" field="country" value={shipping.country} onChange={(v) => updateShipping('country', v)} error={shippingErrors.country} />
               </div>
             </motion.section>
 
-            {/* Gift Options */}
             <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
               <h2 className="font-heading text-xl mb-6">Gift Options</h2>
               <label className="flex items-center gap-3 cursor-pointer">
@@ -422,12 +433,12 @@ export default function CheckoutPage() {
                 >
                   {giftWrap && <Check size={12} className="text-background" />}
                 </div>
-                <span className="text-sm">Add gift wrapping (+$8.00)</span>
+                <span className="text-sm">Add gift wrapping (+${CHECKOUT_CONFIG.GIFT_WRAP_COST.toFixed(2)})</span>
               </label>
               {giftWrap && (
                 <textarea
                   value={giftMessage}
-                  onChange={e => setGiftMessage(e.target.value.slice(0, 200))}
+                  onChange={(e) => setGiftMessage(e.target.value.slice(0, 200))}
                   placeholder="Add a personalized message (optional)"
                   rows={3}
                   className="w-full mt-4 px-4 py-3 border border-border text-sm bg-background transition-smooth focus:outline-none focus:border-foreground resize-none"
@@ -435,20 +446,17 @@ export default function CheckoutPage() {
               )}
             </motion.section>
 
-            {/* Payment */}
             <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
               <h2 className="font-heading text-xl mb-6">Payment Method</h2>
 
-              <div className="flex gap-3 mb-6">
-                {[
-                  { id: 'card' as const, label: 'Credit Card', icon: CreditCard },
-                  { id: 'cod' as const, label: 'Cash on Delivery', icon: Banknote },
-                ].map(({ id, label, icon: Icon }) => (
+              <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                {paymentOptions.map(({ id, label, icon: Icon }) => (
                   <button
                     key={id}
-                    onClick={() => updatePayment('method', id)}
+                    type="button"
+                    onClick={() => setPaymentMethod(id)}
                     className={`flex-1 flex items-center gap-3 px-5 py-4 border text-sm font-medium transition-smooth ${
-                      payment.method === id ? 'border-foreground bg-secondary' : 'border-border hover:border-foreground'
+                      paymentMethod === id ? 'border-foreground bg-secondary' : 'border-border hover:border-foreground'
                     }`}
                   >
                     <Icon size={18} />
@@ -458,28 +466,30 @@ export default function CheckoutPage() {
               </div>
               {paymentErrors.method && <p className="text-xs text-destructive mb-4">{paymentErrors.method}</p>}
 
-              {payment.method === 'card' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="sm:col-span-2">
-                    <Input label="Card Number" field="cardNumber" value={payment.cardNumber || ''} onChange={v => updatePayment('cardNumber', formatCardNumber(v))} error={paymentErrors.cardNumber} placeholder="1234 5678 9012 3456" />
-                  </div>
-                  <Input label="Expiry Date" field="cardExpiry" value={payment.cardExpiry || ''} onChange={v => updatePayment('cardExpiry', formatExpiry(v))} error={paymentErrors.cardExpiry} placeholder="MM/YY" />
-                  <Input label="CVC" field="cardCvc" value={payment.cardCvc || ''} onChange={v => updatePayment('cardCvc', v.replace(/\D/g, '').slice(0, 4))} error={paymentErrors.cardCvc} placeholder="123" />
-                  <div className="sm:col-span-2">
-                    <Input label="Cardholder Name" field="cardName" value={payment.cardName || ''} onChange={v => updatePayment('cardName', v)} error={paymentErrors.cardName} placeholder="As shown on card" />
-                  </div>
+              {paymentMethod === 'stripe' && paymentConfig?.stripePublishableKey && (
+                <StripePaymentSection
+                  ref={stripeRef}
+                  publishableKey={paymentConfig.stripePublishableKey}
+                  items={lineItems}
+                  promoCode={appliedPromo?.code}
+                  giftWrap={giftWrap}
+                />
+              )}
+
+              {paymentMethod === 'cod' && (
+                <div className="px-5 py-4 bg-secondary text-sm text-muted-foreground">
+                  Pay with cash when your order is delivered. A ${CHECKOUT_CONFIG.COD_FEE.toFixed(2)} COD fee applies.
                 </div>
               )}
 
-              {payment.method === 'cod' && (
+              {paymentMethod === 'paypal' && (
                 <div className="px-5 py-4 bg-secondary text-sm text-muted-foreground">
-                  Pay with cash when your order is delivered. A ₹50 COD fee may apply.
+                  Your order will be placed with PayPal payment pending. Our team will send a PayPal invoice to complete payment.
                 </div>
               )}
             </motion.section>
           </div>
 
-          {/* Right — Order Summary */}
           <div className="lg:col-span-5">
             <div className="lg:sticky lg:top-28">
               <motion.div
@@ -490,9 +500,8 @@ export default function CheckoutPage() {
               >
                 <h2 className="font-heading text-xl mb-6">Order Summary</h2>
 
-                {/* Items */}
                 <div className="space-y-4 mb-6 max-h-64 overflow-y-auto">
-                  {items.map(item => (
+                  {items.map((item) => (
                     <div key={`${item.product.id}-${item.selectedSize}-${item.selectedColor}`} className="flex gap-3">
                       <div className="w-14 h-18 bg-secondary overflow-hidden flex-shrink-0">
                         <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />
@@ -506,7 +515,6 @@ export default function CheckoutPage() {
                   ))}
                 </div>
 
-                {/* Promo Code */}
                 <div className="mb-6 pb-4 border-b border-border">
                   <p className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-2">Promo Code</p>
                   {appliedPromo ? (
@@ -523,12 +531,12 @@ export default function CheckoutPage() {
                       <input
                         type="text"
                         value={promoInput}
-                        onChange={e => { setPromoInput(e.target.value.toUpperCase()); setPromoError(''); }}
+                        onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError(''); }}
                         placeholder="Enter code"
                         className="flex-1 px-3 py-2.5 border border-border text-sm bg-background transition-smooth focus:outline-none focus:border-foreground"
                       />
                       <button
-                        onClick={handleApplyPromo}
+                        onClick={() => void handleApplyPromo()}
                         className="px-5 py-2.5 border border-foreground text-sm font-medium transition-smooth hover:bg-foreground hover:text-background"
                       >
                         Apply
@@ -536,10 +544,8 @@ export default function CheckoutPage() {
                     </div>
                   )}
                   {promoError && <p className="text-xs text-destructive mt-1.5">{promoError}</p>}
-                  {promoSuccess && !appliedPromo && <p className="text-xs text-gold mt-1.5">{promoSuccess}</p>}
                 </div>
 
-                {/* Totals */}
                 <div className="border-t border-border pt-4 space-y-2.5">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
@@ -547,12 +553,18 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Shipping</span>
-                    <span>{shippingCost === 0 ? <span className="text-gold">Free</span> : `$${shippingCost.toFixed(2)}`}</span>
+                    <span>{totals.shipping === 0 ? <span className="text-gold">Free</span> : `$${totals.shipping.toFixed(2)}`}</span>
                   </div>
                   {giftWrap && (
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Gift Wrap</span>
-                      <span>${giftWrapCost.toFixed(2)}</span>
+                      <span>${totals.giftWrap.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {totals.codFee > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">COD Fee</span>
+                      <span>${totals.codFee.toFixed(2)}</span>
                     </div>
                   )}
                   {discount > 0 && (
@@ -562,24 +574,24 @@ export default function CheckoutPage() {
                     </div>
                   )}
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Tax (8%)</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span className="text-muted-foreground">Tax ({(CHECKOUT_CONFIG.TAX_RATE * 100).toFixed(0)}%)</span>
+                    <span>${totals.tax.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-base font-heading font-semibold pt-3 border-t border-border">
                     <span>Total</span>
-                    <span>${grandTotal.toFixed(2)}</span>
+                    <span>${totals.total.toFixed(2)}</span>
                   </div>
                 </div>
 
-                {totalPrice < FREE_SHIPPING_THRESHOLD && (
+                {totalPrice < CHECKOUT_CONFIG.FREE_SHIPPING_THRESHOLD && (
                   <p className="text-xs text-muted-foreground mt-4 text-center">
-                    Add ${(FREE_SHIPPING_THRESHOLD - totalPrice).toFixed(2)} more for free shipping
+                    Add ${(CHECKOUT_CONFIG.FREE_SHIPPING_THRESHOLD - totalPrice).toFixed(2)} more for free shipping
                   </p>
                 )}
 
                 <button
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
+                  onClick={() => void handleSubmit()}
+                  disabled={isSubmitting || (paymentMethod === 'stripe' && !paymentConfig?.stripePublishableKey)}
                   className="w-full mt-6 py-3.5 bg-primary text-primary-foreground text-sm font-medium letter-wide uppercase transition-smooth hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
@@ -589,13 +601,16 @@ export default function CheckoutPage() {
                     </span>
                   ) : (
                     <>
-                      <Lock size={14} /> Place Order
+                      <Lock size={14} />
+                      {paymentMethod === 'stripe' ? 'Pay & Place Order' : 'Place Order'}
                     </>
                   )}
                 </button>
 
                 <p className="text-[10px] text-muted-foreground text-center mt-3">
-                  Your payment information is encrypted and secure.
+                  {paymentMethod === 'stripe'
+                    ? 'Card payments are processed securely by Stripe.'
+                    : 'Your order details are transmitted securely.'}
                 </p>
               </motion.div>
             </div>

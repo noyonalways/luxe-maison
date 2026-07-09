@@ -1,17 +1,17 @@
 import { apiFetch } from '@/lib/api/client';
-import type { Order, OrderItem } from '@luxe-maison/shared';
+import type { CheckoutLineItemInput, Order, PaymentMethod } from '@luxe-maison/shared';
 
 export type CreateOrderPayload = {
-  items: OrderItem[];
+  items: CheckoutLineItemInput[];
   customerName: string;
   customerEmail: string;
   phone: string;
   shippingAddress: string;
-  subtotal: number;
-  shipping: number;
-  tax: number;
-  total: number;
+  paymentMethod: PaymentMethod;
+  stripePaymentIntentId?: string;
   promoCode?: string;
+  giftWrap?: boolean;
+  giftMessage?: string;
 };
 
 export const ordersApi = {

@@ -42,7 +42,7 @@ export function createImpOrderRepository(
       return { ...order };
     },
 
-    async update(id: string, updates: Partial<Pick<Order, 'status' | 'trackingNumber' | 'carrier' | 'notes'>>) {
+    async update(id: string, updates: Partial<Pick<Order, 'status' | 'trackingNumber' | 'carrier' | 'notes' | 'paymentStatus'>>) {
       const order = orders.find((o) => o.id === id);
       if (!order) return null;
       Object.assign(order, updates);

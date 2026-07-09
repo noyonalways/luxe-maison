@@ -7,6 +7,6 @@ export interface OrderRepository {
   findByIdAndEmail(id: string, email: string): Promise<Order | null>;
   create(order: Order): Promise<Order>;
   updateStatus(id: string, status: Order['status']): Promise<Order | null>;
-  update(id: string, updates: Partial<Pick<Order, 'status' | 'trackingNumber' | 'carrier' | 'notes'>>): Promise<Order | null>;
+  update(id: string, updates: Partial<Pick<Order, 'status' | 'trackingNumber' | 'carrier' | 'notes' | 'paymentStatus'>>): Promise<Order | null>;
   appendNote(id: string, note: string): Promise<Order | null>;
 }

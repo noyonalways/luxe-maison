@@ -18,7 +18,8 @@
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "hono": "^4.8.3",
-    "jose": "^6.2.3"
+    "jose": "^6.2.3",
+    "stripe": "^17.7.0"
   },
   "devDependencies": {
     "@luxe-maison/typescript-config": "workspace:*",
