@@ -1,6 +1,7 @@
 import type { OrderItem } from '../entities/order.entity.js';
 import type { PaymentMethod } from '../entities/order.entity.js';
 import type { Product } from '../entities/product.entity.js';
+import { getProductStock } from '../entities/product.entity.js';
 import type { PromoCode } from '../entities/promo-code.entity.js';
 import { calculateDiscount } from './promo.service.js';
 
@@ -54,12 +55,32 @@ export async function buildCheckoutQuote(
   }
 
   const resolvedItems: OrderItem[] = [];
+  const requestedByProduct = new Map<string, number>();
 
   for (const item of input.items) {
     const quantity = Math.max(1, Math.floor(item.quantity));
-    const product = await lookupProduct(item.productId);
+    requestedByProduct.set(
+      item.productId,
+      (requestedByProduct.get(item.productId) ?? 0) + quantity,
+    );
+  }
+
+  const productCache = new Map<string, Product>();
+
+  for (const item of input.items) {
+    const quantity = Math.max(1, Math.floor(item.quantity));
+    let product = productCache.get(item.productId);
     if (!product) {
-      throw new Error(`Product not found: ${item.productId}`);
+      product = (await lookupProduct(item.productId)) ?? undefined;
+      if (!product) {
+        throw new Error(`Product not found: ${item.productId}`);
+      }
+      productCache.set(item.productId, product);
+
+      const requestedTotal = requestedByProduct.get(item.productId) ?? quantity;
+      if (requestedTotal > getProductStock(product)) {
+        throw new Error(`Insufficient stock for ${product.name}`);
+      }
     }
 
     const size = item.size?.trim() || product.sizes[0] || 'One Size';

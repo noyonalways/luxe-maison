@@ -12,12 +12,14 @@ import { useReviewsForProduct } from '@/context/ReviewsContext';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import ProductCard from '@/components/ProductCard';
 import ReviewsSection from '@/components/product/ReviewsSection';
+import { QuantityStepper } from '@/components/cart/QuantityStepper';
 import { PageBody, PageCenter, PageMain } from '@/components/layout/PageShell';
+import { getProductStock } from '@/lib/cart-stock';
 
 export default function ProductPage({ id }: { id: string }) {
   const { getRelatedProducts } = useProducts();
   const { data: product, isLoading, isError } = useProduct(id || '');
-  const { addItem } = useCart();
+  const { addItem, getItemQuantity, getRemainingStock } = useCart();
   const { toggleItem, isInWishlist } = useWishlist();
   const { average } = useReviewsForProduct(id);
   const { addViewed } = useRecentlyViewed();
@@ -25,6 +27,7 @@ export default function ProductPage({ id }: { id: string }) {
 
   const [selectedColor, setSelectedColor] = useState(product?.colors[0]?.name || '');
   const [selectedSize, setSelectedSize] = useState('');
+  const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [sizeError, setSizeError] = useState(false);
 
@@ -34,6 +37,26 @@ export default function ProductPage({ id }: { id: string }) {
       addViewed(product.id);
     }
   }, [product?.id, addViewed, product]);
+
+  useEffect(() => {
+    setQuantity(1);
+  }, [selectedSize, selectedColor, product?.id]);
+
+  const inCartQuantity =
+    product && selectedSize
+      ? getItemQuantity(product.id, selectedSize, selectedColor)
+      : 0;
+  const stock = product ? getProductStock(product) : 0;
+  const remainingStock = product ? getRemainingStock(product) : 0;
+  const maxAddQuantity = remainingStock;
+  const isOutOfStock = stock === 0;
+  const isLowStock = stock > 0 && stock <= 5;
+
+  useEffect(() => {
+    if (maxAddQuantity > 0) {
+      setQuantity((current) => Math.min(current, maxAddQuantity));
+    }
+  }, [maxAddQuantity]);
 
   if (isLoading) {
     return (
@@ -69,7 +92,8 @@ export default function ProductPage({ id }: { id: string }) {
       return;
     }
     setSizeError(false);
-    addItem(product, selectedSize, selectedColor);
+    addItem(product, selectedSize, selectedColor, quantity);
+    setQuantity(1);
   };
 
   return (
@@ -132,7 +156,7 @@ export default function ProductPage({ id }: { id: string }) {
               </span>
             </div>
 
-            <div className="flex items-baseline gap-3 mb-8">
+            <div className="flex items-baseline gap-3 mb-3">
               <span className="font-heading text-2xl">${product.price}</span>
               {product.originalPrice && (
                 <span className="text-lg text-muted-foreground line-through">
@@ -140,6 +164,22 @@ export default function ProductPage({ id }: { id: string }) {
                 </span>
               )}
             </div>
+
+            <p
+              className={`text-sm mb-8 ${
+                isOutOfStock
+                  ? 'text-destructive font-medium'
+                  : isLowStock
+                    ? 'text-amber-700'
+                    : 'text-muted-foreground'
+              }`}
+            >
+              {isOutOfStock
+                ? 'Out of stock'
+                : remainingStock <= 5
+                  ? `Only ${remainingStock} left${inCartQuantity > 0 ? ` (${inCartQuantity} in your bag)` : ''}`
+                  : `${stock} in stock${inCartQuantity > 0 ? ` · ${inCartQuantity} in your bag` : ''}`}
+            </p>
 
             <p className="text-sm text-muted-foreground leading-relaxed mb-8">{product.description}</p>
 
@@ -187,12 +227,35 @@ export default function ProductPage({ id }: { id: string }) {
               )}
             </div>
 
+            <div className="mb-8">
+              <p className="text-xs font-body font-medium letter-wide uppercase text-muted-foreground mb-3">
+                Quantity
+              </p>
+              {isOutOfStock ? (
+                <p className="text-sm text-muted-foreground">This item is currently unavailable.</p>
+              ) : (
+                <>
+                  <QuantityStepper
+                    value={maxAddQuantity > 0 ? Math.min(quantity, maxAddQuantity) : 1}
+                    max={Math.max(maxAddQuantity, 1)}
+                    onChange={setQuantity}
+                  />
+                  {maxAddQuantity <= 0 && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      All available units are already in your bag.
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+
             <div className="flex gap-3 mb-10">
               <button
                 onClick={handleAddToCart}
-                className="flex-1 py-4 bg-primary text-primary-foreground text-sm font-medium letter-wide uppercase transition-smooth hover:opacity-90"
+                disabled={!selectedSize || isOutOfStock || maxAddQuantity < 1}
+                className="flex-1 py-4 bg-primary text-primary-foreground text-sm font-medium letter-wide uppercase transition-smooth hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Add to Bag
+                {isOutOfStock ? 'Out of Stock' : 'Add to Bag'}
               </button>
               <button
                 onClick={() => toggleItem(product)}

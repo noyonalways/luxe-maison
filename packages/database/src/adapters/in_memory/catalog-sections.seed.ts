@@ -1,6 +1,8 @@
 import type { Product } from '@luxe-maison/core';
 
-export const womenCatalogProducts: Product[] = [
+type CatalogProductSeed = Omit<Product, 'stock'>;
+
+export const womenCatalogProducts: CatalogProductSeed[] = [
   {
     id: 'wmn-001',
     name: 'Silk Embroidered Punjabi',
@@ -132,7 +134,7 @@ export const womenCatalogProducts: Product[] = [
   },
 ];
 
-export const kidsCatalogProducts: Product[] = [
+export const kidsCatalogProducts: CatalogProductSeed[] = [
   {
     id: 'kid-001',
     name: 'Junior Cotton Punjabi',

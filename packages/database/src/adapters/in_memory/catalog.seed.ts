@@ -1,7 +1,9 @@
 import type { Product, ProductSection } from '@luxe-maison/core';
 import { kidsCatalogProducts, womenCatalogProducts } from './catalog-sections.seed.js';
 
-const menCatalogProducts: Product[] = [
+type CatalogProductSeed = Omit<Product, 'stock'>;
+
+const menCatalogProducts: CatalogProductSeed[] = [
   {
     id: 'pnj-001',
     name: 'Royal Silk Punjabi',
@@ -383,7 +385,10 @@ export const products: Product[] = [
   ...menCatalogProducts,
   ...womenCatalogProducts,
   ...kidsCatalogProducts,
-];
+].map((product, index) => ({
+  ...product,
+  stock: 12 + (index % 48),
+}));
 
 export const sections = [
   { id: 'men' as ProductSection, name: 'Men' },

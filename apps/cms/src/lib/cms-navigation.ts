@@ -100,3 +100,13 @@ export function cmsCustomerDetail(role: StaffRole, id: string) {
   }
   return { to: '/employee/customers/$id' as const, params: { id } };
 }
+
+export function cmsOrderDetail(role: StaffRole, id: string) {
+  if (role === 'admin') {
+    return { to: '/admin/orders/$id' as const, params: { id } };
+  }
+  if (role === 'manager') {
+    return { to: '/manager/orders/$id' as const, params: { id } };
+  }
+  return { to: '/employee/orders/$id' as const, params: { id } };
+}

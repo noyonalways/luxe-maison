@@ -1,12 +1,22 @@
-import { useMemo, useState, useEffect } from 'react';
-import { Search, Truck, MessageSquare, Loader2, CreditCard, ExternalLink, Package } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { Search, Truck, Loader2, CreditCard, ExternalLink, Eye } from 'lucide-react';
 import type { Order, OrderStatus, PaymentMethod, PaymentStatus } from '@/data/cms-types';
 import { StatusBadge } from '@/components/staff/StatusBadge';
 import { useTableSort, useTablePagination, SortableHeader, PaginationControls } from '@/components/staff/TableControls';
 import { useRole } from '@/contexts/role-context';
 import { useOrders } from '@/contexts/orders-context';
-import { toast } from 'sonner';
-import { toApiError } from '@/lib/api/errors';
+import { OrderDetailContent } from '@/components/orders/OrderDetailContent';
+import { cmsOrderDetail } from '@/lib/cms-navigation';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 
 const statusFlow: OrderStatus[] = ['pending', 'processing', 'shipped', 'delivered'];
 
@@ -50,33 +60,19 @@ function PaymentBadge({ method, status }: { method: PaymentMethod; status: Payme
 
 type OrderSortKey = 'id' | 'customerName' | 'total' | 'createdAt' | 'status';
 
-const STOREFRONT_URL = import.meta.env.VITE_STOREFRONT_URL || 'http://localhost:3000';
-
-const CARRIER_OPTIONS = ['FedEx', 'UPS', 'DHL', 'USPS', 'Aramex', 'Local Courier'];
-
 export default function Orders() {
-  const { canEdit, canDelete } = useRole();
-  const { orders, isLoading, advanceStatus, updateTracking, addNote, isSaving } = useOrders();
-  const canEditOrders = canEdit('orders');
-  const canDeleteOrders = canDelete('orders');
+  const navigate = useNavigate();
+  const { role } = useRole();
+  const { orders, isLoading } = useOrders();
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
-  const [noteInput, setNoteInput] = useState('');
-  const [trackingInput, setTrackingInput] = useState('');
-  const [carrierInput, setCarrierInput] = useState('');
 
   const selectedOrder = useMemo(
     () => orders.find((o) => o.id === selectedOrderId) ?? null,
     [orders, selectedOrderId],
   );
-
-  useEffect(() => {
-    if (!selectedOrder) return;
-    setTrackingInput(selectedOrder.trackingNumber || '');
-    setCarrierInput(selectedOrder.carrier || '');
-  }, [selectedOrder]);
 
   const { sortField, sortDir, handleSort, sortData } = useTableSort<Record<OrderSortKey, unknown>>(
     'createdAt' as OrderSortKey,
@@ -97,54 +93,6 @@ export default function Orders() {
 
   const pagination = useTablePagination(filtered.length, 10);
   const paginated = pagination.paginateData(filtered);
-
-  const handleAdvanceStatus = async (order: Order) => {
-    const idx = statusFlow.indexOf(order.status);
-    if (idx < 0 || idx >= statusFlow.length - 1) return;
-    const nextStatus = statusFlow[idx + 1]!;
-    try {
-      await advanceStatus(order.id, nextStatus);
-      toast.success(`Order marked as ${nextStatus}`);
-    } catch (err) {
-      toast.error(toApiError(err).message);
-    }
-  };
-
-  const handleAddNote = async (orderId: string) => {
-    if (!noteInput.trim()) return;
-    try {
-      await addNote(orderId, noteInput.trim());
-      setNoteInput('');
-      toast.success('Note added');
-    } catch (err) {
-      toast.error(toApiError(err).message);
-    }
-  };
-
-  const handleUpdateTracking = async (order: Order) => {
-    if (!trackingInput.trim()) return;
-    try {
-      await updateTracking(order.id, trackingInput.trim(), carrierInput.trim());
-      if (
-        canEditOrders &&
-        (order.status === 'pending' || order.status === 'processing')
-      ) {
-        await advanceStatus(order.id, 'shipped');
-      }
-      toast.success('Tracking updated');
-    } catch (err) {
-      toast.error(toApiError(err).message);
-    }
-  };
-
-  const trackOrderUrl = (order: Order) =>
-    `${STOREFRONT_URL}/track-order?orderId=${encodeURIComponent(order.id)}&email=${encodeURIComponent(order.customerEmail)}`;
-
-  const openOrder = (order: Order) => {
-    setSelectedOrderId(order.id);
-    setTrackingInput(order.trackingNumber || '');
-    setCarrierInput(order.carrier || '');
-  };
 
   if (isLoading) {
     return (
@@ -189,59 +137,61 @@ export default function Orders() {
         </div>
       </div>
 
-      <div className="bg-background border border-border rounded overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border text-left">
-              <th className="px-5 py-3 text-xs font-body font-semibold letter-wide uppercase text-muted-foreground">
+      <div className="bg-background border border-border rounded-lg overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="w-[120px]">
                 <SortableHeader field="id" label="Order" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
-              </th>
-              <th className="px-5 py-3 text-xs font-body font-semibold letter-wide uppercase text-muted-foreground">
+              </TableHead>
+              <TableHead className="min-w-[200px]">
                 <SortableHeader field="customerName" label="Customer" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
-              </th>
-              <th className="px-5 py-3 text-xs font-body font-semibold letter-wide uppercase text-muted-foreground">Items</th>
-              <th className="px-5 py-3 text-xs font-body font-semibold letter-wide uppercase text-muted-foreground">Payment</th>
-              <th className="px-5 py-3 text-xs font-body font-semibold letter-wide uppercase text-muted-foreground">
-                <SortableHeader field="status" label="Status" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
-              </th>
-              <th className="px-5 py-3 text-xs font-body font-semibold letter-wide uppercase text-muted-foreground">
-                Tracking
-              </th>
-              <th className="px-5 py-3 text-xs font-body font-semibold letter-wide uppercase text-muted-foreground">
-                <SortableHeader field="createdAt" label="Date" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
-              </th>
-              <th className="px-5 py-3 text-xs font-body font-semibold letter-wide uppercase text-muted-foreground text-right">
+              </TableHead>
+              <TableHead className="text-center w-[90px]">Items</TableHead>
+              <TableHead className="min-w-[140px]">Payment</TableHead>
+              <TableHead className="text-center w-[120px]">
+                <SortableHeader field="status" label="Status" sortField={sortField} sortDir={sortDir} onSort={handleSort} className="mx-auto" />
+              </TableHead>
+              <TableHead className="text-center min-w-[140px]">Tracking</TableHead>
+              <TableHead className="text-center w-[110px]">
+                <SortableHeader field="createdAt" label="Date" sortField={sortField} sortDir={sortDir} onSort={handleSort} className="mx-auto" />
+              </TableHead>
+              <TableHead className="text-right w-[100px]">
                 <SortableHeader field="total" label="Total" sortField={sortField} sortDir={sortDir} onSort={handleSort} className="ml-auto" />
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+              </TableHead>
+              <TableHead className="text-right w-[90px]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {paginated.map((order) => (
-              <tr
-                key={order.id}
-                onClick={() => openOrder(order)}
-                className="border-b border-border last:border-0 hover:bg-secondary/50 transition-smooth cursor-pointer"
-              >
-                <td className="px-5 py-3 font-medium">{order.id}</td>
-                <td className="px-5 py-3">
-                  <div>
-                    <p>{order.customerName}</p>
-                    <p className="text-xs text-muted-foreground">{order.customerEmail}</p>
+              <TableRow key={order.id}>
+                <TableCell className="font-medium whitespace-nowrap">
+                  <Link
+                    {...cmsOrderDetail(role, order.id)}
+                    className="hover:text-gold transition-smooth"
+                  >
+                    {order.id}
+                  </Link>
+                </TableCell>
+                <TableCell>
+                  <div className="min-w-0">
+                    <p className="font-medium leading-snug">{order.customerName}</p>
+                    <p className="text-xs text-muted-foreground truncate">{order.customerEmail}</p>
                   </div>
-                </td>
-                <td className="px-5 py-3 text-muted-foreground">
+                </TableCell>
+                <TableCell className="text-center text-muted-foreground whitespace-nowrap">
                   {order.items.reduce((s, i) => s + i.quantity, 0)} items
-                </td>
-                <td className="px-5 py-3">
+                </TableCell>
+                <TableCell>
                   <PaymentBadge method={order.paymentMethod ?? 'cod'} status={order.paymentStatus ?? 'pending_collection'} />
-                </td>
-                <td className="px-5 py-3">
+                </TableCell>
+                <TableCell className="text-center">
                   <StatusBadge status={order.status} />
-                </td>
-                <td className="px-5 py-3 text-xs text-muted-foreground max-w-[140px]">
+                </TableCell>
+                <TableCell className="text-center text-xs text-muted-foreground max-w-[160px]">
                   {order.trackingNumber ? (
-                    <div className="truncate" title={`${order.carrier ? `${order.carrier} · ` : ''}${order.trackingNumber}`}>
-                      <span className="flex items-center gap-1 text-foreground">
+                    <div className="min-w-0 mx-auto" title={`${order.carrier ? `${order.carrier} · ` : ''}${order.trackingNumber}`}>
+                      <span className="inline-flex items-center gap-1 text-foreground min-w-0 max-w-full">
                         <Truck size={12} className="shrink-0 text-gold" />
                         <span className="truncate font-mono">{order.trackingNumber}</span>
                       </span>
@@ -250,15 +200,36 @@ export default function Orders() {
                   ) : (
                     <span className="text-muted-foreground/60">—</span>
                   )}
-                </td>
-                <td className="px-5 py-3 text-muted-foreground text-xs">
+                </TableCell>
+                <TableCell className="text-center text-muted-foreground text-xs whitespace-nowrap">
                   {new Date(order.createdAt).toLocaleDateString()}
-                </td>
-                <td className="px-5 py-3 text-right font-medium">${order.total.toFixed(2)}</td>
-              </tr>
+                </TableCell>
+                <TableCell className="text-right font-medium whitespace-nowrap">
+                  ${order.total.toFixed(2)}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end items-center gap-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      title="Quick view"
+                      onClick={() => setSelectedOrderId(order.id)}
+                    >
+                      <Eye size={14} />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" title="Full details" asChild>
+                      <Link {...cmsOrderDetail(role, order.id)}>
+                        <ExternalLink size={14} />
+                      </Link>
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
         {filtered.length === 0 && (
           <div className="text-center py-10 text-sm text-muted-foreground">No orders found.</div>
         )}
@@ -275,7 +246,7 @@ export default function Orders() {
             className="bg-background w-full max-w-2xl max-h-[85vh] overflow-y-auto m-4 shadow-elevated"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-6 py-5 border-b border-border flex items-center justify-between">
+            <div className="px-6 py-5 border-b border-border flex items-center justify-between sticky top-0 bg-background z-10">
               <div>
                 <h2 className="font-heading text-lg">{selectedOrder.id}</h2>
                 <p className="text-xs text-muted-foreground">
@@ -289,215 +260,15 @@ export default function Orders() {
                 ✕
               </button>
             </div>
-            <div className="px-6 py-6 space-y-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-2">
-                    Status
-                  </p>
-                  <StatusBadge status={selectedOrder.status} />
-                </div>
-                <div>
-                  <p className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-2">
-                    Payment
-                  </p>
-                  <PaymentBadge
-                    method={selectedOrder.paymentMethod ?? 'cod'}
-                    status={selectedOrder.paymentStatus ?? 'pending_collection'}
-                  />
-                </div>
-                {canEditOrders && statusFlow.indexOf(selectedOrder.status) < statusFlow.length - 1 && (
-                  <button
-                    onClick={() => void handleAdvanceStatus(selectedOrder)}
-                    disabled={isSaving}
-                    className="px-4 py-2 bg-primary text-primary-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:opacity-90 disabled:opacity-50 sm:self-end"
-                  >
-                    Mark as {statusFlow[statusFlow.indexOf(selectedOrder.status) + 1]}
-                  </button>
-                )}
-              </div>
-              <div>
-                <p className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-2">
-                  Customer
-                </p>
-                <p className="text-sm font-medium">{selectedOrder.customerName}</p>
-                <p className="text-xs text-muted-foreground">
-                  {selectedOrder.customerEmail} · {selectedOrder.phone}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">{selectedOrder.shippingAddress}</p>
-              </div>
-              <div>
-                <p className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-2">
-                  Items
-                </p>
-                <div className="space-y-2">
-                  {selectedOrder.items.map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 p-2 bg-secondary rounded">
-                      <div className="w-10 h-12 bg-muted rounded overflow-hidden flex-shrink-0">
-                        <img src={item.image} alt={item.productName} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{item.productName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {item.color} · {item.size} · Qty {item.quantity}
-                        </p>
-                      </div>
-                      <span className="text-sm font-medium">
-                        ${(item.price * item.quantity).toFixed(2)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-3 pt-3 border-t border-border space-y-1 text-sm">
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>Subtotal</span>
-                    <span>${selectedOrder.subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>Shipping</span>
-                    <span>${selectedOrder.shipping.toFixed(2)}</span>
-                  </div>
-                  {(selectedOrder.giftWrapAmount ?? 0) > 0 && (
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>Gift Wrap</span>
-                      <span>${selectedOrder.giftWrapAmount!.toFixed(2)}</span>
-                    </div>
-                  )}
-                  {(selectedOrder.codFee ?? 0) > 0 && (
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>COD Fee</span>
-                      <span>${selectedOrder.codFee!.toFixed(2)}</span>
-                    </div>
-                  )}
-                  {(selectedOrder.discountAmount ?? 0) > 0 && (
-                    <div className="flex justify-between text-gold">
-                      <span>Discount{selectedOrder.promoCode ? ` (${selectedOrder.promoCode})` : ''}</span>
-                      <span>-${selectedOrder.discountAmount!.toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>Tax</span>
-                    <span>${selectedOrder.tax.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between font-medium pt-1 border-t border-border">
-                    <span>Total</span>
-                    <span>${selectedOrder.total.toFixed(2)}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Shipment tracking */}
-              <div className="rounded-lg border border-border bg-secondary/30 p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
-                  <div>
-                    <p className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-1 flex items-center gap-1.5">
-                      <Truck size={12} /> Shipment tracking
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Customers see this on the storefront track-order page.
-                    </p>
-                  </div>
-                  <a
-                    href={trackOrderUrl(selectedOrder)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground underline underline-offset-4 hover:text-gold shrink-0"
-                  >
-                    Preview customer view
-                    <ExternalLink size={12} />
-                  </a>
-                </div>
-
-                {selectedOrder.trackingNumber ? (
-                  <div className="mb-4 rounded border border-border bg-background px-4 py-3">
-                    <p className="text-[10px] font-semibold letter-wide uppercase text-muted-foreground mb-1">
-                      Current tracking
-                    </p>
-                    <p className="font-mono text-sm font-medium">{selectedOrder.trackingNumber}</p>
-                    {selectedOrder.carrier && (
-                      <p className="text-xs text-muted-foreground mt-1">Carrier: {selectedOrder.carrier}</p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="mb-4 flex items-center gap-2 rounded border border-dashed border-border bg-background px-4 py-3 text-xs text-muted-foreground">
-                    <Package size={14} />
-                    No tracking number yet — add one below so customers can follow their shipment.
-                  </div>
-                )}
-
-                {canEditOrders && (
-                  <div className="space-y-3">
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <input
-                        type="text"
-                        value={trackingInput}
-                        onChange={(e) => setTrackingInput(e.target.value.slice(0, 50))}
-                        placeholder="Tracking number"
-                        className="flex-1 px-3 py-2 border border-border text-sm bg-background focus:outline-none focus:border-foreground transition-smooth font-mono"
-                      />
-                      <input
-                        type="text"
-                        value={carrierInput}
-                        onChange={(e) => setCarrierInput(e.target.value.slice(0, 30))}
-                        placeholder="Carrier"
-                        list="carrier-options"
-                        className="sm:w-36 px-3 py-2 border border-border text-sm bg-background focus:outline-none focus:border-foreground transition-smooth"
-                      />
-                      <datalist id="carrier-options">
-                        {CARRIER_OPTIONS.map((carrier) => (
-                          <option key={carrier} value={carrier} />
-                        ))}
-                      </datalist>
-                      <button
-                        onClick={() => void handleUpdateTracking(selectedOrder)}
-                        disabled={isSaving || !trackingInput.trim()}
-                        className="px-4 py-2 bg-primary text-primary-foreground text-xs font-medium letter-wide uppercase transition-smooth hover:opacity-90 disabled:opacity-50"
-                      >
-                        {selectedOrder.trackingNumber ? 'Update' : 'Add tracking'}
-                      </button>
-                    </div>
-                    {(selectedOrder.status === 'pending' || selectedOrder.status === 'processing') && (
-                      <p className="text-[10px] text-muted-foreground">
-                        Saving tracking will also mark this order as <strong className="text-foreground">shipped</strong>.
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {canDeleteOrders && (
-                <div>
-                  <p className="text-xs font-body font-semibold letter-wide uppercase text-muted-foreground mb-2 flex items-center gap-1.5">
-                    <MessageSquare size={12} /> Internal Notes
-                  </p>
-                  {selectedOrder.notes.length > 0 && (
-                    <div className="space-y-2 mb-3">
-                      {selectedOrder.notes.map((note, i) => (
-                        <div key={i} className="px-3 py-2 bg-secondary rounded text-sm text-muted-foreground">
-                          {note}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={noteInput}
-                      onChange={(e) => setNoteInput(e.target.value.slice(0, 500))}
-                      placeholder="Add a private note..."
-                      className="flex-1 px-3 py-2 border border-border text-sm bg-background focus:outline-none focus:border-foreground transition-smooth"
-                      onKeyDown={(e) => e.key === 'Enter' && void handleAddNote(selectedOrder.id)}
-                    />
-                    <button
-                      onClick={() => void handleAddNote(selectedOrder.id)}
-                      disabled={isSaving}
-                      className="px-3 py-2 bg-foreground text-background text-xs font-medium transition-smooth hover:opacity-90 disabled:opacity-50"
-                    >
-                      Add
-                    </button>
-                  </div>
-                </div>
-              )}
+            <div className="px-6 py-6">
+              <OrderDetailContent
+                order={selectedOrder}
+                variant="modal"
+                onOpenFullPage={() => {
+                  navigate(cmsOrderDetail(role, selectedOrder.id));
+                  setSelectedOrderId(null);
+                }}
+              />
             </div>
           </div>
         </div>

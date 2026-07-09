@@ -1,10 +1,11 @@
-import { X, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { X, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { QuantityStepper } from '@/components/cart/QuantityStepper';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
 export default function MiniCart() {
-  const { items, isOpen, closeCart, updateQuantity, removeItem, totalPrice, totalItems } = useCart();
+  const { items, isOpen, closeCart, updateQuantity, removeItem, totalPrice, totalItems, getMaxLineQuantity } = useCart();
 
   return (
     <AnimatePresence>
@@ -61,19 +62,14 @@ export default function MiniCart() {
                         </p>
                         <p className="text-sm font-medium mt-1">${item.product.price}</p>
                         <div className="flex items-center gap-3 mt-2">
-                          <button
-                            onClick={() => updateQuantity(item.product.id, item.selectedSize, item.selectedColor, item.quantity - 1)}
-                            className="w-7 h-7 flex items-center justify-center border border-border rounded-sm transition-smooth hover:border-foreground"
-                          >
-                            <Minus size={12} />
-                          </button>
-                          <span className="text-xs font-medium w-4 text-center">{item.quantity}</span>
-                          <button
-                            onClick={() => updateQuantity(item.product.id, item.selectedSize, item.selectedColor, item.quantity + 1)}
-                            className="w-7 h-7 flex items-center justify-center border border-border rounded-sm transition-smooth hover:border-foreground"
-                          >
-                            <Plus size={12} />
-                          </button>
+                          <QuantityStepper
+                            size="sm"
+                            value={item.quantity}
+                            max={getMaxLineQuantity(item.product, item.selectedSize, item.selectedColor)}
+                            onChange={(next) =>
+                              updateQuantity(item.product.id, item.selectedSize, item.selectedColor, next)
+                            }
+                          />
                           <button
                             onClick={() => removeItem(item.product.id, item.selectedSize, item.selectedColor)}
                             className="ml-auto text-xs text-muted-foreground underline underline-offset-2 transition-smooth hover-gold"

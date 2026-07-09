@@ -42,11 +42,11 @@ export interface Product {
   badge?: string;
   rating: number;
   reviews: number;
+  stock: number;
 }
 
 export interface AdminProduct extends Product {
   sku: string;
-  stock: number;
   tags: string[];
   seoTitle: string;
   seoDescription: string;
@@ -58,7 +58,6 @@ export function toStorefrontProduct(product: AdminProduct): Product | null {
   if (product.status !== 'active') return null;
   const {
     sku: _sku,
-    stock: _stock,
     tags: _tags,
     seoTitle: _seoTitle,
     seoDescription: _seoDescription,
@@ -67,4 +66,12 @@ export function toStorefrontProduct(product: AdminProduct): Product | null {
     ...storefront
   } = product;
   return storefront;
+}
+
+export function getProductStock(product: Pick<Product, 'stock'>): number {
+  return Math.max(0, Math.floor(product.stock ?? 0));
+}
+
+export function isProductInStock(product: Pick<Product, 'stock'>): boolean {
+  return getProductStock(product) > 0;
 }
