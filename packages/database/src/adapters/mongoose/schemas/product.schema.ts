@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, type Model } from 'mongoose';
 import type { AdminProduct } from '@luxe-maison/core';
+import { COLLECTIONS, MODEL_NAMES } from '../collection-names.js';
 
 const productColorSchema = new Schema(
   {
@@ -36,8 +37,9 @@ const productSchema = new Schema<AdminProduct>(
     status: { type: String, required: true, enum: ['active', 'draft', 'archived'] },
     createdAt: { type: String, required: true },
   },
-  { versionKey: false },
+  { versionKey: false, collection: COLLECTIONS.products },
 );
 
 export const ProductModel: Model<AdminProduct> =
-  mongoose.models?.Product ?? model<AdminProduct>('Product', productSchema);
+  mongoose.models?.[MODEL_NAMES.Product] ??
+  model<AdminProduct>(MODEL_NAMES.Product, productSchema);

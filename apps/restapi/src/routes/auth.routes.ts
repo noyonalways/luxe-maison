@@ -1,9 +1,18 @@
 import type { Hono } from 'hono';
 import { compare } from 'bcryptjs';
-import type { StaffRepository } from '@luxe-maison/core';
+import type { AuthUser, StaffRepository } from '@luxe-maison/core';
 import { createAuthService } from '@luxe-maison/core';
 import { signAccessToken } from '../lib/jwt.js';
 import { requireStaffAuth, type AuthVariables } from '../middleware/auth.middleware.js';
+import { cmsRolesService } from '../lib/cms-roles.js';
+
+async function withRoleSlug(user: AuthUser): Promise<AuthUser> {
+  if (user.role === 'admin') {
+    return { ...user, roleSlug: 'admin' };
+  }
+  const slug = await cmsRolesService.resolveSlugForRole(user.role);
+  return { ...user, roleSlug: slug ?? undefined };
+}
 
 export function authRoutes(
   app: Hono<{ Variables: AuthVariables }>,
@@ -25,10 +34,11 @@ export function authRoutes(
       return c.json({ status: 'error', message: 'Invalid email or password' }, 401);
     }
 
-    const tokens = await signAccessToken(user);
+    const enriched = await withRoleSlug(user);
+    const tokens = await signAccessToken(enriched);
     return c.json({
       status: 'ok',
-      user,
+      user: enriched,
       tokens,
     });
   });
@@ -39,7 +49,8 @@ export function authRoutes(
     if (!user) {
       return c.json({ status: 'error', message: 'User not found' }, 401);
     }
-    return c.json({ status: 'ok', user });
+    const enriched = await withRoleSlug(user);
+    return c.json({ status: 'ok', user: enriched });
   });
 
   app.post('/api/auth/logout', async (c) => {

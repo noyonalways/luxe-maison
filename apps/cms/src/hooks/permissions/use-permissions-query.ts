@@ -10,7 +10,7 @@ export function usePermissionsQuery() {
     queryKey: permissionsKeys.matrix(),
     queryFn: async () => {
       const response = await permissionsApi.get();
-      return response.permissions;
+      return { roles: response.roles, permissions: response.permissions };
     },
     enabled: hasToken,
     staleTime: 60_000,

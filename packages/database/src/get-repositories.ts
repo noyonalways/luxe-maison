@@ -9,7 +9,7 @@ import type {
   ContentPageRepository,
   ProductRepository,
   ReviewRepository,
-  RolePermissionsRepository,
+  CmsRolesRepository,
   SettingsRepository,
   StaffRepository,
 } from '@luxe-maison/core';
@@ -26,7 +26,7 @@ import {
   createImpContentPageRepository,
   createImpProductRepository,
   createImpReviewRepository,
-  createImpRolePermissionsRepository,
+  createImpCmsRolesRepository,
   createImpSettingsRepository,
   createImpStaffRepository,
 } from './adapters/in_memory/repositories.js';
@@ -42,7 +42,7 @@ import {
   createImpContentPageRepository as createMongooseContentPageRepository,
   createImpProductRepository as createMongooseProductRepository,
   createImpReviewRepository as createMongooseReviewRepository,
-  createImpRolePermissionsRepository as createMongooseRolePermissionsRepository,
+  createImpCmsRolesRepository as createMongooseCmsRolesRepository,
   createImpSettingsRepository as createMongooseSettingsRepository,
   createImpStaffRepository as createMongooseStaffRepository,
   disconnectMongoose,
@@ -225,13 +225,13 @@ export function getContentPageRepository(adapter?: DatabaseAdapter): ContentPage
   }
 }
 
-export function getRolePermissionsRepository(adapter?: DatabaseAdapter): RolePermissionsRepository {
+export function getCmsRolesRepository(adapter?: DatabaseAdapter): CmsRolesRepository {
   switch (resolveAdapter(adapter)) {
     case 'in_memory':
-      return createImpRolePermissionsRepository();
+      return createImpCmsRolesRepository();
     case 'mongoose':
-      return createMongooseRolePermissionsRepository();
+      return createMongooseCmsRolesRepository();
     default:
-      return unsupported('role permissions', resolveAdapter(adapter));
+      return unsupported('cms roles', resolveAdapter(adapter));
   }
 }

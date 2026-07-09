@@ -1,112 +1,77 @@
-import type { StaffRole } from "@/contexts/role-context";
-import type { FileRoutesByTo } from "@/routeTree.gen";
+import type { Section } from "@/contexts/role-context";
 
-export type AppRoutePath = keyof FileRoutesByTo;
+type CmsLink = { to: string; params?: { roleSlug: string; id?: string } };
 
-export type CmsSection =
-  | "dashboard"
-  | "products"
-  | "orders"
-  | "customers"
-  | "analytics"
-  | "newsletter"
-  | "discounts"
-  | "campaigns"
-  | "popup"
-  | "homepage"
-  | "pages"
-  | "team"
-  | "settings"
-  | "access-control";
-
-const DASHBOARD_ROUTES: Record<StaffRole, AppRoutePath> = {
-  admin: "/admin/dashboard",
-  manager: "/manager/dashboard",
-  employee: "/employee/dashboard",
-};
-
-const ROLE_SECTION_ROUTES: Record<StaffRole, Partial<Record<CmsSection | string, AppRoutePath>>> = {
-  admin: {
-    dashboard: "/admin/dashboard",
-    products: "/admin/products",
-    orders: "/admin/orders",
-    customers: "/admin/customers",
-    analytics: "/admin/analytics",
-    newsletter: "/admin/newsletter",
-    discounts: "/admin/discounts",
-    campaigns: "/admin/campaigns",
-    popup: "/admin/popup",
-    homepage: "/admin/homepage",
-    "pages/privacy": "/admin/pages/privacy",
-    "pages/terms": "/admin/pages/terms",
-    "pages/cookies": "/admin/pages/cookies",
-    team: "/admin/team",
-    settings: "/admin/settings",
-    "access-control": "/admin/access-control",
-  },
-  manager: {
-    dashboard: "/manager/dashboard",
-    orders: "/manager/orders",
-    customers: "/manager/customers",
-    analytics: "/manager/analytics",
-    newsletter: "/manager/newsletter",
-    discounts: "/manager/discounts",
-    campaigns: "/manager/campaigns",
-  },
-  employee: {
-    dashboard: "/employee/dashboard",
-    products: "/employee/products",
-    orders: "/employee/orders",
-    customers: "/employee/customers",
-  },
-};
-
-/** Typed destinations for fixed role CMS routes. */
-export function cmsTo(section: CmsSection, role: StaffRole) {
-  const to = ROLE_SECTION_ROUTES[role][section] ?? DASHBOARD_ROUTES[role];
-  return { to };
+function cmsLink(roleSlug: string, ...segments: string[]): CmsLink {
+  const suffix = segments.join("/");
+  if (!suffix) {
+    return { to: "/$roleSlug", params: { roleSlug } };
+  }
+  return { to: `/$roleSlug/${suffix}`, params: { roleSlug } };
 }
 
-/** Navigate to a nested CMS path such as `pages/privacy`. */
-export function cmsNavPath(role: StaffRole, path: string) {
-  const routes = ROLE_SECTION_ROUTES[role] as Record<string, AppRoutePath | undefined>;
-  const to = routes[path] ?? DASHBOARD_ROUTES[role];
-  return { to };
+/** Build a CMS link using the staff member's URL role slug. */
+export function cmsPath(roleSlug: string, ...segments: string[]) {
+  return cmsLink(roleSlug, ...segments);
 }
 
-export function cmsProductNew(role: StaffRole) {
-  if (role !== "admin") return { to: DASHBOARD_ROUTES[role] };
-  return { to: "/admin/products/new" as const };
+export function cmsTo(section: Section, roleSlug: string) {
+  const map: Record<Section, string> = {
+    dashboard: "dashboard",
+    products: "products",
+    orders: "orders",
+    customers: "customers",
+    analytics: "analytics",
+    newsletter: "newsletter",
+    discounts: "discounts",
+    campaigns: "campaigns",
+    popup: "popup",
+    homepage: "homepage",
+    pages: "pages/privacy",
+    team: "team",
+    settings: "settings",
+    "access-control": "access-control",
+  };
+  return cmsLink(roleSlug, map[section] ?? "dashboard");
 }
 
-export function cmsProductEdit(role: StaffRole, id: string) {
-  if (role !== "admin") return { to: DASHBOARD_ROUTES[role] };
+export function cmsNavPath(roleSlug: string, path: string) {
+  return cmsLink(roleSlug, path);
+}
+
+export function cmsProductNew(roleSlug: string) {
+  return cmsLink(roleSlug, "products", "new");
+}
+
+export function cmsProductEdit(roleSlug: string, id: string) {
   return {
-    to: "/admin/products/$id/edit" as const,
-    params: { id },
+    to: "/$roleSlug/products/$id/edit",
+    params: { roleSlug, id },
   };
 }
 
-export function cmsDashboard(role: StaffRole) {
-  return { to: DASHBOARD_ROUTES[role] };
+export function cmsDashboard(roleSlug: string) {
+  return cmsLink(roleSlug, "dashboard");
 }
 
-export function cmsCustomerDetail(role: StaffRole, id: string) {
-  if (role === 'admin') {
-    return { to: '/admin/customers/$id' as const, params: { id } };
-  }
-  if (role === 'manager') {
-    return { to: '/manager/customers/$id' as const, params: { id } };
-  }
-  return { to: '/employee/customers/$id' as const, params: { id } };
+export function cmsCustomerDetail(roleSlug: string, id: string) {
+  return {
+    to: "/$roleSlug/customers/$id",
+    params: { roleSlug, id },
+  };
 }
 
-export function cmsOrderDetail(role: StaffRole, id: string) {
-  if (role === 'admin') {
-    return { to: '/admin/orders/$id' as const, params: { id } };
+export function cmsOrderDetail(roleSlug: string, id: string) {
+  return {
+    to: "/$roleSlug/orders/$id",
+    params: { roleSlug, id },
+  };
+}
+
+export function resolveRoleSlug(user: { role: string; roleSlug?: string }): string {
+  if (user.roleSlug) return user.roleSlug;
+  if (user.role === "admin" || user.role === "manager" || user.role === "employee") {
+    return user.role;
   }
-  if (role === 'manager') {
-    return { to: '/manager/orders/$id' as const, params: { id } };
-  }
-  return { to: '/employee/orders/$id' as const, params: { id } };
+  return user.role;
 }

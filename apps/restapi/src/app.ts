@@ -27,6 +27,7 @@ import { newsletterRoutes } from './routes/newsletter.routes.js';
 import { orderRoutes } from './routes/order.routes.js';
 import { paymentRoutes } from './routes/payment.routes.js';
 import { permissionsRoutes } from './routes/permissions.routes.js';
+import { rolesRoutes } from './routes/roles.routes.js';
 import { popupRoutes } from './routes/popup.routes.js';
 import { productRoutes } from './routes/product.routes.js';
 import { reviewRoutes } from './routes/review.routes.js';
@@ -70,6 +71,7 @@ contentPageRoutes(app, { contentPageRepository });
 reviewRoutes(app, { reviewRepository });
 popupRoutes(app, { popupRepository });
 permissionsRoutes(app);
+rolesRoutes(app, { staffRepository });
 analyticsRoutes(app, {
   orderRepository,
   productRepository,

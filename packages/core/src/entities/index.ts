@@ -13,3 +13,4 @@ export * from './review.entity.js';
 export * from './popup.entity.js';
 export * from './homepage.entity.js';
 export * from './content-page.entity.js';
+export * from './cms-role.entity.js';

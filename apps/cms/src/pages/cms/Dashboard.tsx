@@ -20,7 +20,7 @@ function formatRevenue(value: number): string {
 }
 
 export default function Dashboard() {
-  const { role, hasAccess } = useRole();
+  const { roleSlug, role, hasAccess } = useRole();
   const { members } = useStaff();
   const { orders, isLoading: ordersLoading } = useOrders();
   const { products, isLoading: productsLoading } = useProducts();
@@ -116,7 +116,7 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
         {pendingOrders > 0 && hasAccess('orders') && (
-          <Link {...cmsTo('orders', role)} className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded p-4 transition-smooth hover:border-amber-400">
+          <Link {...cmsTo('orders', roleSlug)} className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded p-4 transition-smooth hover:border-amber-400">
             <ShoppingCart size={16} className="text-amber-600" />
             <span className="text-sm font-medium text-amber-800">
               {pendingOrders} pending order{pendingOrders > 1 ? 's' : ''} require attention
@@ -124,7 +124,7 @@ export default function Dashboard() {
           </Link>
         )}
         {lowStockProducts > 0 && hasAccess('products') && (
-          <Link {...cmsTo('products', role)} className="flex items-center gap-3 bg-red-50 border border-red-200 rounded p-4 transition-smooth hover:border-red-400">
+          <Link {...cmsTo('products', roleSlug)} className="flex items-center gap-3 bg-red-50 border border-red-200 rounded p-4 transition-smooth hover:border-red-400">
             <AlertTriangle size={16} className="text-red-600" />
             <span className="text-sm font-medium text-red-800">
               {lowStockProducts} product{lowStockProducts > 1 ? 's' : ''} running low on stock
@@ -134,7 +134,7 @@ export default function Dashboard() {
       </div>
 
       {role === 'admin' && (
-        <Link {...cmsTo('team', role)} className="flex items-center justify-between bg-background border border-border rounded p-5 mb-8 transition-smooth hover:border-foreground/20">
+        <Link {...cmsTo('team', roleSlug)} className="flex items-center justify-between bg-background border border-border rounded p-5 mb-8 transition-smooth hover:border-foreground/20">
           <div className="flex items-center gap-3">
             <Users size={18} className="text-muted-foreground" />
             <div>
@@ -152,7 +152,7 @@ export default function Dashboard() {
       <div className="bg-background border border-border rounded">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <h2 className="font-heading text-lg">Recent Orders</h2>
-          <Link {...cmsTo('orders', role)} className="text-xs text-gold underline underline-offset-2">View all</Link>
+          <Link {...cmsTo('orders', roleSlug)} className="text-xs text-gold underline underline-offset-2">View all</Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -192,7 +192,7 @@ export default function Dashboard() {
         <div className="bg-background border border-border rounded mt-6">
           <div className="flex items-center justify-between px-5 py-4 border-b border-border">
             <h2 className="font-heading text-lg">Top Products</h2>
-            <Link {...cmsTo('analytics', role)} className="text-xs text-gold underline underline-offset-2">Analytics</Link>
+            <Link {...cmsTo('analytics', roleSlug)} className="text-xs text-gold underline underline-offset-2">Analytics</Link>
           </div>
           <div className="divide-y divide-border">
             {analytics.topProducts.length === 0 ? (

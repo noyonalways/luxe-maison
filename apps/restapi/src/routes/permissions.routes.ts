@@ -1,35 +1,64 @@
 import type { Hono } from 'hono';
-import type { EditableRolePermissions } from '@luxe-maison/core';
-import { requireAuth, requireRole, type AuthVariables } from '../middleware/auth.middleware.js';
+import type { CmsSection, Permission } from '@luxe-maison/core';
+import { rolesToEditablePermissions } from '@luxe-maison/core';
+import { requireAuth, type AuthVariables } from '../middleware/auth.middleware.js';
 import {
-  invalidatePermissionsCache,
-  setPermissionsCache,
+  invalidateRolesCache,
+  setRolesCache,
 } from '../middleware/permissions.middleware.js';
-import { rolePermissionsService } from '../lib/role-permissions.js';
+import { cmsRolesService, requireSection } from '../lib/cms-roles.js';
 
 export function permissionsRoutes(app: Hono<{ Variables: AuthVariables }>) {
   app.get('/api/permissions', requireAuth, async (c) => {
-    const matrix = await rolePermissionsService.get();
-    setPermissionsCache(matrix);
-    return c.json({ status: 'ok', permissions: matrix });
+    const roles = await cmsRolesService.list();
+    setRolesCache(roles);
+    return c.json({
+      status: 'ok',
+      roles,
+      permissions: rolesToEditablePermissions(roles),
+    });
   });
 
-  app.put('/api/permissions', requireAuth, requireRole('admin'), async (c) => {
-    const body = await c.req.json<{ permissions?: EditableRolePermissions }>();
+  app.put('/api/permissions', requireAuth, requireSection('access-control', 'edit'), async (c) => {
+    const body = await c.req.json<{
+      permissions?: {
+        manager?: Record<string, string>;
+        employee?: Record<string, string>;
+      };
+    }>();
+
     if (!body.permissions?.manager || !body.permissions?.employee) {
-      return c.json({ status: 'error', message: 'permissions.manager and permissions.employee are required' }, 400);
+      return c.json(
+        { status: 'error', message: 'permissions.manager and permissions.employee are required' },
+        400,
+      );
     }
 
-    const updated = await rolePermissionsService.update(body.permissions);
-    invalidatePermissionsCache();
-    setPermissionsCache(updated);
-    return c.json({ status: 'ok', permissions: updated });
+    for (const [section, permission] of Object.entries(body.permissions.manager)) {
+      await cmsRolesService.updatePermission('manager', section as CmsSection, permission as Permission);
+    }
+    for (const [section, permission] of Object.entries(body.permissions.employee)) {
+      await cmsRolesService.updatePermission('employee', section as CmsSection, permission as Permission);
+    }
+
+    invalidateRolesCache();
+    const roles = await cmsRolesService.list();
+    setRolesCache(roles);
+    return c.json({
+      status: 'ok',
+      roles,
+      permissions: rolesToEditablePermissions(roles),
+    });
   });
 
-  app.post('/api/permissions/reset', requireAuth, requireRole('admin'), async (c) => {
-    const defaults = await rolePermissionsService.reset();
-    invalidatePermissionsCache();
-    setPermissionsCache(defaults);
-    return c.json({ status: 'ok', permissions: defaults });
+  app.post('/api/permissions/reset', requireAuth, requireSection('access-control', 'edit'), async (c) => {
+    const roles = await cmsRolesService.resetSystemRoles();
+    invalidateRolesCache();
+    setRolesCache(roles);
+    return c.json({
+      status: 'ok',
+      roles,
+      permissions: rolesToEditablePermissions(roles),
+    });
   });
 }

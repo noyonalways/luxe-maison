@@ -1,12 +1,20 @@
 import { hash } from 'bcryptjs';
 import type { Hono } from 'hono';
 import type { StaffMember, StaffRepository, StaffRole } from '@luxe-maison/core';
-import { createStaffService, toStaffPublic } from '@luxe-maison/core';
+import { createStaffService, isBuiltinStaffRole, isCustomStaffRole, toStaffPublic } from '@luxe-maison/core';
 import { requireAuth, type AuthVariables } from '../middleware/auth.middleware.js';
-import { requireSection } from '../lib/role-permissions.js';
+import { cmsRolesService, requireSection } from '../lib/cms-roles.js';
 
 function isStaffRoleValue(role: unknown): role is StaffRole {
-  return role === 'admin' || role === 'manager' || role === 'employee';
+  if (typeof role !== 'string') return false;
+  if (role === 'admin' || isBuiltinStaffRole(role)) return true;
+  return isCustomStaffRole(role);
+}
+
+async function isKnownRole(role: string): Promise<boolean> {
+  if (role === 'admin') return true;
+  const cmsRole = await cmsRolesService.getById(role);
+  return cmsRole !== null;
 }
 
 function canAssignRole(actorRole: StaffRole, targetRole: StaffRole): boolean {
@@ -57,7 +65,11 @@ export function staffRoutes(
     }
 
     if (!isStaffRoleValue(body.role)) {
-      return c.json({ status: 'error', message: 'role must be admin, manager, or employee' }, 400);
+      return c.json({ status: 'error', message: 'Invalid role' }, 400);
+    }
+
+    if (!(await isKnownRole(body.role))) {
+      return c.json({ status: 'error', message: 'Role does not exist' }, 400);
     }
 
     const currentUser = c.get('user');
@@ -129,7 +141,10 @@ export function staffRoutes(
 
     if (body.role !== undefined) {
       if (!isStaffRoleValue(body.role)) {
-        return c.json({ status: 'error', message: 'role must be admin, manager, or employee' }, 400);
+        return c.json({ status: 'error', message: 'Invalid role' }, 400);
+      }
+      if (!(await isKnownRole(body.role))) {
+        return c.json({ status: 'error', message: 'Role does not exist' }, 400);
       }
       if (!canAssignRole(currentUser.role as StaffRole, body.role)) {
         return c.json({ status: 'error', message: 'Only admins can assign the admin role' }, 403);

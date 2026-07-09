@@ -26,6 +26,7 @@ export const requireAuth = createMiddleware<{ Variables: AuthVariables }>(async 
       email: payload.email,
       role: payload.role,
       name: payload.name,
+      ...(payload.roleSlug ? { roleSlug: payload.roleSlug } : {}),
     });
     await next();
   } catch {
@@ -50,6 +51,7 @@ export const requireStaffAuth = createMiddleware<{ Variables: AuthVariables }>(a
       email: payload.email,
       role: payload.role,
       name: payload.name,
+      ...(payload.roleSlug ? { roleSlug: payload.roleSlug } : {}),
     });
     await next();
   } catch {
@@ -74,6 +76,7 @@ export const requireCustomerAuth = createMiddleware<{ Variables: AuthVariables }
       email: payload.email,
       role: payload.role,
       name: payload.name,
+      ...(payload.roleSlug ? { roleSlug: payload.roleSlug } : {}),
     });
     await next();
   } catch {

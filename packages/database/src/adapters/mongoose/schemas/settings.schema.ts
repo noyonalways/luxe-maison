@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, type Model } from 'mongoose';
 import type { StoreSettings } from '@luxe-maison/core';
+import { COLLECTIONS, MODEL_NAMES } from '../collection-names.js';
 
 const SETTINGS_ID = 'default';
 
@@ -21,11 +22,11 @@ const settingsSchema = new Schema<SettingsDocument>(
     lowStockThreshold: { type: Number, required: true },
     timezone: { type: String, required: true },
   },
-  { versionKey: false },
+  { versionKey: false, collection: COLLECTIONS.store_settings },
 );
 
 export const SettingsModel: Model<SettingsDocument> =
-  mongoose.models?.StoreSettings ??
-  model<SettingsDocument>('StoreSettings', settingsSchema);
+  mongoose.models?.[MODEL_NAMES.Store_Settings] ??
+  model<SettingsDocument>(MODEL_NAMES.Store_Settings, settingsSchema);
 
 export { SETTINGS_ID };

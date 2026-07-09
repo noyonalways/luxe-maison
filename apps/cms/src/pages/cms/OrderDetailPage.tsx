@@ -11,8 +11,8 @@ import { Button } from '@/components/ui/button';
 export default function OrderDetailPage() {
   const { id } = useParams({ strict: false });
   const navigate = useNavigate();
-  const { role } = useRole();
-  const ordersRoute = cmsTo('orders', role);
+  const { roleSlug } = useRole();
+  const ordersRoute = cmsTo('orders', roleSlug);
   const { data: order, isPending, isError } = useOrderQuery(id ?? '');
 
   if (!id) {

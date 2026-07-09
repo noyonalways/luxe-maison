@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, type Model } from 'mongoose';
 import type { PopupConfig } from '@luxe-maison/core';
+import { COLLECTIONS, MODEL_NAMES } from '../collection-names.js';
 
 const popupSchema = new Schema<PopupConfig>(
   {
@@ -18,8 +19,9 @@ const popupSchema = new Schema<PopupConfig>(
     },
     priority: { type: Number, required: true },
   },
-  { versionKey: false },
+  { versionKey: false, collection: COLLECTIONS.popup_configs },
 );
 
 export const PopupModel: Model<PopupConfig> =
-  mongoose.models?.PopupConfig ?? model<PopupConfig>('PopupConfig', popupSchema);
+  mongoose.models?.[MODEL_NAMES.Popup_Config] ??
+  model<PopupConfig>(MODEL_NAMES.Popup_Config, popupSchema);

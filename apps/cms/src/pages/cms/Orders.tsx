@@ -62,7 +62,7 @@ type OrderSortKey = 'id' | 'customerName' | 'total' | 'createdAt' | 'status';
 
 export default function Orders() {
   const navigate = useNavigate();
-  const { role } = useRole();
+  const { roleSlug } = useRole();
   const { orders, isLoading } = useOrders();
 
   const [search, setSearch] = useState('');
@@ -167,7 +167,7 @@ export default function Orders() {
               <TableRow key={order.id}>
                 <TableCell className="font-medium whitespace-nowrap">
                   <Link
-                    {...cmsOrderDetail(role, order.id)}
+                    {...cmsOrderDetail(roleSlug, order.id)}
                     className="hover:text-gold transition-smooth"
                   >
                     {order.id}
@@ -220,7 +220,7 @@ export default function Orders() {
                       <Eye size={14} />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7" title="Full details" asChild>
-                      <Link {...cmsOrderDetail(role, order.id)}>
+                      <Link {...cmsOrderDetail(roleSlug, order.id)}>
                         <ExternalLink size={14} />
                       </Link>
                     </Button>
@@ -265,7 +265,7 @@ export default function Orders() {
                 order={selectedOrder}
                 variant="modal"
                 onOpenFullPage={() => {
-                  navigate(cmsOrderDetail(role, selectedOrder.id));
+                  navigate(cmsOrderDetail(roleSlug, selectedOrder.id));
                   setSelectedOrderId(null);
                 }}
               />

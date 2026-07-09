@@ -16,7 +16,7 @@ export { createPopupService, type PopupService } from './services/popup.service.
 export { createHomepageService, type HomepageService, DEFAULT_HOMEPAGE_CONTENT } from './services/homepage.service.js';
 export { createContentPageService, type ContentPageService } from './services/content-page.service.js';
 export { createAnalyticsService, computeAnalytics, type AnalyticsService } from './services/analytics.service.js';
-export { createRolePermissionsService, type RolePermissionsService } from './services/role-permissions.service.js';
+export { createCmsRolesService, rolesToEditablePermissions, type CmsRolesService } from './services/cms-roles.service.js';
 export {
   validatePromoCode,
   calculateDiscount,

@@ -2,38 +2,45 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { RoleContext, type StaffRole } from '@/contexts/role-context';
 import { useAuth, isStaffRole } from '@/contexts/auth-context';
 import {
-  DEFAULT_PERMISSIONS,
   getPermission as resolvePermission,
   type Section,
   type Permission,
-  type EditableRolePermissions,
+  type CmsRole,
 } from '@/lib/role-permissions';
-import { setPermissionsCache } from '@/lib/permissions-cache';
+import { setRolesCache } from '@/lib/permissions-cache';
+import { resolveRoleSlug } from '@/lib/cms-navigation';
 import { usePermissionsQuery } from '@/hooks/permissions/use-permissions-query';
-import { useUpdatePermissionsMutation } from '@/hooks/permissions/use-update-permissions-mutation';
+import { useUpdateRolePermissionMutation } from '@/hooks/permissions/use-update-role-permission-mutation';
 import { useResetPermissionsMutation } from '@/hooks/permissions/use-reset-permissions-mutation';
+import { useCreateRoleMutation } from '@/hooks/permissions/use-create-role-mutation';
+import { useDeleteRoleMutation } from '@/hooks/permissions/use-delete-role-mutation';
 
 export function RoleProvider({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuth();
   const [role, setRoleState] = useState<StaffRole>('employee');
+  const [roleSlug, setRoleSlug] = useState('employee');
   const permissionsQuery = usePermissionsQuery();
-  const updateMutation = useUpdatePermissionsMutation();
+  const updatePermissionMutation = useUpdateRolePermissionMutation();
   const resetMutation = useResetPermissionsMutation();
+  const createRoleMutation = useCreateRoleMutation();
+  const deleteRoleMutation = useDeleteRoleMutation();
 
-  const editablePermissions = permissionsQuery.data ?? {
-    manager: { ...DEFAULT_PERMISSIONS.manager },
-    employee: { ...DEFAULT_PERMISSIONS.employee },
-  };
+  const roles = permissionsQuery.data?.roles ?? [];
+  const editableRoles = useMemo(
+    () => roles.filter((r) => r.id !== 'admin'),
+    [roles],
+  );
 
   useEffect(() => {
     if (user && isStaffRole(user.role)) {
       setRoleState(user.role);
+      setRoleSlug(resolveRoleSlug(user));
     }
   }, [user]);
 
   useEffect(() => {
     if (permissionsQuery.data) {
-      setPermissionsCache(permissionsQuery.data);
+      setRolesCache(permissionsQuery.data.roles, permissionsQuery.data.permissions);
     }
   }, [permissionsQuery.data]);
 
@@ -42,7 +49,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   };
 
   const getPermission = (section: Section): Permission => {
-    return resolvePermission(role, section, editablePermissions);
+    return resolvePermission(role, section, roles);
   };
 
   const hasAccess = (section: Section): boolean => getPermission(section) !== 'none';
@@ -53,20 +60,26 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   const canDelete = (section: Section): boolean => getPermission(section) === 'full';
 
   const updatePermission = useCallback(
-    (targetRole: 'manager' | 'employee', section: Section, permission: Permission) => {
-      const next: EditableRolePermissions = {
-        ...editablePermissions,
-        [targetRole]: {
-          ...editablePermissions[targetRole],
-          [section]: permission,
-        },
-      };
-      updateMutation.mutate(next);
+    (targetRoleId: string, section: Section, permission: Permission) => {
+      updatePermissionMutation.mutate({ roleId: targetRoleId, section, permission });
     },
-    [editablePermissions, updateMutation],
+    [updatePermissionMutation],
   );
 
-  const getPermissions = useCallback(() => editablePermissions, [editablePermissions]);
+  const createRole = useCallback(
+    async (input: { name: string; slug?: string }) => {
+      const result = await createRoleMutation.mutateAsync(input);
+      return result.role;
+    },
+    [createRoleMutation],
+  );
+
+  const deleteRole = useCallback(
+    async (roleId: string) => {
+      await deleteRoleMutation.mutateAsync(roleId);
+    },
+    [deleteRoleMutation],
+  );
 
   const resetPermissions = useCallback(() => {
     resetMutation.mutate();
@@ -75,27 +88,38 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       role,
+      roleSlug,
+      roles: editableRoles,
       setRole,
       hasAccess,
       canEdit,
       canDelete,
       getPermission,
       updatePermission,
-      getPermissions,
+      createRole,
+      deleteRole,
       resetPermissions,
       isLoadingPermissions: isAuthenticated && permissionsQuery.isLoading,
-      isSavingPermissions: updateMutation.isPending || resetMutation.isPending,
+      isSavingPermissions:
+        updatePermissionMutation.isPending ||
+        resetMutation.isPending ||
+        createRoleMutation.isPending ||
+        deleteRoleMutation.isPending,
     }),
     [
       role,
-      editablePermissions,
+      roleSlug,
+      editableRoles,
       updatePermission,
-      getPermissions,
+      createRole,
+      deleteRole,
       resetPermissions,
       isAuthenticated,
       permissionsQuery.isLoading,
-      updateMutation.isPending,
+      updatePermissionMutation.isPending,
       resetMutation.isPending,
+      createRoleMutation.isPending,
+      deleteRoleMutation.isPending,
     ],
   );
 

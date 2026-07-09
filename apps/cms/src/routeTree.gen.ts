@@ -13,45 +13,26 @@ import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
-import { Route as rolesManagerRouteRouteImport } from './routes/(roles)/manager/route'
-import { Route as rolesEmployeeRouteRouteImport } from './routes/(roles)/employee/route'
-import { Route as rolesAdminRouteRouteImport } from './routes/(roles)/admin/route'
-import { Route as rolesManagerIndexRouteImport } from './routes/(roles)/manager/index'
-import { Route as rolesEmployeeIndexRouteImport } from './routes/(roles)/employee/index'
-import { Route as rolesAdminIndexRouteImport } from './routes/(roles)/admin/index'
-import { Route as rolesManagerNewsletterRouteImport } from './routes/(roles)/manager/newsletter'
-import { Route as rolesManagerDiscountsRouteImport } from './routes/(roles)/manager/discounts'
-import { Route as rolesManagerDashboardRouteImport } from './routes/(roles)/manager/dashboard'
-import { Route as rolesManagerCampaignsRouteImport } from './routes/(roles)/manager/campaigns'
-import { Route as rolesManagerAnalyticsRouteImport } from './routes/(roles)/manager/analytics'
-import { Route as rolesEmployeeDashboardRouteImport } from './routes/(roles)/employee/dashboard'
-import { Route as rolesAdminTeamRouteImport } from './routes/(roles)/admin/team'
-import { Route as rolesAdminSettingsRouteImport } from './routes/(roles)/admin/settings'
-import { Route as rolesAdminPopupRouteImport } from './routes/(roles)/admin/popup'
-import { Route as rolesAdminNewsletterRouteImport } from './routes/(roles)/admin/newsletter'
-import { Route as rolesAdminHomepageRouteImport } from './routes/(roles)/admin/homepage'
-import { Route as rolesAdminDiscountsRouteImport } from './routes/(roles)/admin/discounts'
-import { Route as rolesAdminDashboardRouteImport } from './routes/(roles)/admin/dashboard'
-import { Route as rolesAdminCampaignsRouteImport } from './routes/(roles)/admin/campaigns'
-import { Route as rolesAdminAnalyticsRouteImport } from './routes/(roles)/admin/analytics'
-import { Route as rolesAdminAccessControlRouteImport } from './routes/(roles)/admin/access-control'
-import { Route as rolesManagerOrdersIndexRouteImport } from './routes/(roles)/manager/orders/index'
-import { Route as rolesManagerCustomersIndexRouteImport } from './routes/(roles)/manager/customers/index'
-import { Route as rolesEmployeeProductsIndexRouteImport } from './routes/(roles)/employee/products/index'
-import { Route as rolesEmployeeOrdersIndexRouteImport } from './routes/(roles)/employee/orders/index'
-import { Route as rolesEmployeeCustomersIndexRouteImport } from './routes/(roles)/employee/customers/index'
-import { Route as rolesAdminProductsIndexRouteImport } from './routes/(roles)/admin/products/index'
-import { Route as rolesAdminOrdersIndexRouteImport } from './routes/(roles)/admin/orders/index'
-import { Route as rolesAdminCustomersIndexRouteImport } from './routes/(roles)/admin/customers/index'
-import { Route as rolesManagerOrdersIdRouteImport } from './routes/(roles)/manager/orders/$id'
-import { Route as rolesManagerCustomersIdRouteImport } from './routes/(roles)/manager/customers/$id'
-import { Route as rolesEmployeeOrdersIdRouteImport } from './routes/(roles)/employee/orders/$id'
-import { Route as rolesEmployeeCustomersIdRouteImport } from './routes/(roles)/employee/customers/$id'
-import { Route as rolesAdminProductsNewRouteImport } from './routes/(roles)/admin/products/new'
-import { Route as rolesAdminPagesSlugRouteImport } from './routes/(roles)/admin/pages/$slug'
-import { Route as rolesAdminOrdersIdRouteImport } from './routes/(roles)/admin/orders/$id'
-import { Route as rolesAdminCustomersIdRouteImport } from './routes/(roles)/admin/customers/$id'
-import { Route as rolesAdminProductsIdEditRouteImport } from './routes/(roles)/admin/products/$id.edit'
+import { Route as rolesRoleSlugRouteRouteImport } from './routes/(roles)/$roleSlug/route'
+import { Route as rolesRoleSlugIndexRouteImport } from './routes/(roles)/$roleSlug/index'
+import { Route as rolesRoleSlugTeamRouteImport } from './routes/(roles)/$roleSlug/team'
+import { Route as rolesRoleSlugSettingsRouteImport } from './routes/(roles)/$roleSlug/settings'
+import { Route as rolesRoleSlugPopupRouteImport } from './routes/(roles)/$roleSlug/popup'
+import { Route as rolesRoleSlugNewsletterRouteImport } from './routes/(roles)/$roleSlug/newsletter'
+import { Route as rolesRoleSlugHomepageRouteImport } from './routes/(roles)/$roleSlug/homepage'
+import { Route as rolesRoleSlugDiscountsRouteImport } from './routes/(roles)/$roleSlug/discounts'
+import { Route as rolesRoleSlugDashboardRouteImport } from './routes/(roles)/$roleSlug/dashboard'
+import { Route as rolesRoleSlugCampaignsRouteImport } from './routes/(roles)/$roleSlug/campaigns'
+import { Route as rolesRoleSlugAnalyticsRouteImport } from './routes/(roles)/$roleSlug/analytics'
+import { Route as rolesRoleSlugAccessControlRouteImport } from './routes/(roles)/$roleSlug/access-control'
+import { Route as rolesRoleSlugProductsIndexRouteImport } from './routes/(roles)/$roleSlug/products/index'
+import { Route as rolesRoleSlugOrdersIndexRouteImport } from './routes/(roles)/$roleSlug/orders/index'
+import { Route as rolesRoleSlugCustomersIndexRouteImport } from './routes/(roles)/$roleSlug/customers/index'
+import { Route as rolesRoleSlugProductsNewRouteImport } from './routes/(roles)/$roleSlug/products/new'
+import { Route as rolesRoleSlugPagesSlugRouteImport } from './routes/(roles)/$roleSlug/pages/$slug'
+import { Route as rolesRoleSlugOrdersIdRouteImport } from './routes/(roles)/$roleSlug/orders/$id'
+import { Route as rolesRoleSlugCustomersIdRouteImport } from './routes/(roles)/$roleSlug/customers/$id'
+import { Route as rolesRoleSlugProductsIdEditRouteImport } from './routes/(roles)/$roleSlug/products/$id.edit'
 
 const authRouteRoute = authRouteRouteImport.update({
   id: '/(auth)',
@@ -72,479 +53,272 @@ const authForgotPasswordRoute = authForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => authRouteRoute,
 } as any)
-const rolesManagerRouteRoute = rolesManagerRouteRouteImport.update({
-  id: '/(roles)/manager',
-  path: '/manager',
+const rolesRoleSlugRouteRoute = rolesRoleSlugRouteRouteImport.update({
+  id: '/(roles)/$roleSlug',
+  path: '/$roleSlug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const rolesEmployeeRouteRoute = rolesEmployeeRouteRouteImport.update({
-  id: '/(roles)/employee',
-  path: '/employee',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const rolesAdminRouteRoute = rolesAdminRouteRouteImport.update({
-  id: '/(roles)/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const rolesManagerIndexRoute = rolesManagerIndexRouteImport.update({
+const rolesRoleSlugIndexRoute = rolesRoleSlugIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rolesManagerRouteRoute,
+  getParentRoute: () => rolesRoleSlugRouteRoute,
 } as any)
-const rolesEmployeeIndexRoute = rolesEmployeeIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rolesEmployeeRouteRoute,
-} as any)
-const rolesAdminIndexRoute = rolesAdminIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rolesAdminRouteRoute,
-} as any)
-const rolesManagerNewsletterRoute = rolesManagerNewsletterRouteImport.update({
-  id: '/newsletter',
-  path: '/newsletter',
-  getParentRoute: () => rolesManagerRouteRoute,
-} as any)
-const rolesManagerDiscountsRoute = rolesManagerDiscountsRouteImport.update({
-  id: '/discounts',
-  path: '/discounts',
-  getParentRoute: () => rolesManagerRouteRoute,
-} as any)
-const rolesManagerDashboardRoute = rolesManagerDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rolesManagerRouteRoute,
-} as any)
-const rolesManagerCampaignsRoute = rolesManagerCampaignsRouteImport.update({
-  id: '/campaigns',
-  path: '/campaigns',
-  getParentRoute: () => rolesManagerRouteRoute,
-} as any)
-const rolesManagerAnalyticsRoute = rolesManagerAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
-  getParentRoute: () => rolesManagerRouteRoute,
-} as any)
-const rolesEmployeeDashboardRoute = rolesEmployeeDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rolesEmployeeRouteRoute,
-} as any)
-const rolesAdminTeamRoute = rolesAdminTeamRouteImport.update({
+const rolesRoleSlugTeamRoute = rolesRoleSlugTeamRouteImport.update({
   id: '/team',
   path: '/team',
-  getParentRoute: () => rolesAdminRouteRoute,
+  getParentRoute: () => rolesRoleSlugRouteRoute,
 } as any)
-const rolesAdminSettingsRoute = rolesAdminSettingsRouteImport.update({
+const rolesRoleSlugSettingsRoute = rolesRoleSlugSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => rolesAdminRouteRoute,
+  getParentRoute: () => rolesRoleSlugRouteRoute,
 } as any)
-const rolesAdminPopupRoute = rolesAdminPopupRouteImport.update({
+const rolesRoleSlugPopupRoute = rolesRoleSlugPopupRouteImport.update({
   id: '/popup',
   path: '/popup',
-  getParentRoute: () => rolesAdminRouteRoute,
+  getParentRoute: () => rolesRoleSlugRouteRoute,
 } as any)
-const rolesAdminNewsletterRoute = rolesAdminNewsletterRouteImport.update({
+const rolesRoleSlugNewsletterRoute = rolesRoleSlugNewsletterRouteImport.update({
   id: '/newsletter',
   path: '/newsletter',
-  getParentRoute: () => rolesAdminRouteRoute,
+  getParentRoute: () => rolesRoleSlugRouteRoute,
 } as any)
-const rolesAdminHomepageRoute = rolesAdminHomepageRouteImport.update({
+const rolesRoleSlugHomepageRoute = rolesRoleSlugHomepageRouteImport.update({
   id: '/homepage',
   path: '/homepage',
-  getParentRoute: () => rolesAdminRouteRoute,
+  getParentRoute: () => rolesRoleSlugRouteRoute,
 } as any)
-const rolesAdminDiscountsRoute = rolesAdminDiscountsRouteImport.update({
+const rolesRoleSlugDiscountsRoute = rolesRoleSlugDiscountsRouteImport.update({
   id: '/discounts',
   path: '/discounts',
-  getParentRoute: () => rolesAdminRouteRoute,
+  getParentRoute: () => rolesRoleSlugRouteRoute,
 } as any)
-const rolesAdminDashboardRoute = rolesAdminDashboardRouteImport.update({
+const rolesRoleSlugDashboardRoute = rolesRoleSlugDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
-  getParentRoute: () => rolesAdminRouteRoute,
+  getParentRoute: () => rolesRoleSlugRouteRoute,
 } as any)
-const rolesAdminCampaignsRoute = rolesAdminCampaignsRouteImport.update({
+const rolesRoleSlugCampaignsRoute = rolesRoleSlugCampaignsRouteImport.update({
   id: '/campaigns',
   path: '/campaigns',
-  getParentRoute: () => rolesAdminRouteRoute,
+  getParentRoute: () => rolesRoleSlugRouteRoute,
 } as any)
-const rolesAdminAnalyticsRoute = rolesAdminAnalyticsRouteImport.update({
+const rolesRoleSlugAnalyticsRoute = rolesRoleSlugAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
-  getParentRoute: () => rolesAdminRouteRoute,
+  getParentRoute: () => rolesRoleSlugRouteRoute,
 } as any)
-const rolesAdminAccessControlRoute = rolesAdminAccessControlRouteImport.update({
-  id: '/access-control',
-  path: '/access-control',
-  getParentRoute: () => rolesAdminRouteRoute,
-} as any)
-const rolesManagerOrdersIndexRoute = rolesManagerOrdersIndexRouteImport.update({
-  id: '/orders/',
-  path: '/orders/',
-  getParentRoute: () => rolesManagerRouteRoute,
-} as any)
-const rolesManagerCustomersIndexRoute =
-  rolesManagerCustomersIndexRouteImport.update({
-    id: '/customers/',
-    path: '/customers/',
-    getParentRoute: () => rolesManagerRouteRoute,
+const rolesRoleSlugAccessControlRoute =
+  rolesRoleSlugAccessControlRouteImport.update({
+    id: '/access-control',
+    path: '/access-control',
+    getParentRoute: () => rolesRoleSlugRouteRoute,
   } as any)
-const rolesEmployeeProductsIndexRoute =
-  rolesEmployeeProductsIndexRouteImport.update({
+const rolesRoleSlugProductsIndexRoute =
+  rolesRoleSlugProductsIndexRouteImport.update({
     id: '/products/',
     path: '/products/',
-    getParentRoute: () => rolesEmployeeRouteRoute,
+    getParentRoute: () => rolesRoleSlugRouteRoute,
   } as any)
-const rolesEmployeeOrdersIndexRoute =
-  rolesEmployeeOrdersIndexRouteImport.update({
+const rolesRoleSlugOrdersIndexRoute =
+  rolesRoleSlugOrdersIndexRouteImport.update({
     id: '/orders/',
     path: '/orders/',
-    getParentRoute: () => rolesEmployeeRouteRoute,
+    getParentRoute: () => rolesRoleSlugRouteRoute,
   } as any)
-const rolesEmployeeCustomersIndexRoute =
-  rolesEmployeeCustomersIndexRouteImport.update({
+const rolesRoleSlugCustomersIndexRoute =
+  rolesRoleSlugCustomersIndexRouteImport.update({
     id: '/customers/',
     path: '/customers/',
-    getParentRoute: () => rolesEmployeeRouteRoute,
+    getParentRoute: () => rolesRoleSlugRouteRoute,
   } as any)
-const rolesAdminProductsIndexRoute = rolesAdminProductsIndexRouteImport.update({
-  id: '/products/',
-  path: '/products/',
-  getParentRoute: () => rolesAdminRouteRoute,
-} as any)
-const rolesAdminOrdersIndexRoute = rolesAdminOrdersIndexRouteImport.update({
-  id: '/orders/',
-  path: '/orders/',
-  getParentRoute: () => rolesAdminRouteRoute,
-} as any)
-const rolesAdminCustomersIndexRoute =
-  rolesAdminCustomersIndexRouteImport.update({
-    id: '/customers/',
-    path: '/customers/',
-    getParentRoute: () => rolesAdminRouteRoute,
+const rolesRoleSlugProductsNewRoute =
+  rolesRoleSlugProductsNewRouteImport.update({
+    id: '/products/new',
+    path: '/products/new',
+    getParentRoute: () => rolesRoleSlugRouteRoute,
   } as any)
-const rolesManagerOrdersIdRoute = rolesManagerOrdersIdRouteImport.update({
-  id: '/orders/$id',
-  path: '/orders/$id',
-  getParentRoute: () => rolesManagerRouteRoute,
-} as any)
-const rolesManagerCustomersIdRoute = rolesManagerCustomersIdRouteImport.update({
-  id: '/customers/$id',
-  path: '/customers/$id',
-  getParentRoute: () => rolesManagerRouteRoute,
-} as any)
-const rolesEmployeeOrdersIdRoute = rolesEmployeeOrdersIdRouteImport.update({
-  id: '/orders/$id',
-  path: '/orders/$id',
-  getParentRoute: () => rolesEmployeeRouteRoute,
-} as any)
-const rolesEmployeeCustomersIdRoute =
-  rolesEmployeeCustomersIdRouteImport.update({
-    id: '/customers/$id',
-    path: '/customers/$id',
-    getParentRoute: () => rolesEmployeeRouteRoute,
-  } as any)
-const rolesAdminProductsNewRoute = rolesAdminProductsNewRouteImport.update({
-  id: '/products/new',
-  path: '/products/new',
-  getParentRoute: () => rolesAdminRouteRoute,
-} as any)
-const rolesAdminPagesSlugRoute = rolesAdminPagesSlugRouteImport.update({
+const rolesRoleSlugPagesSlugRoute = rolesRoleSlugPagesSlugRouteImport.update({
   id: '/pages/$slug',
   path: '/pages/$slug',
-  getParentRoute: () => rolesAdminRouteRoute,
+  getParentRoute: () => rolesRoleSlugRouteRoute,
 } as any)
-const rolesAdminOrdersIdRoute = rolesAdminOrdersIdRouteImport.update({
+const rolesRoleSlugOrdersIdRoute = rolesRoleSlugOrdersIdRouteImport.update({
   id: '/orders/$id',
   path: '/orders/$id',
-  getParentRoute: () => rolesAdminRouteRoute,
+  getParentRoute: () => rolesRoleSlugRouteRoute,
 } as any)
-const rolesAdminCustomersIdRoute = rolesAdminCustomersIdRouteImport.update({
-  id: '/customers/$id',
-  path: '/customers/$id',
-  getParentRoute: () => rolesAdminRouteRoute,
-} as any)
-const rolesAdminProductsIdEditRoute =
-  rolesAdminProductsIdEditRouteImport.update({
+const rolesRoleSlugCustomersIdRoute =
+  rolesRoleSlugCustomersIdRouteImport.update({
+    id: '/customers/$id',
+    path: '/customers/$id',
+    getParentRoute: () => rolesRoleSlugRouteRoute,
+  } as any)
+const rolesRoleSlugProductsIdEditRoute =
+  rolesRoleSlugProductsIdEditRouteImport.update({
     id: '/products/$id/edit',
     path: '/products/$id/edit',
-    getParentRoute: () => rolesAdminRouteRoute,
+    getParentRoute: () => rolesRoleSlugRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof rolesAdminRouteRouteWithChildren
-  '/employee': typeof rolesEmployeeRouteRouteWithChildren
-  '/manager': typeof rolesManagerRouteRouteWithChildren
+  '/$roleSlug': typeof rolesRoleSlugRouteRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/login': typeof authLoginRoute
-  '/admin/access-control': typeof rolesAdminAccessControlRoute
-  '/admin/analytics': typeof rolesAdminAnalyticsRoute
-  '/admin/campaigns': typeof rolesAdminCampaignsRoute
-  '/admin/dashboard': typeof rolesAdminDashboardRoute
-  '/admin/discounts': typeof rolesAdminDiscountsRoute
-  '/admin/homepage': typeof rolesAdminHomepageRoute
-  '/admin/newsletter': typeof rolesAdminNewsletterRoute
-  '/admin/popup': typeof rolesAdminPopupRoute
-  '/admin/settings': typeof rolesAdminSettingsRoute
-  '/admin/team': typeof rolesAdminTeamRoute
-  '/employee/dashboard': typeof rolesEmployeeDashboardRoute
-  '/manager/analytics': typeof rolesManagerAnalyticsRoute
-  '/manager/campaigns': typeof rolesManagerCampaignsRoute
-  '/manager/dashboard': typeof rolesManagerDashboardRoute
-  '/manager/discounts': typeof rolesManagerDiscountsRoute
-  '/manager/newsletter': typeof rolesManagerNewsletterRoute
-  '/admin/': typeof rolesAdminIndexRoute
-  '/employee/': typeof rolesEmployeeIndexRoute
-  '/manager/': typeof rolesManagerIndexRoute
-  '/admin/customers/$id': typeof rolesAdminCustomersIdRoute
-  '/admin/orders/$id': typeof rolesAdminOrdersIdRoute
-  '/admin/pages/$slug': typeof rolesAdminPagesSlugRoute
-  '/admin/products/new': typeof rolesAdminProductsNewRoute
-  '/employee/customers/$id': typeof rolesEmployeeCustomersIdRoute
-  '/employee/orders/$id': typeof rolesEmployeeOrdersIdRoute
-  '/manager/customers/$id': typeof rolesManagerCustomersIdRoute
-  '/manager/orders/$id': typeof rolesManagerOrdersIdRoute
-  '/admin/customers/': typeof rolesAdminCustomersIndexRoute
-  '/admin/orders/': typeof rolesAdminOrdersIndexRoute
-  '/admin/products/': typeof rolesAdminProductsIndexRoute
-  '/employee/customers/': typeof rolesEmployeeCustomersIndexRoute
-  '/employee/orders/': typeof rolesEmployeeOrdersIndexRoute
-  '/employee/products/': typeof rolesEmployeeProductsIndexRoute
-  '/manager/customers/': typeof rolesManagerCustomersIndexRoute
-  '/manager/orders/': typeof rolesManagerOrdersIndexRoute
-  '/admin/products/$id/edit': typeof rolesAdminProductsIdEditRoute
+  '/$roleSlug/access-control': typeof rolesRoleSlugAccessControlRoute
+  '/$roleSlug/analytics': typeof rolesRoleSlugAnalyticsRoute
+  '/$roleSlug/campaigns': typeof rolesRoleSlugCampaignsRoute
+  '/$roleSlug/dashboard': typeof rolesRoleSlugDashboardRoute
+  '/$roleSlug/discounts': typeof rolesRoleSlugDiscountsRoute
+  '/$roleSlug/homepage': typeof rolesRoleSlugHomepageRoute
+  '/$roleSlug/newsletter': typeof rolesRoleSlugNewsletterRoute
+  '/$roleSlug/popup': typeof rolesRoleSlugPopupRoute
+  '/$roleSlug/settings': typeof rolesRoleSlugSettingsRoute
+  '/$roleSlug/team': typeof rolesRoleSlugTeamRoute
+  '/$roleSlug/': typeof rolesRoleSlugIndexRoute
+  '/$roleSlug/customers/$id': typeof rolesRoleSlugCustomersIdRoute
+  '/$roleSlug/orders/$id': typeof rolesRoleSlugOrdersIdRoute
+  '/$roleSlug/pages/$slug': typeof rolesRoleSlugPagesSlugRoute
+  '/$roleSlug/products/new': typeof rolesRoleSlugProductsNewRoute
+  '/$roleSlug/customers/': typeof rolesRoleSlugCustomersIndexRoute
+  '/$roleSlug/orders/': typeof rolesRoleSlugOrdersIndexRoute
+  '/$roleSlug/products/': typeof rolesRoleSlugProductsIndexRoute
+  '/$roleSlug/products/$id/edit': typeof rolesRoleSlugProductsIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/login': typeof authLoginRoute
-  '/admin/access-control': typeof rolesAdminAccessControlRoute
-  '/admin/analytics': typeof rolesAdminAnalyticsRoute
-  '/admin/campaigns': typeof rolesAdminCampaignsRoute
-  '/admin/dashboard': typeof rolesAdminDashboardRoute
-  '/admin/discounts': typeof rolesAdminDiscountsRoute
-  '/admin/homepage': typeof rolesAdminHomepageRoute
-  '/admin/newsletter': typeof rolesAdminNewsletterRoute
-  '/admin/popup': typeof rolesAdminPopupRoute
-  '/admin/settings': typeof rolesAdminSettingsRoute
-  '/admin/team': typeof rolesAdminTeamRoute
-  '/employee/dashboard': typeof rolesEmployeeDashboardRoute
-  '/manager/analytics': typeof rolesManagerAnalyticsRoute
-  '/manager/campaigns': typeof rolesManagerCampaignsRoute
-  '/manager/dashboard': typeof rolesManagerDashboardRoute
-  '/manager/discounts': typeof rolesManagerDiscountsRoute
-  '/manager/newsletter': typeof rolesManagerNewsletterRoute
-  '/admin': typeof rolesAdminIndexRoute
-  '/employee': typeof rolesEmployeeIndexRoute
-  '/manager': typeof rolesManagerIndexRoute
-  '/admin/customers/$id': typeof rolesAdminCustomersIdRoute
-  '/admin/orders/$id': typeof rolesAdminOrdersIdRoute
-  '/admin/pages/$slug': typeof rolesAdminPagesSlugRoute
-  '/admin/products/new': typeof rolesAdminProductsNewRoute
-  '/employee/customers/$id': typeof rolesEmployeeCustomersIdRoute
-  '/employee/orders/$id': typeof rolesEmployeeOrdersIdRoute
-  '/manager/customers/$id': typeof rolesManagerCustomersIdRoute
-  '/manager/orders/$id': typeof rolesManagerOrdersIdRoute
-  '/admin/customers': typeof rolesAdminCustomersIndexRoute
-  '/admin/orders': typeof rolesAdminOrdersIndexRoute
-  '/admin/products': typeof rolesAdminProductsIndexRoute
-  '/employee/customers': typeof rolesEmployeeCustomersIndexRoute
-  '/employee/orders': typeof rolesEmployeeOrdersIndexRoute
-  '/employee/products': typeof rolesEmployeeProductsIndexRoute
-  '/manager/customers': typeof rolesManagerCustomersIndexRoute
-  '/manager/orders': typeof rolesManagerOrdersIndexRoute
-  '/admin/products/$id/edit': typeof rolesAdminProductsIdEditRoute
+  '/$roleSlug/access-control': typeof rolesRoleSlugAccessControlRoute
+  '/$roleSlug/analytics': typeof rolesRoleSlugAnalyticsRoute
+  '/$roleSlug/campaigns': typeof rolesRoleSlugCampaignsRoute
+  '/$roleSlug/dashboard': typeof rolesRoleSlugDashboardRoute
+  '/$roleSlug/discounts': typeof rolesRoleSlugDiscountsRoute
+  '/$roleSlug/homepage': typeof rolesRoleSlugHomepageRoute
+  '/$roleSlug/newsletter': typeof rolesRoleSlugNewsletterRoute
+  '/$roleSlug/popup': typeof rolesRoleSlugPopupRoute
+  '/$roleSlug/settings': typeof rolesRoleSlugSettingsRoute
+  '/$roleSlug/team': typeof rolesRoleSlugTeamRoute
+  '/$roleSlug': typeof rolesRoleSlugIndexRoute
+  '/$roleSlug/customers/$id': typeof rolesRoleSlugCustomersIdRoute
+  '/$roleSlug/orders/$id': typeof rolesRoleSlugOrdersIdRoute
+  '/$roleSlug/pages/$slug': typeof rolesRoleSlugPagesSlugRoute
+  '/$roleSlug/products/new': typeof rolesRoleSlugProductsNewRoute
+  '/$roleSlug/customers': typeof rolesRoleSlugCustomersIndexRoute
+  '/$roleSlug/orders': typeof rolesRoleSlugOrdersIndexRoute
+  '/$roleSlug/products': typeof rolesRoleSlugProductsIndexRoute
+  '/$roleSlug/products/$id/edit': typeof rolesRoleSlugProductsIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/(auth)': typeof authRouteRouteWithChildren
-  '/(roles)/admin': typeof rolesAdminRouteRouteWithChildren
-  '/(roles)/employee': typeof rolesEmployeeRouteRouteWithChildren
-  '/(roles)/manager': typeof rolesManagerRouteRouteWithChildren
+  '/(roles)/$roleSlug': typeof rolesRoleSlugRouteRouteWithChildren
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/login': typeof authLoginRoute
-  '/(roles)/admin/access-control': typeof rolesAdminAccessControlRoute
-  '/(roles)/admin/analytics': typeof rolesAdminAnalyticsRoute
-  '/(roles)/admin/campaigns': typeof rolesAdminCampaignsRoute
-  '/(roles)/admin/dashboard': typeof rolesAdminDashboardRoute
-  '/(roles)/admin/discounts': typeof rolesAdminDiscountsRoute
-  '/(roles)/admin/homepage': typeof rolesAdminHomepageRoute
-  '/(roles)/admin/newsletter': typeof rolesAdminNewsletterRoute
-  '/(roles)/admin/popup': typeof rolesAdminPopupRoute
-  '/(roles)/admin/settings': typeof rolesAdminSettingsRoute
-  '/(roles)/admin/team': typeof rolesAdminTeamRoute
-  '/(roles)/employee/dashboard': typeof rolesEmployeeDashboardRoute
-  '/(roles)/manager/analytics': typeof rolesManagerAnalyticsRoute
-  '/(roles)/manager/campaigns': typeof rolesManagerCampaignsRoute
-  '/(roles)/manager/dashboard': typeof rolesManagerDashboardRoute
-  '/(roles)/manager/discounts': typeof rolesManagerDiscountsRoute
-  '/(roles)/manager/newsletter': typeof rolesManagerNewsletterRoute
-  '/(roles)/admin/': typeof rolesAdminIndexRoute
-  '/(roles)/employee/': typeof rolesEmployeeIndexRoute
-  '/(roles)/manager/': typeof rolesManagerIndexRoute
-  '/(roles)/admin/customers/$id': typeof rolesAdminCustomersIdRoute
-  '/(roles)/admin/orders/$id': typeof rolesAdminOrdersIdRoute
-  '/(roles)/admin/pages/$slug': typeof rolesAdminPagesSlugRoute
-  '/(roles)/admin/products/new': typeof rolesAdminProductsNewRoute
-  '/(roles)/employee/customers/$id': typeof rolesEmployeeCustomersIdRoute
-  '/(roles)/employee/orders/$id': typeof rolesEmployeeOrdersIdRoute
-  '/(roles)/manager/customers/$id': typeof rolesManagerCustomersIdRoute
-  '/(roles)/manager/orders/$id': typeof rolesManagerOrdersIdRoute
-  '/(roles)/admin/customers/': typeof rolesAdminCustomersIndexRoute
-  '/(roles)/admin/orders/': typeof rolesAdminOrdersIndexRoute
-  '/(roles)/admin/products/': typeof rolesAdminProductsIndexRoute
-  '/(roles)/employee/customers/': typeof rolesEmployeeCustomersIndexRoute
-  '/(roles)/employee/orders/': typeof rolesEmployeeOrdersIndexRoute
-  '/(roles)/employee/products/': typeof rolesEmployeeProductsIndexRoute
-  '/(roles)/manager/customers/': typeof rolesManagerCustomersIndexRoute
-  '/(roles)/manager/orders/': typeof rolesManagerOrdersIndexRoute
-  '/(roles)/admin/products/$id/edit': typeof rolesAdminProductsIdEditRoute
+  '/(roles)/$roleSlug/access-control': typeof rolesRoleSlugAccessControlRoute
+  '/(roles)/$roleSlug/analytics': typeof rolesRoleSlugAnalyticsRoute
+  '/(roles)/$roleSlug/campaigns': typeof rolesRoleSlugCampaignsRoute
+  '/(roles)/$roleSlug/dashboard': typeof rolesRoleSlugDashboardRoute
+  '/(roles)/$roleSlug/discounts': typeof rolesRoleSlugDiscountsRoute
+  '/(roles)/$roleSlug/homepage': typeof rolesRoleSlugHomepageRoute
+  '/(roles)/$roleSlug/newsletter': typeof rolesRoleSlugNewsletterRoute
+  '/(roles)/$roleSlug/popup': typeof rolesRoleSlugPopupRoute
+  '/(roles)/$roleSlug/settings': typeof rolesRoleSlugSettingsRoute
+  '/(roles)/$roleSlug/team': typeof rolesRoleSlugTeamRoute
+  '/(roles)/$roleSlug/': typeof rolesRoleSlugIndexRoute
+  '/(roles)/$roleSlug/customers/$id': typeof rolesRoleSlugCustomersIdRoute
+  '/(roles)/$roleSlug/orders/$id': typeof rolesRoleSlugOrdersIdRoute
+  '/(roles)/$roleSlug/pages/$slug': typeof rolesRoleSlugPagesSlugRoute
+  '/(roles)/$roleSlug/products/new': typeof rolesRoleSlugProductsNewRoute
+  '/(roles)/$roleSlug/customers/': typeof rolesRoleSlugCustomersIndexRoute
+  '/(roles)/$roleSlug/orders/': typeof rolesRoleSlugOrdersIndexRoute
+  '/(roles)/$roleSlug/products/': typeof rolesRoleSlugProductsIndexRoute
+  '/(roles)/$roleSlug/products/$id/edit': typeof rolesRoleSlugProductsIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/admin'
-    | '/employee'
-    | '/manager'
+    | '/$roleSlug'
     | '/forgot-password'
     | '/login'
-    | '/admin/access-control'
-    | '/admin/analytics'
-    | '/admin/campaigns'
-    | '/admin/dashboard'
-    | '/admin/discounts'
-    | '/admin/homepage'
-    | '/admin/newsletter'
-    | '/admin/popup'
-    | '/admin/settings'
-    | '/admin/team'
-    | '/employee/dashboard'
-    | '/manager/analytics'
-    | '/manager/campaigns'
-    | '/manager/dashboard'
-    | '/manager/discounts'
-    | '/manager/newsletter'
-    | '/admin/'
-    | '/employee/'
-    | '/manager/'
-    | '/admin/customers/$id'
-    | '/admin/orders/$id'
-    | '/admin/pages/$slug'
-    | '/admin/products/new'
-    | '/employee/customers/$id'
-    | '/employee/orders/$id'
-    | '/manager/customers/$id'
-    | '/manager/orders/$id'
-    | '/admin/customers/'
-    | '/admin/orders/'
-    | '/admin/products/'
-    | '/employee/customers/'
-    | '/employee/orders/'
-    | '/employee/products/'
-    | '/manager/customers/'
-    | '/manager/orders/'
-    | '/admin/products/$id/edit'
+    | '/$roleSlug/access-control'
+    | '/$roleSlug/analytics'
+    | '/$roleSlug/campaigns'
+    | '/$roleSlug/dashboard'
+    | '/$roleSlug/discounts'
+    | '/$roleSlug/homepage'
+    | '/$roleSlug/newsletter'
+    | '/$roleSlug/popup'
+    | '/$roleSlug/settings'
+    | '/$roleSlug/team'
+    | '/$roleSlug/'
+    | '/$roleSlug/customers/$id'
+    | '/$roleSlug/orders/$id'
+    | '/$roleSlug/pages/$slug'
+    | '/$roleSlug/products/new'
+    | '/$roleSlug/customers/'
+    | '/$roleSlug/orders/'
+    | '/$roleSlug/products/'
+    | '/$roleSlug/products/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/forgot-password'
     | '/login'
-    | '/admin/access-control'
-    | '/admin/analytics'
-    | '/admin/campaigns'
-    | '/admin/dashboard'
-    | '/admin/discounts'
-    | '/admin/homepage'
-    | '/admin/newsletter'
-    | '/admin/popup'
-    | '/admin/settings'
-    | '/admin/team'
-    | '/employee/dashboard'
-    | '/manager/analytics'
-    | '/manager/campaigns'
-    | '/manager/dashboard'
-    | '/manager/discounts'
-    | '/manager/newsletter'
-    | '/admin'
-    | '/employee'
-    | '/manager'
-    | '/admin/customers/$id'
-    | '/admin/orders/$id'
-    | '/admin/pages/$slug'
-    | '/admin/products/new'
-    | '/employee/customers/$id'
-    | '/employee/orders/$id'
-    | '/manager/customers/$id'
-    | '/manager/orders/$id'
-    | '/admin/customers'
-    | '/admin/orders'
-    | '/admin/products'
-    | '/employee/customers'
-    | '/employee/orders'
-    | '/employee/products'
-    | '/manager/customers'
-    | '/manager/orders'
-    | '/admin/products/$id/edit'
+    | '/$roleSlug/access-control'
+    | '/$roleSlug/analytics'
+    | '/$roleSlug/campaigns'
+    | '/$roleSlug/dashboard'
+    | '/$roleSlug/discounts'
+    | '/$roleSlug/homepage'
+    | '/$roleSlug/newsletter'
+    | '/$roleSlug/popup'
+    | '/$roleSlug/settings'
+    | '/$roleSlug/team'
+    | '/$roleSlug'
+    | '/$roleSlug/customers/$id'
+    | '/$roleSlug/orders/$id'
+    | '/$roleSlug/pages/$slug'
+    | '/$roleSlug/products/new'
+    | '/$roleSlug/customers'
+    | '/$roleSlug/orders'
+    | '/$roleSlug/products'
+    | '/$roleSlug/products/$id/edit'
   id:
     | '__root__'
     | '/'
     | '/(auth)'
-    | '/(roles)/admin'
-    | '/(roles)/employee'
-    | '/(roles)/manager'
+    | '/(roles)/$roleSlug'
     | '/(auth)/forgot-password'
     | '/(auth)/login'
-    | '/(roles)/admin/access-control'
-    | '/(roles)/admin/analytics'
-    | '/(roles)/admin/campaigns'
-    | '/(roles)/admin/dashboard'
-    | '/(roles)/admin/discounts'
-    | '/(roles)/admin/homepage'
-    | '/(roles)/admin/newsletter'
-    | '/(roles)/admin/popup'
-    | '/(roles)/admin/settings'
-    | '/(roles)/admin/team'
-    | '/(roles)/employee/dashboard'
-    | '/(roles)/manager/analytics'
-    | '/(roles)/manager/campaigns'
-    | '/(roles)/manager/dashboard'
-    | '/(roles)/manager/discounts'
-    | '/(roles)/manager/newsletter'
-    | '/(roles)/admin/'
-    | '/(roles)/employee/'
-    | '/(roles)/manager/'
-    | '/(roles)/admin/customers/$id'
-    | '/(roles)/admin/orders/$id'
-    | '/(roles)/admin/pages/$slug'
-    | '/(roles)/admin/products/new'
-    | '/(roles)/employee/customers/$id'
-    | '/(roles)/employee/orders/$id'
-    | '/(roles)/manager/customers/$id'
-    | '/(roles)/manager/orders/$id'
-    | '/(roles)/admin/customers/'
-    | '/(roles)/admin/orders/'
-    | '/(roles)/admin/products/'
-    | '/(roles)/employee/customers/'
-    | '/(roles)/employee/orders/'
-    | '/(roles)/employee/products/'
-    | '/(roles)/manager/customers/'
-    | '/(roles)/manager/orders/'
-    | '/(roles)/admin/products/$id/edit'
+    | '/(roles)/$roleSlug/access-control'
+    | '/(roles)/$roleSlug/analytics'
+    | '/(roles)/$roleSlug/campaigns'
+    | '/(roles)/$roleSlug/dashboard'
+    | '/(roles)/$roleSlug/discounts'
+    | '/(roles)/$roleSlug/homepage'
+    | '/(roles)/$roleSlug/newsletter'
+    | '/(roles)/$roleSlug/popup'
+    | '/(roles)/$roleSlug/settings'
+    | '/(roles)/$roleSlug/team'
+    | '/(roles)/$roleSlug/'
+    | '/(roles)/$roleSlug/customers/$id'
+    | '/(roles)/$roleSlug/orders/$id'
+    | '/(roles)/$roleSlug/pages/$slug'
+    | '/(roles)/$roleSlug/products/new'
+    | '/(roles)/$roleSlug/customers/'
+    | '/(roles)/$roleSlug/orders/'
+    | '/(roles)/$roleSlug/products/'
+    | '/(roles)/$roleSlug/products/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   authRouteRoute: typeof authRouteRouteWithChildren
-  rolesAdminRouteRoute: typeof rolesAdminRouteRouteWithChildren
-  rolesEmployeeRouteRoute: typeof rolesEmployeeRouteRouteWithChildren
-  rolesManagerRouteRoute: typeof rolesManagerRouteRouteWithChildren
+  rolesRoleSlugRouteRoute: typeof rolesRoleSlugRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -577,278 +351,145 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authForgotPasswordRouteImport
       parentRoute: typeof authRouteRoute
     }
-    '/(roles)/manager': {
-      id: '/(roles)/manager'
-      path: '/manager'
-      fullPath: '/manager'
-      preLoaderRoute: typeof rolesManagerRouteRouteImport
+    '/(roles)/$roleSlug': {
+      id: '/(roles)/$roleSlug'
+      path: '/$roleSlug'
+      fullPath: '/$roleSlug'
+      preLoaderRoute: typeof rolesRoleSlugRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(roles)/employee': {
-      id: '/(roles)/employee'
-      path: '/employee'
-      fullPath: '/employee'
-      preLoaderRoute: typeof rolesEmployeeRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(roles)/admin': {
-      id: '/(roles)/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof rolesAdminRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(roles)/manager/': {
-      id: '/(roles)/manager/'
+    '/(roles)/$roleSlug/': {
+      id: '/(roles)/$roleSlug/'
       path: '/'
-      fullPath: '/manager/'
-      preLoaderRoute: typeof rolesManagerIndexRouteImport
-      parentRoute: typeof rolesManagerRouteRoute
+      fullPath: '/$roleSlug/'
+      preLoaderRoute: typeof rolesRoleSlugIndexRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/employee/': {
-      id: '/(roles)/employee/'
-      path: '/'
-      fullPath: '/employee/'
-      preLoaderRoute: typeof rolesEmployeeIndexRouteImport
-      parentRoute: typeof rolesEmployeeRouteRoute
-    }
-    '/(roles)/admin/': {
-      id: '/(roles)/admin/'
-      path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof rolesAdminIndexRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
-    }
-    '/(roles)/manager/newsletter': {
-      id: '/(roles)/manager/newsletter'
-      path: '/newsletter'
-      fullPath: '/manager/newsletter'
-      preLoaderRoute: typeof rolesManagerNewsletterRouteImport
-      parentRoute: typeof rolesManagerRouteRoute
-    }
-    '/(roles)/manager/discounts': {
-      id: '/(roles)/manager/discounts'
-      path: '/discounts'
-      fullPath: '/manager/discounts'
-      preLoaderRoute: typeof rolesManagerDiscountsRouteImport
-      parentRoute: typeof rolesManagerRouteRoute
-    }
-    '/(roles)/manager/dashboard': {
-      id: '/(roles)/manager/dashboard'
-      path: '/dashboard'
-      fullPath: '/manager/dashboard'
-      preLoaderRoute: typeof rolesManagerDashboardRouteImport
-      parentRoute: typeof rolesManagerRouteRoute
-    }
-    '/(roles)/manager/campaigns': {
-      id: '/(roles)/manager/campaigns'
-      path: '/campaigns'
-      fullPath: '/manager/campaigns'
-      preLoaderRoute: typeof rolesManagerCampaignsRouteImport
-      parentRoute: typeof rolesManagerRouteRoute
-    }
-    '/(roles)/manager/analytics': {
-      id: '/(roles)/manager/analytics'
-      path: '/analytics'
-      fullPath: '/manager/analytics'
-      preLoaderRoute: typeof rolesManagerAnalyticsRouteImport
-      parentRoute: typeof rolesManagerRouteRoute
-    }
-    '/(roles)/employee/dashboard': {
-      id: '/(roles)/employee/dashboard'
-      path: '/dashboard'
-      fullPath: '/employee/dashboard'
-      preLoaderRoute: typeof rolesEmployeeDashboardRouteImport
-      parentRoute: typeof rolesEmployeeRouteRoute
-    }
-    '/(roles)/admin/team': {
-      id: '/(roles)/admin/team'
+    '/(roles)/$roleSlug/team': {
+      id: '/(roles)/$roleSlug/team'
       path: '/team'
-      fullPath: '/admin/team'
-      preLoaderRoute: typeof rolesAdminTeamRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
+      fullPath: '/$roleSlug/team'
+      preLoaderRoute: typeof rolesRoleSlugTeamRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/admin/settings': {
-      id: '/(roles)/admin/settings'
+    '/(roles)/$roleSlug/settings': {
+      id: '/(roles)/$roleSlug/settings'
       path: '/settings'
-      fullPath: '/admin/settings'
-      preLoaderRoute: typeof rolesAdminSettingsRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
+      fullPath: '/$roleSlug/settings'
+      preLoaderRoute: typeof rolesRoleSlugSettingsRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/admin/popup': {
-      id: '/(roles)/admin/popup'
+    '/(roles)/$roleSlug/popup': {
+      id: '/(roles)/$roleSlug/popup'
       path: '/popup'
-      fullPath: '/admin/popup'
-      preLoaderRoute: typeof rolesAdminPopupRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
+      fullPath: '/$roleSlug/popup'
+      preLoaderRoute: typeof rolesRoleSlugPopupRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/admin/newsletter': {
-      id: '/(roles)/admin/newsletter'
+    '/(roles)/$roleSlug/newsletter': {
+      id: '/(roles)/$roleSlug/newsletter'
       path: '/newsletter'
-      fullPath: '/admin/newsletter'
-      preLoaderRoute: typeof rolesAdminNewsletterRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
+      fullPath: '/$roleSlug/newsletter'
+      preLoaderRoute: typeof rolesRoleSlugNewsletterRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/admin/homepage': {
-      id: '/(roles)/admin/homepage'
+    '/(roles)/$roleSlug/homepage': {
+      id: '/(roles)/$roleSlug/homepage'
       path: '/homepage'
-      fullPath: '/admin/homepage'
-      preLoaderRoute: typeof rolesAdminHomepageRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
+      fullPath: '/$roleSlug/homepage'
+      preLoaderRoute: typeof rolesRoleSlugHomepageRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/admin/discounts': {
-      id: '/(roles)/admin/discounts'
+    '/(roles)/$roleSlug/discounts': {
+      id: '/(roles)/$roleSlug/discounts'
       path: '/discounts'
-      fullPath: '/admin/discounts'
-      preLoaderRoute: typeof rolesAdminDiscountsRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
+      fullPath: '/$roleSlug/discounts'
+      preLoaderRoute: typeof rolesRoleSlugDiscountsRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/admin/dashboard': {
-      id: '/(roles)/admin/dashboard'
+    '/(roles)/$roleSlug/dashboard': {
+      id: '/(roles)/$roleSlug/dashboard'
       path: '/dashboard'
-      fullPath: '/admin/dashboard'
-      preLoaderRoute: typeof rolesAdminDashboardRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
+      fullPath: '/$roleSlug/dashboard'
+      preLoaderRoute: typeof rolesRoleSlugDashboardRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/admin/campaigns': {
-      id: '/(roles)/admin/campaigns'
+    '/(roles)/$roleSlug/campaigns': {
+      id: '/(roles)/$roleSlug/campaigns'
       path: '/campaigns'
-      fullPath: '/admin/campaigns'
-      preLoaderRoute: typeof rolesAdminCampaignsRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
+      fullPath: '/$roleSlug/campaigns'
+      preLoaderRoute: typeof rolesRoleSlugCampaignsRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/admin/analytics': {
-      id: '/(roles)/admin/analytics'
+    '/(roles)/$roleSlug/analytics': {
+      id: '/(roles)/$roleSlug/analytics'
       path: '/analytics'
-      fullPath: '/admin/analytics'
-      preLoaderRoute: typeof rolesAdminAnalyticsRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
+      fullPath: '/$roleSlug/analytics'
+      preLoaderRoute: typeof rolesRoleSlugAnalyticsRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/admin/access-control': {
-      id: '/(roles)/admin/access-control'
+    '/(roles)/$roleSlug/access-control': {
+      id: '/(roles)/$roleSlug/access-control'
       path: '/access-control'
-      fullPath: '/admin/access-control'
-      preLoaderRoute: typeof rolesAdminAccessControlRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
+      fullPath: '/$roleSlug/access-control'
+      preLoaderRoute: typeof rolesRoleSlugAccessControlRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/manager/orders/': {
-      id: '/(roles)/manager/orders/'
-      path: '/orders'
-      fullPath: '/manager/orders/'
-      preLoaderRoute: typeof rolesManagerOrdersIndexRouteImport
-      parentRoute: typeof rolesManagerRouteRoute
-    }
-    '/(roles)/manager/customers/': {
-      id: '/(roles)/manager/customers/'
-      path: '/customers'
-      fullPath: '/manager/customers/'
-      preLoaderRoute: typeof rolesManagerCustomersIndexRouteImport
-      parentRoute: typeof rolesManagerRouteRoute
-    }
-    '/(roles)/employee/products/': {
-      id: '/(roles)/employee/products/'
+    '/(roles)/$roleSlug/products/': {
+      id: '/(roles)/$roleSlug/products/'
       path: '/products'
-      fullPath: '/employee/products/'
-      preLoaderRoute: typeof rolesEmployeeProductsIndexRouteImport
-      parentRoute: typeof rolesEmployeeRouteRoute
+      fullPath: '/$roleSlug/products/'
+      preLoaderRoute: typeof rolesRoleSlugProductsIndexRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/employee/orders/': {
-      id: '/(roles)/employee/orders/'
+    '/(roles)/$roleSlug/orders/': {
+      id: '/(roles)/$roleSlug/orders/'
       path: '/orders'
-      fullPath: '/employee/orders/'
-      preLoaderRoute: typeof rolesEmployeeOrdersIndexRouteImport
-      parentRoute: typeof rolesEmployeeRouteRoute
+      fullPath: '/$roleSlug/orders/'
+      preLoaderRoute: typeof rolesRoleSlugOrdersIndexRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/employee/customers/': {
-      id: '/(roles)/employee/customers/'
+    '/(roles)/$roleSlug/customers/': {
+      id: '/(roles)/$roleSlug/customers/'
       path: '/customers'
-      fullPath: '/employee/customers/'
-      preLoaderRoute: typeof rolesEmployeeCustomersIndexRouteImport
-      parentRoute: typeof rolesEmployeeRouteRoute
+      fullPath: '/$roleSlug/customers/'
+      preLoaderRoute: typeof rolesRoleSlugCustomersIndexRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/admin/products/': {
-      id: '/(roles)/admin/products/'
-      path: '/products'
-      fullPath: '/admin/products/'
-      preLoaderRoute: typeof rolesAdminProductsIndexRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
-    }
-    '/(roles)/admin/orders/': {
-      id: '/(roles)/admin/orders/'
-      path: '/orders'
-      fullPath: '/admin/orders/'
-      preLoaderRoute: typeof rolesAdminOrdersIndexRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
-    }
-    '/(roles)/admin/customers/': {
-      id: '/(roles)/admin/customers/'
-      path: '/customers'
-      fullPath: '/admin/customers/'
-      preLoaderRoute: typeof rolesAdminCustomersIndexRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
-    }
-    '/(roles)/manager/orders/$id': {
-      id: '/(roles)/manager/orders/$id'
-      path: '/orders/$id'
-      fullPath: '/manager/orders/$id'
-      preLoaderRoute: typeof rolesManagerOrdersIdRouteImport
-      parentRoute: typeof rolesManagerRouteRoute
-    }
-    '/(roles)/manager/customers/$id': {
-      id: '/(roles)/manager/customers/$id'
-      path: '/customers/$id'
-      fullPath: '/manager/customers/$id'
-      preLoaderRoute: typeof rolesManagerCustomersIdRouteImport
-      parentRoute: typeof rolesManagerRouteRoute
-    }
-    '/(roles)/employee/orders/$id': {
-      id: '/(roles)/employee/orders/$id'
-      path: '/orders/$id'
-      fullPath: '/employee/orders/$id'
-      preLoaderRoute: typeof rolesEmployeeOrdersIdRouteImport
-      parentRoute: typeof rolesEmployeeRouteRoute
-    }
-    '/(roles)/employee/customers/$id': {
-      id: '/(roles)/employee/customers/$id'
-      path: '/customers/$id'
-      fullPath: '/employee/customers/$id'
-      preLoaderRoute: typeof rolesEmployeeCustomersIdRouteImport
-      parentRoute: typeof rolesEmployeeRouteRoute
-    }
-    '/(roles)/admin/products/new': {
-      id: '/(roles)/admin/products/new'
+    '/(roles)/$roleSlug/products/new': {
+      id: '/(roles)/$roleSlug/products/new'
       path: '/products/new'
-      fullPath: '/admin/products/new'
-      preLoaderRoute: typeof rolesAdminProductsNewRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
+      fullPath: '/$roleSlug/products/new'
+      preLoaderRoute: typeof rolesRoleSlugProductsNewRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/admin/pages/$slug': {
-      id: '/(roles)/admin/pages/$slug'
+    '/(roles)/$roleSlug/pages/$slug': {
+      id: '/(roles)/$roleSlug/pages/$slug'
       path: '/pages/$slug'
-      fullPath: '/admin/pages/$slug'
-      preLoaderRoute: typeof rolesAdminPagesSlugRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
+      fullPath: '/$roleSlug/pages/$slug'
+      preLoaderRoute: typeof rolesRoleSlugPagesSlugRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/admin/orders/$id': {
-      id: '/(roles)/admin/orders/$id'
+    '/(roles)/$roleSlug/orders/$id': {
+      id: '/(roles)/$roleSlug/orders/$id'
       path: '/orders/$id'
-      fullPath: '/admin/orders/$id'
-      preLoaderRoute: typeof rolesAdminOrdersIdRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
+      fullPath: '/$roleSlug/orders/$id'
+      preLoaderRoute: typeof rolesRoleSlugOrdersIdRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/admin/customers/$id': {
-      id: '/(roles)/admin/customers/$id'
+    '/(roles)/$roleSlug/customers/$id': {
+      id: '/(roles)/$roleSlug/customers/$id'
       path: '/customers/$id'
-      fullPath: '/admin/customers/$id'
-      preLoaderRoute: typeof rolesAdminCustomersIdRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
+      fullPath: '/$roleSlug/customers/$id'
+      preLoaderRoute: typeof rolesRoleSlugCustomersIdRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
-    '/(roles)/admin/products/$id/edit': {
-      id: '/(roles)/admin/products/$id/edit'
+    '/(roles)/$roleSlug/products/$id/edit': {
+      id: '/(roles)/$roleSlug/products/$id/edit'
       path: '/products/$id/edit'
-      fullPath: '/admin/products/$id/edit'
-      preLoaderRoute: typeof rolesAdminProductsIdEditRouteImport
-      parentRoute: typeof rolesAdminRouteRoute
+      fullPath: '/$roleSlug/products/$id/edit'
+      preLoaderRoute: typeof rolesRoleSlugProductsIdEditRouteImport
+      parentRoute: typeof rolesRoleSlugRouteRoute
     }
   }
 }
@@ -867,112 +508,57 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
   authRouteRouteChildren,
 )
 
-interface rolesAdminRouteRouteChildren {
-  rolesAdminAccessControlRoute: typeof rolesAdminAccessControlRoute
-  rolesAdminAnalyticsRoute: typeof rolesAdminAnalyticsRoute
-  rolesAdminCampaignsRoute: typeof rolesAdminCampaignsRoute
-  rolesAdminDashboardRoute: typeof rolesAdminDashboardRoute
-  rolesAdminDiscountsRoute: typeof rolesAdminDiscountsRoute
-  rolesAdminHomepageRoute: typeof rolesAdminHomepageRoute
-  rolesAdminNewsletterRoute: typeof rolesAdminNewsletterRoute
-  rolesAdminPopupRoute: typeof rolesAdminPopupRoute
-  rolesAdminSettingsRoute: typeof rolesAdminSettingsRoute
-  rolesAdminTeamRoute: typeof rolesAdminTeamRoute
-  rolesAdminIndexRoute: typeof rolesAdminIndexRoute
-  rolesAdminCustomersIdRoute: typeof rolesAdminCustomersIdRoute
-  rolesAdminOrdersIdRoute: typeof rolesAdminOrdersIdRoute
-  rolesAdminPagesSlugRoute: typeof rolesAdminPagesSlugRoute
-  rolesAdminProductsNewRoute: typeof rolesAdminProductsNewRoute
-  rolesAdminCustomersIndexRoute: typeof rolesAdminCustomersIndexRoute
-  rolesAdminOrdersIndexRoute: typeof rolesAdminOrdersIndexRoute
-  rolesAdminProductsIndexRoute: typeof rolesAdminProductsIndexRoute
-  rolesAdminProductsIdEditRoute: typeof rolesAdminProductsIdEditRoute
+interface rolesRoleSlugRouteRouteChildren {
+  rolesRoleSlugAccessControlRoute: typeof rolesRoleSlugAccessControlRoute
+  rolesRoleSlugAnalyticsRoute: typeof rolesRoleSlugAnalyticsRoute
+  rolesRoleSlugCampaignsRoute: typeof rolesRoleSlugCampaignsRoute
+  rolesRoleSlugDashboardRoute: typeof rolesRoleSlugDashboardRoute
+  rolesRoleSlugDiscountsRoute: typeof rolesRoleSlugDiscountsRoute
+  rolesRoleSlugHomepageRoute: typeof rolesRoleSlugHomepageRoute
+  rolesRoleSlugNewsletterRoute: typeof rolesRoleSlugNewsletterRoute
+  rolesRoleSlugPopupRoute: typeof rolesRoleSlugPopupRoute
+  rolesRoleSlugSettingsRoute: typeof rolesRoleSlugSettingsRoute
+  rolesRoleSlugTeamRoute: typeof rolesRoleSlugTeamRoute
+  rolesRoleSlugIndexRoute: typeof rolesRoleSlugIndexRoute
+  rolesRoleSlugCustomersIdRoute: typeof rolesRoleSlugCustomersIdRoute
+  rolesRoleSlugOrdersIdRoute: typeof rolesRoleSlugOrdersIdRoute
+  rolesRoleSlugPagesSlugRoute: typeof rolesRoleSlugPagesSlugRoute
+  rolesRoleSlugProductsNewRoute: typeof rolesRoleSlugProductsNewRoute
+  rolesRoleSlugCustomersIndexRoute: typeof rolesRoleSlugCustomersIndexRoute
+  rolesRoleSlugOrdersIndexRoute: typeof rolesRoleSlugOrdersIndexRoute
+  rolesRoleSlugProductsIndexRoute: typeof rolesRoleSlugProductsIndexRoute
+  rolesRoleSlugProductsIdEditRoute: typeof rolesRoleSlugProductsIdEditRoute
 }
 
-const rolesAdminRouteRouteChildren: rolesAdminRouteRouteChildren = {
-  rolesAdminAccessControlRoute: rolesAdminAccessControlRoute,
-  rolesAdminAnalyticsRoute: rolesAdminAnalyticsRoute,
-  rolesAdminCampaignsRoute: rolesAdminCampaignsRoute,
-  rolesAdminDashboardRoute: rolesAdminDashboardRoute,
-  rolesAdminDiscountsRoute: rolesAdminDiscountsRoute,
-  rolesAdminHomepageRoute: rolesAdminHomepageRoute,
-  rolesAdminNewsletterRoute: rolesAdminNewsletterRoute,
-  rolesAdminPopupRoute: rolesAdminPopupRoute,
-  rolesAdminSettingsRoute: rolesAdminSettingsRoute,
-  rolesAdminTeamRoute: rolesAdminTeamRoute,
-  rolesAdminIndexRoute: rolesAdminIndexRoute,
-  rolesAdminCustomersIdRoute: rolesAdminCustomersIdRoute,
-  rolesAdminOrdersIdRoute: rolesAdminOrdersIdRoute,
-  rolesAdminPagesSlugRoute: rolesAdminPagesSlugRoute,
-  rolesAdminProductsNewRoute: rolesAdminProductsNewRoute,
-  rolesAdminCustomersIndexRoute: rolesAdminCustomersIndexRoute,
-  rolesAdminOrdersIndexRoute: rolesAdminOrdersIndexRoute,
-  rolesAdminProductsIndexRoute: rolesAdminProductsIndexRoute,
-  rolesAdminProductsIdEditRoute: rolesAdminProductsIdEditRoute,
+const rolesRoleSlugRouteRouteChildren: rolesRoleSlugRouteRouteChildren = {
+  rolesRoleSlugAccessControlRoute: rolesRoleSlugAccessControlRoute,
+  rolesRoleSlugAnalyticsRoute: rolesRoleSlugAnalyticsRoute,
+  rolesRoleSlugCampaignsRoute: rolesRoleSlugCampaignsRoute,
+  rolesRoleSlugDashboardRoute: rolesRoleSlugDashboardRoute,
+  rolesRoleSlugDiscountsRoute: rolesRoleSlugDiscountsRoute,
+  rolesRoleSlugHomepageRoute: rolesRoleSlugHomepageRoute,
+  rolesRoleSlugNewsletterRoute: rolesRoleSlugNewsletterRoute,
+  rolesRoleSlugPopupRoute: rolesRoleSlugPopupRoute,
+  rolesRoleSlugSettingsRoute: rolesRoleSlugSettingsRoute,
+  rolesRoleSlugTeamRoute: rolesRoleSlugTeamRoute,
+  rolesRoleSlugIndexRoute: rolesRoleSlugIndexRoute,
+  rolesRoleSlugCustomersIdRoute: rolesRoleSlugCustomersIdRoute,
+  rolesRoleSlugOrdersIdRoute: rolesRoleSlugOrdersIdRoute,
+  rolesRoleSlugPagesSlugRoute: rolesRoleSlugPagesSlugRoute,
+  rolesRoleSlugProductsNewRoute: rolesRoleSlugProductsNewRoute,
+  rolesRoleSlugCustomersIndexRoute: rolesRoleSlugCustomersIndexRoute,
+  rolesRoleSlugOrdersIndexRoute: rolesRoleSlugOrdersIndexRoute,
+  rolesRoleSlugProductsIndexRoute: rolesRoleSlugProductsIndexRoute,
+  rolesRoleSlugProductsIdEditRoute: rolesRoleSlugProductsIdEditRoute,
 }
 
-const rolesAdminRouteRouteWithChildren = rolesAdminRouteRoute._addFileChildren(
-  rolesAdminRouteRouteChildren,
-)
-
-interface rolesEmployeeRouteRouteChildren {
-  rolesEmployeeDashboardRoute: typeof rolesEmployeeDashboardRoute
-  rolesEmployeeIndexRoute: typeof rolesEmployeeIndexRoute
-  rolesEmployeeCustomersIdRoute: typeof rolesEmployeeCustomersIdRoute
-  rolesEmployeeOrdersIdRoute: typeof rolesEmployeeOrdersIdRoute
-  rolesEmployeeCustomersIndexRoute: typeof rolesEmployeeCustomersIndexRoute
-  rolesEmployeeOrdersIndexRoute: typeof rolesEmployeeOrdersIndexRoute
-  rolesEmployeeProductsIndexRoute: typeof rolesEmployeeProductsIndexRoute
-}
-
-const rolesEmployeeRouteRouteChildren: rolesEmployeeRouteRouteChildren = {
-  rolesEmployeeDashboardRoute: rolesEmployeeDashboardRoute,
-  rolesEmployeeIndexRoute: rolesEmployeeIndexRoute,
-  rolesEmployeeCustomersIdRoute: rolesEmployeeCustomersIdRoute,
-  rolesEmployeeOrdersIdRoute: rolesEmployeeOrdersIdRoute,
-  rolesEmployeeCustomersIndexRoute: rolesEmployeeCustomersIndexRoute,
-  rolesEmployeeOrdersIndexRoute: rolesEmployeeOrdersIndexRoute,
-  rolesEmployeeProductsIndexRoute: rolesEmployeeProductsIndexRoute,
-}
-
-const rolesEmployeeRouteRouteWithChildren =
-  rolesEmployeeRouteRoute._addFileChildren(rolesEmployeeRouteRouteChildren)
-
-interface rolesManagerRouteRouteChildren {
-  rolesManagerAnalyticsRoute: typeof rolesManagerAnalyticsRoute
-  rolesManagerCampaignsRoute: typeof rolesManagerCampaignsRoute
-  rolesManagerDashboardRoute: typeof rolesManagerDashboardRoute
-  rolesManagerDiscountsRoute: typeof rolesManagerDiscountsRoute
-  rolesManagerNewsletterRoute: typeof rolesManagerNewsletterRoute
-  rolesManagerIndexRoute: typeof rolesManagerIndexRoute
-  rolesManagerCustomersIdRoute: typeof rolesManagerCustomersIdRoute
-  rolesManagerOrdersIdRoute: typeof rolesManagerOrdersIdRoute
-  rolesManagerCustomersIndexRoute: typeof rolesManagerCustomersIndexRoute
-  rolesManagerOrdersIndexRoute: typeof rolesManagerOrdersIndexRoute
-}
-
-const rolesManagerRouteRouteChildren: rolesManagerRouteRouteChildren = {
-  rolesManagerAnalyticsRoute: rolesManagerAnalyticsRoute,
-  rolesManagerCampaignsRoute: rolesManagerCampaignsRoute,
-  rolesManagerDashboardRoute: rolesManagerDashboardRoute,
-  rolesManagerDiscountsRoute: rolesManagerDiscountsRoute,
-  rolesManagerNewsletterRoute: rolesManagerNewsletterRoute,
-  rolesManagerIndexRoute: rolesManagerIndexRoute,
-  rolesManagerCustomersIdRoute: rolesManagerCustomersIdRoute,
-  rolesManagerOrdersIdRoute: rolesManagerOrdersIdRoute,
-  rolesManagerCustomersIndexRoute: rolesManagerCustomersIndexRoute,
-  rolesManagerOrdersIndexRoute: rolesManagerOrdersIndexRoute,
-}
-
-const rolesManagerRouteRouteWithChildren =
-  rolesManagerRouteRoute._addFileChildren(rolesManagerRouteRouteChildren)
+const rolesRoleSlugRouteRouteWithChildren =
+  rolesRoleSlugRouteRoute._addFileChildren(rolesRoleSlugRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   authRouteRoute: authRouteRouteWithChildren,
-  rolesAdminRouteRoute: rolesAdminRouteRouteWithChildren,
-  rolesEmployeeRouteRoute: rolesEmployeeRouteRouteWithChildren,
-  rolesManagerRouteRoute: rolesManagerRouteRouteWithChildren,
+  rolesRoleSlugRouteRoute: rolesRoleSlugRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

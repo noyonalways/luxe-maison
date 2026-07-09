@@ -6,21 +6,25 @@ import {
   type Section,
   type Permission,
   type EditableRolePermissions,
+  type CmsRole,
+  type StaffRole,
 } from '@/lib/role-permissions';
 
-export type StaffRole = 'admin' | 'manager' | 'employee';
-export type { Section, Permission, EditableRolePermissions };
+export type { Section, Permission, EditableRolePermissions, CmsRole, StaffRole };
 export { DEFAULT_PERMISSIONS, pathToSection, ALL_SECTIONS };
 
 export interface RoleContextValue {
   role: StaffRole;
+  roleSlug: string;
+  roles: CmsRole[];
   setRole: (role: StaffRole) => void;
   hasAccess: (section: Section) => boolean;
   canEdit: (section: Section) => boolean;
   canDelete: (section: Section) => boolean;
   getPermission: (section: Section) => Permission;
-  updatePermission: (role: 'manager' | 'employee', section: Section, permission: Permission) => void;
-  getPermissions: () => EditableRolePermissions;
+  updatePermission: (roleId: string, section: Section, permission: Permission) => void;
+  createRole: (input: { name: string; slug?: string }) => Promise<CmsRole>;
+  deleteRole: (roleId: string) => Promise<void>;
   resetPermissions: () => void;
   isLoadingPermissions: boolean;
   isSavingPermissions: boolean;
@@ -34,4 +38,4 @@ export function useRole() {
   return ctx;
 }
 
-export const VALID_ROLES: StaffRole[] = ['admin', 'manager', 'employee'];
+export const BUILTIN_ROLE_SLUGS = ['admin', 'manager', 'employee'] as const;

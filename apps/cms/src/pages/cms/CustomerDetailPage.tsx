@@ -25,9 +25,9 @@ import { toApiError } from '@/lib/api/errors';
 export default function CustomerDetailPage() {
   const { id } = useParams({ strict: false });
   const navigate = useNavigate();
-  const { role, canDelete } = useRole();
+  const { roleSlug, canDelete } = useRole();
   const canDeleteCustomers = canDelete('customers');
-  const customersRoute = cmsTo('customers', role);
+  const customersRoute = cmsTo('customers', roleSlug);
   const { setCustomerStatus, isSaving } = useCustomers();
   const { data: customer, isPending, isError } = useCustomerQuery(id ?? '');
   const { data: orders = [] } = useOrdersList(true);

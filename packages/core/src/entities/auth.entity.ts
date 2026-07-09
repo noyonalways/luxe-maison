@@ -1,4 +1,5 @@
 import type { StaffRole } from './staff.entity.js';
+import { isBuiltinStaffRole, isCustomStaffRole } from './staff.entity.js';
 
 export type UserRole = StaffRole | 'customer';
 
@@ -7,6 +8,8 @@ export interface AuthUser {
   name: string;
   email: string;
   role: UserRole;
+  /** URL prefix for CMS routes (admin, manager, employee, or custom role slug). */
+  roleSlug?: string;
   avatar?: string;
 }
 
@@ -38,10 +41,13 @@ export interface JwtPayload {
   email: string;
   role: UserRole;
   name: string;
+  roleSlug?: string;
 }
 
 export function isStaffRole(role: UserRole): role is StaffRole {
-  return role === 'admin' || role === 'manager' || role === 'employee';
+  if (role === 'customer') return false;
+  if (isBuiltinStaffRole(role)) return true;
+  return isCustomStaffRole(role);
 }
 
 export function isCustomerRole(role: UserRole): role is 'customer' {

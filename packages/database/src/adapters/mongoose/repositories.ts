@@ -10,5 +10,5 @@ export { createImpReviewRepository } from './imp_review.repository.js';
 export { createImpPopupRepository } from './imp_popup.repository.js';
 export { createImpHomepageRepository } from './imp_homepage.repository.js';
 export { createImpContentPageRepository } from './imp_content-page.repository.js';
-export { createImpRolePermissionsRepository } from './imp_role-permissions.repository.js';
+export { createImpCmsRolesRepository } from './imp_cms-roles.repository.js';
 export { connectMongoose, disconnectMongoose } from './connection.js';

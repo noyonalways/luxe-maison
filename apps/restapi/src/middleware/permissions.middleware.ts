@@ -1,34 +1,41 @@
 import { createMiddleware } from 'hono/factory';
-import type { CmsSection } from '@luxe-maison/core';
+import type { CmsSection, CmsRole } from '@luxe-maison/core';
 import {
   getPermission,
   meetsPermissionLevel,
   isStaffRole,
-  type EditableRolePermissions,
 } from '@luxe-maison/core';
-import type { RolePermissionsService } from '@luxe-maison/core';
+import type { CmsRolesService } from '@luxe-maison/core';
 import type { AuthVariables } from './auth.middleware.js';
 
-let cachedPermissions: EditableRolePermissions | null = null;
+let cachedRoles: CmsRole[] | null = null;
 
-export function setPermissionsCache(permissions: EditableRolePermissions | null) {
-  cachedPermissions = permissions;
+export function setRolesCache(roles: CmsRole[] | null) {
+  cachedRoles = roles;
 }
 
-export async function getPermissionsForRequest(
-  service: RolePermissionsService,
-): Promise<EditableRolePermissions> {
-  if (cachedPermissions) return cachedPermissions;
-  const permissions = await service.get();
-  cachedPermissions = permissions;
-  return permissions;
+export async function getRolesForRequest(service: CmsRolesService): Promise<CmsRole[]> {
+  if (cachedRoles) return cachedRoles;
+  const roles = await service.list();
+  cachedRoles = roles;
+  return roles;
 }
 
+export function invalidateRolesCache() {
+  cachedRoles = null;
+}
+
+/** @deprecated Use invalidateRolesCache */
 export function invalidatePermissionsCache() {
-  cachedPermissions = null;
+  invalidateRolesCache();
 }
 
-export function createRequireSection(service: RolePermissionsService) {
+/** @deprecated Use setRolesCache after deriving editable permissions if needed */
+export function setPermissionsCache(_permissions: unknown) {
+  invalidateRolesCache();
+}
+
+export function createRequireSection(service: CmsRolesService) {
   return function requireSection(
     section: CmsSection,
     required: 'view' | 'edit' | 'full' = 'view',
@@ -43,8 +50,8 @@ export function createRequireSection(service: RolePermissionsService) {
         return c.json({ status: 'error', message: 'Insufficient permissions' }, 403);
       }
 
-      const permissions = await getPermissionsForRequest(service);
-      const level = getPermission(user.role, section, permissions);
+      const roles = await getRolesForRequest(service);
+      const level = getPermission(user.role, section, roles);
 
       if (!meetsPermissionLevel(level, required)) {
         return c.json({ status: 'error', message: 'Insufficient permissions' }, 403);

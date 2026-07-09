@@ -194,7 +194,7 @@ function CustomerAnalytics({ customers }: { customers: Customer[] }) {
 
 // --- Main page ---
 export default function Customers() {
-  const { role, canEdit, canDelete } = useRole();
+  const { roleSlug, canEdit, canDelete } = useRole();
   const canEditCustomers = canEdit('customers');
   const canDeleteCustomers = canDelete('customers');
   const {
@@ -418,7 +418,7 @@ export default function Customers() {
                         </div>
                         <div>
                           <Link
-                            {...cmsCustomerDetail(role, c.id)}
+                            {...cmsCustomerDetail(roleSlug, c.id)}
                             className="font-medium text-sm hover:text-gold transition-smooth"
                           >
                             {c.name}
@@ -447,7 +447,7 @@ export default function Customers() {
                           title="View customer"
                           asChild
                         >
-                          <Link {...cmsCustomerDetail(role, c.id)}>
+                          <Link {...cmsCustomerDetail(roleSlug, c.id)}>
                             <Eye size={14} />
                           </Link>
                         </Button>

@@ -25,8 +25,8 @@ const PRESET_SIZES: Record<string, string[]> = {
 
 export default function ProductForm() {
   const { id } = useParams({ strict: false });
-  const { role } = useRole();
-  const productsRoute = cmsTo('products', role);
+  const { roleSlug } = useRole();
+  const productsRoute = cmsTo('products', roleSlug);
   const navigate = useNavigate();
   const { addProduct, updateProduct, deleteProduct, isSaving } = useProducts();
   const productQuery = useProduct(id);

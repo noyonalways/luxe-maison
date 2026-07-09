@@ -10,7 +10,7 @@ export type { ReviewRepository } from './review.repository.js';
 export type { PopupRepository } from './popup.repository.js';
 export type { HomepageRepository } from './homepage.repository.js';
 export type { ContentPageRepository } from './content-page.repository.js';
-export type { RolePermissionsRepository } from './role-permissions.repository.js';
+export type { CmsRolesRepository } from './cms-roles.repository.js';
 
 import type { ProductRepository } from './product.repository.js';
 import type { OrderRepository } from './order.repository.js';
@@ -22,7 +22,6 @@ import type { StaffRepository } from './staff.repository.js';
 import type { SettingsRepository } from './settings.repository.js';
 import type { ReviewRepository } from './review.repository.js';
 import type { PopupRepository } from './popup.repository.js';
-import type { RolePermissionsRepository } from './role-permissions.repository.js';
 
 export interface Repositories {
   products: ProductRepository;
@@ -35,5 +34,4 @@ export interface Repositories {
   settings: SettingsRepository;
   reviews: ReviewRepository;
   popups: PopupRepository;
-  rolePermissions: RolePermissionsRepository;
 }

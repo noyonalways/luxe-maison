@@ -8,6 +8,7 @@ export interface StoredUser {
   name: string;
   email: string;
   role: StaffRole | "customer";
+  roleSlug?: string;
   avatar?: string;
 }
 
@@ -39,13 +40,13 @@ export function clearAuthSession(): void {
   localStorage.removeItem(TOKEN_STORAGE_KEY);
 }
 
-export function isStaffRole(
-  role: StoredUser["role"],
-): role is StaffRole {
-  return role === "admin" || role === "manager" || role === "employee";
+export function isStaffRole(role: StoredUser["role"]): role is StaffRole {
+  if (role === "customer") return false;
+  if (role === "admin" || role === "manager" || role === "employee") return true;
+  return role.startsWith("role-");
 }
 
-export function getStoredStaffUser(): StoredUser & { role: StaffRole } | null {
+export function getStoredStaffUser(): (StoredUser & { role: StaffRole }) | null {
   const user = getStoredUser();
   if (!user || !isStaffRole(user.role)) return null;
   return user as StoredUser & { role: StaffRole };

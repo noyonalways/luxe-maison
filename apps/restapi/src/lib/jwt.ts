@@ -33,12 +33,9 @@ function parseExpiresIn(value: string): number {
 }
 
 function isUserRole(role: string): role is UserRole {
-  return (
-    role === 'customer' ||
-    role === 'admin' ||
-    role === 'manager' ||
-    role === 'employee'
-  );
+  if (role === 'customer') return true;
+  if (role === 'admin' || role === 'manager' || role === 'employee') return true;
+  return role.startsWith('role-');
 }
 
 export async function signAccessToken(user: AuthUser): Promise<{ accessToken: string; expiresAt: string }> {
@@ -50,6 +47,7 @@ export async function signAccessToken(user: AuthUser): Promise<{ accessToken: st
     email: user.email,
     role: user.role,
     name: user.name,
+    ...(user.roleSlug ? { roleSlug: user.roleSlug } : {}),
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(user.id)
@@ -69,6 +67,7 @@ export async function verifyAccessToken(token: string): Promise<JwtPayload> {
   const email = payload.email;
   const role = payload.role;
   const name = payload.name;
+  const roleSlug = payload.roleSlug;
 
   if (
     typeof sub !== 'string' ||
@@ -83,5 +82,11 @@ export async function verifyAccessToken(token: string): Promise<JwtPayload> {
     throw new Error('Invalid token role');
   }
 
-  return { sub, email, role, name };
+  return {
+    sub,
+    email,
+    role,
+    name,
+    ...(typeof roleSlug === 'string' ? { roleSlug } : {}),
+  };
 }

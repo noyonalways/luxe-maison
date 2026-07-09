@@ -24,10 +24,10 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useRole, pathToSection, type StaffRole } from '@/contexts/role-context';
+import { useRole, pathToSection, type Section } from '@/contexts/role-context';
 import { useAuth, isStaffRole } from '@/contexts/auth-context';
 import { useLogout } from '@/hooks/auth/use-logout';
-import { cmsDashboard, cmsNavPath, cmsTo, type CmsSection } from '@/lib/cms-navigation';
+import { cmsDashboard, cmsNavPath, cmsTo, resolveRoleSlug } from '@/lib/cms-navigation';
 import { useStaffUrlRole } from '@/lib/use-staff-url-role';
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -47,7 +47,7 @@ type NavItem = {
   path: string;
   icon: LucideIcon;
   label: string;
-  section: CmsSection;
+  section: Section;
 };
 
 type NavGroup = {
@@ -82,41 +82,36 @@ const bottomNavItems: NavItem[] = [
   { path: 'access-control', icon: Shield, label: 'Access Control', section: 'access-control' },
 ];
 
-const roleLabels: Record<StaffRole, string> = {
-  admin: 'Admin',
-  manager: 'Manager',
-  employee: 'Employee',
-};
+function roleBadgeClass(roleId: string) {
+  if (roleId === 'admin') return 'bg-primary text-primary-foreground';
+  if (roleId === 'manager') return 'bg-amber-100 text-amber-800';
+  if (roleId === 'employee') return 'bg-secondary text-muted-foreground';
+  return 'bg-violet-100 text-violet-800';
+}
 
-const roleBadgeStyles: Record<StaffRole, string> = {
-  admin: 'bg-primary text-primary-foreground',
-  manager: 'bg-amber-100 text-amber-800',
-  employee: 'bg-secondary text-muted-foreground',
-};
-
-function navItemActive(pathname: string, role: StaffRole, path: string) {
-  const fullPath = `/${role}/${path}`;
+function navItemActive(pathname: string, roleSlug: string, path: string) {
+  const fullPath = `/${roleSlug}/${path}`;
   if (path === 'dashboard') {
-    return pathname === fullPath || pathname === `/${role}`;
+    return pathname === fullPath || pathname === `/${roleSlug}`;
   }
   return pathname === fullPath || pathname.startsWith(`${fullPath}/`);
 }
 
 function NavLink({
   item,
-  role,
+  roleSlug,
   pathname,
   collapsed,
 }: {
   item: NavItem;
-  role: StaffRole;
+  roleSlug: string;
   pathname: string;
   collapsed: boolean;
 }) {
-  const active = navItemActive(pathname, role, item.path);
+  const active = navItemActive(pathname, roleSlug, item.path);
   const linkProps = item.path.includes('/')
-    ? cmsNavPath(role, item.path)
-    : cmsTo(item.section, role);
+    ? cmsNavPath(roleSlug, item.path)
+    : cmsTo(item.section, roleSlug);
 
   return (
     <Link
@@ -140,13 +135,18 @@ export default function StaffLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const urlRole = useStaffUrlRole();
-  const { role, hasAccess } = useRole();
+  const { roleSlug, role, roles: cmsRoles, hasAccess } = useRole();
   const { user, isRestoringSession } = useAuth();
   const { logout } = useLogout();
   const [collapsed, setCollapsed] = useState(false);
   const [pagesOpen, setPagesOpen] = useState(true);
 
   const authRole = user && isStaffRole(user.role) ? user.role : null;
+  const expectedSlug = user ? resolveRoleSlug(user) : null;
+  const roleDisplayName = useMemo(() => {
+    if (role === 'admin') return 'Admin';
+    return cmsRoles.find((r) => r.id === role)?.name ?? role;
+  }, [role, cmsRoles]);
 
   const visibleMainItems = useMemo(
     () => mainNavItems.filter((item) => hasAccess(item.section)),
@@ -166,7 +166,7 @@ export default function StaffLayout() {
   );
 
   const pagesGroupActive = visiblePageItems.some((item) =>
-    navItemActive(location.pathname, urlRole ?? 'admin', item.path),
+    navItemActive(location.pathname, urlRole ?? roleSlug, item.path),
   );
 
   if (isRestoringSession) {
@@ -177,7 +177,7 @@ export default function StaffLayout() {
     );
   }
 
-  if (!authRole || !urlRole || urlRole !== authRole) {
+  if (!authRole || !urlRole || urlRole !== expectedSlug) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-secondary text-muted-foreground">
         <Loader2 className="h-6 w-6 animate-spin" />
@@ -194,7 +194,7 @@ export default function StaffLayout() {
         <NavLink
           key={item.path}
           item={item}
-          role={urlRole}
+          roleSlug={urlRole}
           pathname={location.pathname}
           collapsed={navCollapsed}
         />
@@ -206,7 +206,7 @@ export default function StaffLayout() {
             <NavLink
               key={item.path}
               item={item}
-              role={urlRole}
+              roleSlug={urlRole}
               pathname={location.pathname}
               collapsed
             />
@@ -225,7 +225,7 @@ export default function StaffLayout() {
                 <NavLink
                   key={item.path}
                   item={item}
-                  role={urlRole}
+                  roleSlug={urlRole}
                   pathname={location.pathname}
                   collapsed={false}
                 />
@@ -239,7 +239,7 @@ export default function StaffLayout() {
         <NavLink
           key={item.path}
           item={item}
-          role={urlRole}
+          roleSlug={urlRole}
           pathname={location.pathname}
           collapsed={navCollapsed}
         />
@@ -267,7 +267,7 @@ export default function StaffLayout() {
             </div>
             <h2 className="text-2xl font-heading font-bold mb-2">Access Denied</h2>
             <p className="text-muted-foreground text-sm mb-6">
-              The <span className="font-semibold text-foreground">{roleLabels[role]}</span> role does not have permission to access this section.
+              The <span className="font-semibold text-foreground">{roleDisplayName}</span> role does not have permission to access this section.
             </p>
             <Button variant="outline" onClick={() => navigate(cmsDashboard(urlRole))} className="gap-2">
               <ArrowLeft size={14} />
@@ -298,8 +298,8 @@ export default function StaffLayout() {
                   <h1 className="font-heading text-lg font-semibold">MAISON</h1>
                   <div className="flex items-center gap-2 mt-0.5">
                     <p className="text-[10px] font-body letter-wide uppercase text-muted-foreground">{user?.name || 'Staff'}</p>
-                    <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${roleBadgeStyles[role]}`}>
-                      {roleLabels[role]}
+                    <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${roleBadgeClass(role)}`}>
+                      {roleDisplayName}
                     </span>
                   </div>
                 </div>
@@ -322,7 +322,7 @@ export default function StaffLayout() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-48">
                   <DropdownMenuItem disabled className="text-[10px] text-muted-foreground">
-                    Signed in as {roleLabels[role]}
+                    Signed in as {roleDisplayName}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout} className="text-destructive">
@@ -341,7 +341,7 @@ export default function StaffLayout() {
           {hasAccess('settings') && (
             <NavLink
               item={{ path: 'settings', icon: Settings, label: 'Settings', section: 'settings' }}
-              role={urlRole}
+              roleSlug={urlRole}
               pathname={location.pathname}
               collapsed={collapsed}
             />
@@ -363,8 +363,8 @@ export default function StaffLayout() {
             <h1 className="font-heading text-base font-semibold">MAISON</h1>
             <p className="text-[9px] letter-wide uppercase text-muted-foreground">Store Manager</p>
           </div>
-          <span className={`text-[8px] font-semibold px-1.5 py-0.5 rounded ${roleBadgeStyles[role]}`}>
-            {roleLabels[role]}
+          <span className={`text-[8px] font-semibold px-1.5 py-0.5 rounded ${roleBadgeClass(role)}`}>
+            {roleDisplayName}
           </span>
         </div>
         <a href={STOREFRONT_URL} className="text-xs text-muted-foreground flex items-center gap-1">

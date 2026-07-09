@@ -1,4 +1,4 @@
-import type { StaffRole, CmsSection, Permission, EditableRolePermissions } from '@luxe-maison/shared';
+import type { StaffRole, CmsSection, Permission, EditableRolePermissions, CmsRole } from '@luxe-maison/shared';
 import {
   DEFAULT_PERMISSIONS,
   ALL_SECTIONS,
@@ -7,21 +7,31 @@ import {
   canModifySection as canCoreModifySection,
   getAccessibleSections as getCoreAccessibleSections,
   pathToSection,
+  rolesToEditablePermissions,
 } from '@luxe-maison/shared';
-import { getPermissionsCache } from '@/lib/permissions-cache';
+import { getPermissionsCache, getRolesCache } from '@/lib/permissions-cache';
 
-export type { StaffRole, Permission, EditableRolePermissions };
+export type { StaffRole, Permission, EditableRolePermissions, CmsRole };
 export type Section = CmsSection;
-export { DEFAULT_PERMISSIONS, ALL_SECTIONS, pathToSection };
+export { DEFAULT_PERMISSIONS, ALL_SECTIONS, pathToSection, rolesToEditablePermissions };
+
+export function getActiveRoles(): CmsRole[] {
+  const roles = getRolesCache();
+  return roles.length > 0 ? roles : [];
+}
 
 export function getActivePermissions(): EditableRolePermissions {
+  const roles = getActiveRoles();
+  if (roles.length > 0) return rolesToEditablePermissions(roles);
   return getPermissionsCache();
 }
 
 export function getPermission(
   role: StaffRole,
   section: Section,
-  stored: EditableRolePermissions = getActivePermissions(),
+  stored: EditableRolePermissions | CmsRole[] = getActiveRoles().length
+    ? getActiveRoles()
+    : getActivePermissions(),
 ): Permission {
   return getCorePermission(role, section, stored);
 }
@@ -29,7 +39,9 @@ export function getPermission(
 export function canAccessSection(
   role: StaffRole,
   section: Section,
-  stored: EditableRolePermissions = getActivePermissions(),
+  stored: EditableRolePermissions | CmsRole[] = getActiveRoles().length
+    ? getActiveRoles()
+    : getActivePermissions(),
 ): boolean {
   return canCoreAccessSection(role, section, stored);
 }
@@ -37,14 +49,18 @@ export function canAccessSection(
 export function canModifySection(
   role: StaffRole,
   section: Section,
-  stored: EditableRolePermissions = getActivePermissions(),
+  stored: EditableRolePermissions | CmsRole[] = getActiveRoles().length
+    ? getActiveRoles()
+    : getActivePermissions(),
 ): boolean {
   return canCoreModifySection(role, section, stored);
 }
 
 export function getAccessibleSections(
   role: StaffRole,
-  stored: EditableRolePermissions = getActivePermissions(),
+  stored: EditableRolePermissions | CmsRole[] = getActiveRoles().length
+    ? getActiveRoles()
+    : getActivePermissions(),
 ): Section[] {
   return getCoreAccessibleSections(role, stored);
 }

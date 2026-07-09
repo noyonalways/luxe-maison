@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useStaff, type StaffMember } from '@/contexts/staff-context';
 import { useRole, type StaffRole } from '@/contexts/role-context';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { toApiError } from '@/lib/api/errors';
 
 export default function Team() {
-  const { role, canEdit, canDelete } = useRole();
+  const { role: myRole, roles: cmsRoles, canEdit, canDelete } = useRole();
   const { members, addMember, removeMember, updateMember, isLoading, isSaving } = useStaff();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
@@ -27,15 +27,18 @@ export default function Team() {
   const canEditTeam = canEdit('team');
   const canDeleteTeam = canDelete('team');
 
-  if (role !== 'admin') {
-    return (
-      <div className="text-center py-20">
-        <Users size={40} className="mx-auto text-muted-foreground mb-4" />
-        <h2 className="font-heading text-xl mb-2">Access Restricted</h2>
-        <p className="text-muted-foreground text-sm">Only admins can manage team members.</p>
-      </div>
-    );
-  }
+  const assignableRoles = useMemo(() => {
+    const items = cmsRoles.map((r) => ({ id: r.id as StaffRole, name: r.name }));
+    if (myRole === 'admin') {
+      return [{ id: 'admin' as StaffRole, name: 'Admin' }, ...items];
+    }
+    return items;
+  }, [cmsRoles, myRole]);
+
+  const roleLabel = (roleId: string) => {
+    if (roleId === 'admin') return 'Admin';
+    return cmsRoles.find((r) => r.id === roleId)?.name ?? roleId;
+  };
 
   const filtered = members.filter((m) => {
     const matchSearch =
@@ -45,9 +48,13 @@ export default function Team() {
     return matchSearch && matchRole;
   });
 
-  const admins = members.filter((m) => m.role === 'admin').length;
-  const managers = members.filter((m) => m.role === 'manager').length;
-  const employees = members.filter((m) => m.role === 'employee').length;
+  const roleCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const member of members) {
+      counts.set(member.role, (counts.get(member.role) ?? 0) + 1);
+    }
+    return counts;
+  }, [members]);
 
   const handleAdd = async () => {
     if (!name.trim() || !email.trim() || !password.trim()) {
@@ -62,7 +69,7 @@ export default function Team() {
         role: memberRole,
         password,
       });
-      toast.success(`${name} added as ${memberRole}`);
+      toast.success(`${name} added as ${roleLabel(memberRole)}`);
       setName('');
       setEmail('');
       setPassword('');
@@ -92,7 +99,7 @@ export default function Team() {
   const saveEdit = async (member: StaffMember) => {
     try {
       await updateMember(member.id, { role: editRole });
-      toast.success(`${member.name} updated to ${editRole}`);
+      toast.success(`${member.name} updated to ${roleLabel(editRole)}`);
       setEditingId(null);
     } catch (error) {
       toast.error(toApiError(error).message);
@@ -119,7 +126,9 @@ export default function Team() {
         <div>
           <h1 className="font-heading text-2xl lg:text-3xl">Team Members</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {admins} admin{admins !== 1 ? 's' : ''}, {managers} manager{managers !== 1 ? 's' : ''}, {employees} employee{employees !== 1 ? 's' : ''}
+            {members.length} member{members.length !== 1 ? 's' : ''}
+            {roleCounts.size > 0 &&
+              ` · ${[...roleCounts.entries()].map(([id, count]) => `${count} ${roleLabel(id)}`).join(', ')}`}
           </p>
         </div>
         {canEditTeam && (
@@ -154,9 +163,11 @@ export default function Team() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                      <SelectItem value="employee">Employee</SelectItem>
+                      {assignableRoles.map((r) => (
+                        <SelectItem key={r.id} value={r.id}>
+                          {r.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -185,9 +196,12 @@ export default function Team() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Roles</SelectItem>
-            <SelectItem value="admin">Admins</SelectItem>
-            <SelectItem value="manager">Managers</SelectItem>
-            <SelectItem value="employee">Employees</SelectItem>
+            {myRole === 'admin' && <SelectItem value="admin">Admin</SelectItem>}
+            {cmsRoles.map((r) => (
+              <SelectItem key={r.id} value={r.id}>
+                {r.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -216,14 +230,16 @@ export default function Team() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="admin">Admin</SelectItem>
-                          <SelectItem value="manager">Manager</SelectItem>
-                          <SelectItem value="employee">Employee</SelectItem>
+                          {assignableRoles.map((r) => (
+                            <SelectItem key={r.id} value={r.id}>
+                              {r.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     ) : (
                       <span className={`inline-block px-2 py-0.5 text-[10px] font-semibold letter-wide uppercase rounded ${roleBadge(member.role)}`}>
-                        {member.role}
+                        {roleLabel(member.role)}
                       </span>
                     )}
                   </td>

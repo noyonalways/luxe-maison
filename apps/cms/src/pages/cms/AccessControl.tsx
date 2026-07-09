@@ -1,5 +1,7 @@
 import { useRole, ALL_SECTIONS, type Section, type Permission } from '@/contexts/role-context';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
@@ -16,11 +18,20 @@ import {
   Settings,
   Home,
   FileText,
-  Cookie,
   RotateCcw,
   Loader2,
+  Plus,
+  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 const sectionMeta: Record<Section, { label: string; icon: React.ElementType }> = {
   dashboard: { label: 'Dashboard', icon: LayoutDashboard },
@@ -55,17 +66,53 @@ const permissionColors: Record<Permission, string> = {
 
 export default function AccessControl() {
   const {
-    getPermissions,
+    roles,
+    canEdit,
     updatePermission,
+    createRole,
+    deleteRole,
     resetPermissions,
     isLoadingPermissions,
     isSavingPermissions,
   } = useRole();
-  const permissions = getPermissions();
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newRoleName, setNewRoleName] = useState('');
+  const [newRoleSlug, setNewRoleSlug] = useState('');
+
+  const canManage = canEdit('access-control');
 
   const handleReset = () => {
     resetPermissions();
-    toast.success('Permissions reset to defaults');
+    toast.success('System roles reset to defaults');
+  };
+
+  const handleCreateRole = async () => {
+    if (!newRoleName.trim()) {
+      toast.error('Role name is required');
+      return;
+    }
+    try {
+      await createRole({
+        name: newRoleName.trim(),
+        slug: newRoleSlug.trim() || undefined,
+      });
+      toast.success(`Role "${newRoleName}" created`);
+      setNewRoleName('');
+      setNewRoleSlug('');
+      setCreateOpen(false);
+    } catch {
+      toast.error('Failed to create role');
+    }
+  };
+
+  const handleDeleteRole = async (roleId: string, roleName: string) => {
+    try {
+      await deleteRole(roleId);
+      toast.success(`Role "${roleName}" deleted`);
+    } catch {
+      toast.error('Failed to delete role. Remove staff assigned to this role first.');
+    }
   };
 
   if (isLoadingPermissions) {
@@ -76,34 +123,101 @@ export default function AccessControl() {
     );
   }
 
+  if (!canManage) {
+    return (
+      <div className="text-center py-20 text-muted-foreground">
+        <Shield size={40} className="mx-auto mb-4 opacity-50" />
+        <h2 className="font-heading text-xl mb-2 text-foreground">Access Restricted</h2>
+        <p className="text-sm">You do not have permission to manage access control.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-heading font-bold">Access Control</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage what Manager and Employee roles can access across the CMS
+            Grant module access per role. Create custom roles and assign them to team members.
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleReset}
-          disabled={isSavingPermissions}
-          className="gap-2"
-        >
-          {isSavingPermissions ? <Loader2 size={14} className="animate-spin" /> : <RotateCcw size={14} />}
-          Reset to Defaults
-        </Button>
+        <div className="flex items-center gap-2">
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-2">
+                <Plus size={14} />
+                Create Role
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create Custom Role</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div>
+                  <Label htmlFor="role-name">Role name</Label>
+                  <Input
+                    id="role-name"
+                    value={newRoleName}
+                    onChange={(e) => setNewRoleName(e.target.value)}
+                    placeholder="e.g. Support Agent"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="role-slug">URL slug (optional)</Label>
+                  <Input
+                    id="role-slug"
+                    value={newRoleSlug}
+                    onChange={(e) => setNewRoleSlug(e.target.value)}
+                    placeholder="e.g. support-agent"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Lowercase letters, numbers, and hyphens. Used in the CMS URL.
+                  </p>
+                </div>
+                <Button onClick={handleCreateRole} disabled={isSavingPermissions} className="w-full">
+                  Create Role
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleReset}
+            disabled={isSavingPermissions}
+            className="gap-2"
+          >
+            {isSavingPermissions ? <Loader2 size={14} className="animate-spin" /> : <RotateCcw size={14} />}
+            Reset Defaults
+          </Button>
+        </div>
       </div>
 
-      <div className="bg-background border border-border rounded-lg overflow-hidden">
+      <div className="bg-background border border-border rounded-lg overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[200px]">Section</TableHead>
-              <TableHead>Manager</TableHead>
-              <TableHead>Employee</TableHead>
+              <TableHead className="w-[200px] sticky left-0 bg-background">Section</TableHead>
+              {roles.map((cmsRole) => (
+                <TableHead key={cmsRole.id} className="min-w-[140px]">
+                  <div className="flex items-center justify-between gap-2">
+                    <span>{cmsRole.name}</span>
+                    {!cmsRole.isSystem && (
+                      <button
+                        type="button"
+                        title={`Delete ${cmsRole.name}`}
+                        onClick={() => handleDeleteRole(cmsRole.id, cmsRole.name)}
+                        className="text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    )}
+                  </div>
+                  <span className="text-[10px] font-normal text-muted-foreground">/{cmsRole.slug}</span>
+                </TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -112,20 +226,20 @@ export default function AccessControl() {
               const Icon = meta.icon;
               return (
                 <TableRow key={section}>
-                  <TableCell>
+                  <TableCell className="sticky left-0 bg-background">
                     <div className="flex items-center gap-2.5">
                       <Icon size={15} className="text-muted-foreground" />
                       <span className="font-medium text-sm">{meta.label}</span>
                     </div>
                   </TableCell>
-                  {(['manager', 'employee'] as const).map((targetRole) => (
-                    <TableCell key={targetRole}>
+                  {roles.map((cmsRole) => (
+                    <TableCell key={cmsRole.id}>
                       <Select
-                        value={permissions[targetRole][section]}
+                        value={cmsRole.permissions[section]}
                         disabled={isSavingPermissions}
                         onValueChange={(val: Permission) => {
-                          updatePermission(targetRole, section, val);
-                          toast.success(`${meta.label} → ${targetRole}: ${val}`);
+                          updatePermission(cmsRole.id, section, val);
+                          toast.success(`${meta.label} → ${cmsRole.name}: ${val}`);
                         }}
                       >
                         <SelectTrigger className="w-[120px] h-9 text-xs">

@@ -8,7 +8,10 @@ export function useResetPermissionsMutation() {
   return useMutation({
     mutationFn: () => permissionsApi.reset(),
     onSuccess: (response) => {
-      queryClient.setQueryData(permissionsKeys.matrix(), response.permissions);
+      queryClient.setQueryData(permissionsKeys.matrix(), {
+        roles: response.roles,
+        permissions: response.permissions,
+      });
     },
   });
 }

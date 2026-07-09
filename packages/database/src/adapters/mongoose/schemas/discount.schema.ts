@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, type Model } from 'mongoose';
 import type { Discount } from '@luxe-maison/core';
+import { COLLECTIONS, MODEL_NAMES } from '../collection-names.js';
 
 const discountSchema = new Schema<Discount>(
   {
@@ -16,8 +17,9 @@ const discountSchema = new Schema<Discount>(
     description: { type: String, required: true },
     createdAt: { type: String, required: true },
   },
-  { versionKey: false },
+  { versionKey: false, collection: COLLECTIONS.discounts },
 );
 
 export const DiscountModel: Model<Discount> =
-  mongoose.models?.Discount ?? model<Discount>('Discount', discountSchema);
+  mongoose.models?.[MODEL_NAMES.Discount] ??
+  model<Discount>(MODEL_NAMES.Discount, discountSchema);

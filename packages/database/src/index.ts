@@ -14,7 +14,7 @@ export {
   getPopupRepository,
   getHomepageRepository,
   getContentPageRepository,
-  getRolePermissionsRepository,
+  getCmsRolesRepository,
 } from './get-repositories.js';
 
 export type {
@@ -46,7 +46,7 @@ export {
   createImpPopupRepository as createInMemoryPopupRepository,
   createImpHomepageRepository as createInMemoryHomepageRepository,
   createImpContentPageRepository as createInMemoryContentPageRepository,
-  createImpRolePermissionsRepository as createInMemoryRolePermissionsRepository,
+  createImpCmsRolesRepository as createInMemoryCmsRolesRepository,
 } from './adapters/in_memory/repositories.js';
 
 export {
@@ -62,7 +62,7 @@ export {
   createImpPopupRepository as createMongoosePopupRepository,
   createImpHomepageRepository as createMongooseHomepageRepository,
   createImpContentPageRepository as createMongooseContentPageRepository,
-  createImpRolePermissionsRepository as createMongooseRolePermissionsRepository,
+  createImpCmsRolesRepository as createMongooseCmsRolesRepository,
   connectMongoose,
   disconnectMongoose,
 } from './adapters/mongoose/repositories.js';
@@ -92,4 +92,11 @@ export {
   getRelatedProducts,
 } from './adapters/in_memory/index.js';
 
+export {
+  COLLECTIONS,
+  REQUIRED_COLLECTIONS,
+  LEGACY_COLLECTIONS,
+  MODEL_NAMES,
+} from './adapters/mongoose/collection-names.js';
+export { cleanupLegacyCollections } from './adapters/mongoose/cleanup-legacy-collections.js';
 export { STAFF_SEED_ACCOUNTS } from './seed/staff-accounts.seed.js';

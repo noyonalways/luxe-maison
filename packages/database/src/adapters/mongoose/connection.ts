@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { cleanupLegacyCollections } from './cleanup-legacy-collections.js';
 
 let connectionPromise: Promise<typeof mongoose> | null = null;
 
@@ -8,7 +9,10 @@ export function connectMongoose(uri: string): Promise<typeof mongoose> {
   }
 
   if (!connectionPromise) {
-    connectionPromise = mongoose.connect(uri).then(() => mongoose);
+    connectionPromise = mongoose.connect(uri).then(async (conn) => {
+      await cleanupLegacyCollections(conn);
+      return conn;
+    });
   }
 
   return connectionPromise;

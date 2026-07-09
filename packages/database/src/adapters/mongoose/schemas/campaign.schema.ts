@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, type Model } from 'mongoose';
 import type { Campaign } from '@luxe-maison/core';
+import { COLLECTIONS, MODEL_NAMES } from '../collection-names.js';
 
 const campaignSchema = new Schema<Campaign>(
   {
@@ -19,8 +20,9 @@ const campaignSchema = new Schema<Campaign>(
     conversions: { type: Number, required: true },
     createdAt: { type: String, required: true },
   },
-  { versionKey: false },
+  { versionKey: false, collection: COLLECTIONS.campaigns },
 );
 
 export const CampaignModel: Model<Campaign> =
-  mongoose.models?.Campaign ?? model<Campaign>('Campaign', campaignSchema);
+  mongoose.models?.[MODEL_NAMES.Campaign] ??
+  model<Campaign>(MODEL_NAMES.Campaign, campaignSchema);

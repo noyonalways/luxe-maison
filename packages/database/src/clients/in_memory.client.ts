@@ -9,7 +9,6 @@ import { createImpStaffRepository } from '../adapters/in_memory/imp_staff.reposi
 import { createImpSettingsRepository } from '../adapters/in_memory/imp_settings.repository.js';
 import { createImpReviewRepository } from '../adapters/in_memory/imp_review.repository.js';
 import { createImpPopupRepository } from '../adapters/in_memory/imp_popup.repository.js';
-import { createImpRolePermissionsRepository } from '../adapters/in_memory/imp_role-permissions.repository.js';
 
 export function createInMemoryClient(): DatabaseClient {
   return {
@@ -25,7 +24,6 @@ export function createInMemoryClient(): DatabaseClient {
       settings: createImpSettingsRepository(),
       reviews: createImpReviewRepository(),
       popups: createImpPopupRepository(),
-      rolePermissions: createImpRolePermissionsRepository(),
     },
   };
 }

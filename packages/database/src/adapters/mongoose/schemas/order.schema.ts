@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, type Model } from 'mongoose';
 import type { Order } from '@luxe-maison/core';
+import { COLLECTIONS, MODEL_NAMES } from '../collection-names.js';
 
 const orderItemSchema = new Schema(
   {
@@ -56,8 +57,8 @@ const orderSchema = new Schema<Order>(
     createdAt: { type: String, required: true },
     updatedAt: { type: String, required: true },
   },
-  { versionKey: false },
+  { versionKey: false, collection: COLLECTIONS.orders },
 );
 
 export const OrderModel: Model<Order> =
-  mongoose.models?.Order ?? model<Order>('Order', orderSchema);
+  mongoose.models?.[MODEL_NAMES.Order] ?? model<Order>(MODEL_NAMES.Order, orderSchema);

@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, type Model } from 'mongoose';
 import type { NewsletterEmail, Subscriber } from '@luxe-maison/core';
+import { COLLECTIONS, MODEL_NAMES } from '../collection-names.js';
 
 const subscriberSchema = new Schema<Subscriber>(
   {
@@ -9,7 +10,7 @@ const subscriberSchema = new Schema<Subscriber>(
     status: { type: String, required: true, enum: ['active', 'unsubscribed'] },
     subscribedAt: { type: String, required: true },
   },
-  { versionKey: false },
+  { versionKey: false, collection: COLLECTIONS.subscribers },
 );
 
 const newsletterEmailSchema = new Schema<NewsletterEmail>(
@@ -22,12 +23,13 @@ const newsletterEmailSchema = new Schema<NewsletterEmail>(
     openRate: { type: Number, required: true },
     sentAt: { type: String, required: true },
   },
-  { versionKey: false },
+  { versionKey: false, collection: COLLECTIONS.newsletter_emails },
 );
 
 export const SubscriberModel: Model<Subscriber> =
-  mongoose.models?.Subscriber ?? model<Subscriber>('Subscriber', subscriberSchema);
+  mongoose.models?.[MODEL_NAMES.Subscriber] ??
+  model<Subscriber>(MODEL_NAMES.Subscriber, subscriberSchema);
 
 export const NewsletterEmailModel: Model<NewsletterEmail> =
-  mongoose.models?.NewsletterEmail ??
-  model<NewsletterEmail>('NewsletterEmail', newsletterEmailSchema);
+  mongoose.models?.[MODEL_NAMES.Newsletter_Email] ??
+  model<NewsletterEmail>(MODEL_NAMES.Newsletter_Email, newsletterEmailSchema);

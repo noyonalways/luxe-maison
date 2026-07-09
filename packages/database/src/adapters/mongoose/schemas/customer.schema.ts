@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, type Model } from 'mongoose';
 import type { Customer } from '@luxe-maison/core';
+import { COLLECTIONS, MODEL_NAMES } from '../collection-names.js';
 
 const customerSchema = new Schema<Customer>(
   {
@@ -16,8 +17,9 @@ const customerSchema = new Schema<Customer>(
     avatar: { type: String },
     passwordHash: { type: String, select: false },
   },
-  { versionKey: false },
+  { versionKey: false, collection: COLLECTIONS.customers },
 );
 
 export const CustomerModel: Model<Customer> =
-  mongoose.models?.Customer ?? model<Customer>('Customer', customerSchema);
+  mongoose.models?.[MODEL_NAMES.Customer] ??
+  model<Customer>(MODEL_NAMES.Customer, customerSchema);

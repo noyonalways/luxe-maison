@@ -4,33 +4,21 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const routesRoot = path.join(__dirname, "../src/routes/(roles)");
-const roles = ["admin", "manager", "employee"];
 
-const sectionsByRole = {
-  admin: [
-    "dashboard",
-    "orders",
-    "customers",
-    "analytics",
-    "newsletter",
-    "discounts",
-    "campaigns",
-    "popup",
-    "team",
-    "settings",
-    "access-control",
-  ],
-  manager: [
-    "dashboard",
-    "orders",
-    "customers",
-    "analytics",
-    "newsletter",
-    "discounts",
-    "campaigns",
-  ],
-  employee: ["dashboard", "orders"],
-};
+const ALL_SECTIONS = [
+  "dashboard",
+  "orders",
+  "customers",
+  "analytics",
+  "newsletter",
+  "discounts",
+  "campaigns",
+  "popup",
+  "homepage",
+  "team",
+  "settings",
+  "access-control",
+];
 
 const pages = {
   dashboard: { name: "Dashboard", importPath: "@/pages/cms/Dashboard" },
@@ -41,6 +29,7 @@ const pages = {
   discounts: { name: "Discounts", importPath: "@/pages/cms/Discounts" },
   campaigns: { name: "Campaigns", importPath: "@/pages/cms/Campaigns" },
   popup: { name: "PopupSettings", importPath: "@/pages/cms/PopupSettings" },
+  homepage: { name: "Homepage", importPath: "@/pages/cms/Homepage" },
   team: { name: "Team", importPath: "@/pages/cms/Team" },
   settings: { name: "Settings", importPath: "@/pages/cms/Settings" },
   "access-control": {
@@ -49,127 +38,178 @@ const pages = {
   },
 };
 
-const ROLE_HAS_PRODUCTS = { admin: true, manager: false, employee: true };
-const ROLE_CAN_MODIFY_PRODUCTS = { admin: true, manager: false, employee: false };
-
 function write(filePath, content) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, content);
 }
 
 function removeIfExists(filePath) {
-  if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-}
-
-function cleanRoleDir(roleDir, allowedFiles) {
-  if (!fs.existsSync(roleDir)) return;
-  for (const entry of fs.readdirSync(roleDir, { withFileTypes: true })) {
-    const fullPath = path.join(roleDir, entry.name);
-    if (entry.isDirectory()) {
-      if (entry.name === "products") {
-        for (const file of fs.readdirSync(fullPath)) {
-          const rel = `products/${file}`;
-          if (!allowedFiles.has(rel)) removeIfExists(path.join(fullPath, file));
-        }
-        if (fs.readdirSync(fullPath).length === 0) fs.rmdirSync(fullPath);
-      }
-      continue;
-    }
-    if (!allowedFiles.has(entry.name)) removeIfExists(fullPath);
+  if (fs.existsSync(filePath)) {
+    const stat = fs.statSync(filePath);
+    if (stat.isDirectory()) fs.rmSync(filePath, { recursive: true, force: true });
+    else fs.unlinkSync(filePath);
   }
 }
 
-// Remove dynamic $role folder if present
-const dynamicRoleDir = path.join(routesRoot, "$role");
-if (fs.existsSync(dynamicRoleDir)) {
-  fs.rmSync(dynamicRoleDir, { recursive: true, force: true });
+// Remove legacy fixed-role route folders
+for (const legacy of ["admin", "manager", "employee", "$role"]) {
+  removeIfExists(path.join(routesRoot, legacy));
 }
 
-for (const role of roles) {
-  const roleDir = path.join(routesRoot, role);
-  const sections = sectionsByRole[role];
-  const allowedFiles = new Set(["route.tsx", "index.tsx"]);
+const roleDir = path.join(routesRoot, "$roleSlug");
+const allowedFiles = new Set(["route.tsx", "index.tsx"]);
 
-  write(
-    path.join(roleDir, "route.tsx"),
-    `import { createFileRoute } from "@tanstack/react-router";
+write(
+  path.join(roleDir, "route.tsx"),
+  `import { createFileRoute } from "@tanstack/react-router";
 import StaffLayout from "@/components/staff/StaffLayout";
-import { requireStaffRole } from "@/lib/route-guards";
+import { requireStaffRoleSlug } from "@/lib/route-guards";
 
-export const Route = createFileRoute("/(roles)/${role}")({
-  beforeLoad: () => requireStaffRole("${role}"),
+export const Route = createFileRoute("/(roles)/$roleSlug")({
+  beforeLoad: ({ params }) => requireStaffRoleSlug(params.roleSlug),
   component: StaffLayout,
 });
 `,
-  );
+);
 
-  write(
-    path.join(roleDir, "index.tsx"),
-    `import { createFileRoute, redirect } from "@tanstack/react-router";
+write(
+  path.join(roleDir, "index.tsx"),
+  `import { createFileRoute, redirect } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/(roles)/${role}/")({
-  beforeLoad: () => {
-    throw redirect({ to: "/${role}/dashboard" });
+export const Route = createFileRoute("/(roles)/$roleSlug/")({
+  beforeLoad: ({ params }) => {
+    throw redirect({ to: "/$roleSlug/dashboard", params: { roleSlug: params.roleSlug } });
   },
 });
 `,
-  );
+);
 
-  for (const segment of sections) {
-    const page = pages[segment];
-    allowedFiles.add(`${segment}.tsx`);
-    write(
-      path.join(roleDir, `${segment}.tsx`),
-      `import { createFileRoute } from "@tanstack/react-router";
+for (const segment of ALL_SECTIONS) {
+  const page = pages[segment];
+  allowedFiles.add(`${segment}.tsx`);
+  write(
+    path.join(roleDir, `${segment}.tsx`),
+    `import { createFileRoute } from "@tanstack/react-router";
 import { requireSectionAccess } from "@/lib/route-guards";
 import ${page.name} from "${page.importPath}";
 
-export const Route = createFileRoute("/(roles)/${role}/${segment}")({
-  beforeLoad: () => requireSectionAccess("${role}", "${segment}"),
+export const Route = createFileRoute("/(roles)/$roleSlug/${segment}")({
+  beforeLoad: ({ params }) => requireSectionAccess(params.roleSlug, "${segment}"),
   component: ${page.name},
 });
 `,
-    );
-  }
-
-  if (ROLE_HAS_PRODUCTS[role]) {
-    allowedFiles.add("products/index.tsx");
-    write(
-      path.join(roleDir, "products", "index.tsx"),
-      `import { createFileRoute } from "@tanstack/react-router";
-import { requireSectionAccess } from "@/lib/route-guards";
-import Products from "@/pages/cms/Products";
-
-export const Route = createFileRoute("/(roles)/${role}/products/")({
-  beforeLoad: () => requireSectionAccess("${role}", "products"),
-  component: Products,
-});
-`,
-    );
-  }
-
-  if (ROLE_CAN_MODIFY_PRODUCTS[role]) {
-    for (const [file, route, guard] of [
-      ["new.tsx", "products/new", "requireSectionModify"],
-      ["$id.edit.tsx", "products/$id/edit", "requireSectionModify"],
-    ]) {
-      allowedFiles.add(`products/${file}`);
-      write(
-        path.join(roleDir, "products", file),
-        `import { createFileRoute } from "@tanstack/react-router";
-import { ${guard} } from "@/lib/route-guards";
-import ProductForm from "@/pages/cms/ProductForm";
-
-export const Route = createFileRoute("/(roles)/${role}/${route}")({
-  beforeLoad: () => ${guard}("${role}", "products"),
-  component: ProductForm,
-});
-`,
-      );
-    }
-  }
-
-  cleanRoleDir(roleDir, allowedFiles);
+  );
 }
 
-console.log(`Generated fixed role routes: ${roles.join(", ")}`);
+// Products routes
+for (const [file, route, guard, section] of [
+  ["index.tsx", "products/", "requireSectionAccess", "products"],
+  ["new.tsx", "products/new", "requireSectionModify", "products"],
+  ["$id.edit.tsx", "products/$id/edit", "requireSectionModify", "products"],
+]) {
+  allowedFiles.add(`products/${file}`);
+  write(
+    path.join(roleDir, "products", file),
+    `import { createFileRoute } from "@tanstack/react-router";
+import { ${guard} } from "@/lib/route-guards";
+import ${file === "index.tsx" ? "Products" : "ProductForm"} from "@/pages/cms/${file === "index.tsx" ? "Products" : "ProductForm"}";
+
+export const Route = createFileRoute("/(roles)/$roleSlug/${route}")({
+  beforeLoad: ({ params }) => ${guard}(params.roleSlug, "${section}"),
+  component: ${file === "index.tsx" ? "Products" : "ProductForm"},
+});
+`,
+  );
+}
+
+// Orders detail
+allowedFiles.add("orders/index.tsx");
+write(
+  path.join(roleDir, "orders", "index.tsx"),
+  `import { createFileRoute } from "@tanstack/react-router";
+import { requireSectionAccess } from "@/lib/route-guards";
+import Orders from "@/pages/cms/Orders";
+
+export const Route = createFileRoute("/(roles)/$roleSlug/orders/")({
+  beforeLoad: ({ params }) => requireSectionAccess(params.roleSlug, "orders"),
+  component: Orders,
+});
+`,
+);
+
+allowedFiles.add("orders/$id.tsx");
+write(
+  path.join(roleDir, "orders", "$id.tsx"),
+  `import { createFileRoute } from "@tanstack/react-router";
+import { requireSectionAccess } from "@/lib/route-guards";
+import OrderDetailPage from "@/pages/cms/OrderDetailPage";
+
+export const Route = createFileRoute("/(roles)/$roleSlug/orders/$id")({
+  beforeLoad: ({ params }) => requireSectionAccess(params.roleSlug, "orders"),
+  component: OrderDetailPage,
+});
+`,
+);
+
+// Customers detail
+allowedFiles.add("customers/index.tsx");
+write(
+  path.join(roleDir, "customers", "index.tsx"),
+  `import { createFileRoute } from "@tanstack/react-router";
+import { requireSectionAccess } from "@/lib/route-guards";
+import Customers from "@/pages/cms/Customers";
+
+export const Route = createFileRoute("/(roles)/$roleSlug/customers/")({
+  beforeLoad: ({ params }) => requireSectionAccess(params.roleSlug, "customers"),
+  component: Customers,
+});
+`,
+);
+
+allowedFiles.add("customers/$id.tsx");
+write(
+  path.join(roleDir, "customers", "$id.tsx"),
+  `import { createFileRoute } from "@tanstack/react-router";
+import { requireSectionAccess } from "@/lib/route-guards";
+import CustomerDetailPage from "@/pages/cms/CustomerDetailPage";
+
+export const Route = createFileRoute("/(roles)/$roleSlug/customers/$id")({
+  beforeLoad: ({ params }) => requireSectionAccess(params.roleSlug, "customers"),
+  component: CustomerDetailPage,
+});
+`,
+);
+
+// Content pages
+allowedFiles.add("pages/$slug.tsx");
+write(
+  path.join(roleDir, "pages", "$slug.tsx"),
+  `import { createFileRoute, redirect } from "@tanstack/react-router";
+import { requireSectionAccess } from "@/lib/route-guards";
+import ContentPageEditor from "@/pages/cms/ContentPageEditor";
+import { isContentPageSlug } from "@luxe-maison/shared";
+import { cmsNavPath } from "@/lib/cms-navigation";
+
+export const Route = createFileRoute("/(roles)/$roleSlug/pages/$slug")({
+  beforeLoad: ({ params }) => {
+    requireSectionAccess(params.roleSlug, "pages");
+    if (!isContentPageSlug(params.slug)) {
+      throw redirect(cmsNavPath(params.roleSlug, "pages/privacy"));
+    }
+  },
+  component: ContentPageRoute,
+});
+
+function ContentPageRoute() {
+  const { slug } = Route.useParams();
+  if (!isContentPageSlug(slug)) return null;
+  return <ContentPageEditor slug={slug} />;
+}
+`,
+);
+
+// Remove duplicate flat orders/customers if generated as section files
+removeIfExists(path.join(roleDir, "orders.tsx"));
+removeIfExists(path.join(roleDir, "customers.tsx"));
+
+console.log("Generated permission-based $roleSlug routes");
