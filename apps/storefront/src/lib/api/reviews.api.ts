@@ -3,7 +3,6 @@ import { apiFetch } from '@/lib/api/client';
 
 export type CreateReviewPayload = {
   productId: string;
-  author: string;
   rating: number;
   text: string;
 };
@@ -16,6 +15,11 @@ export const reviewsApi = {
 
   getAverage(productId: string) {
     return apiFetch<{ avg: number; count: number }>(`/api/reviews/${productId}/average`);
+  },
+
+  getMyReview(productId: string) {
+    const params = new URLSearchParams({ productId });
+    return apiFetch<Review | null>(`/api/reviews/mine?${params.toString()}`);
   },
 
   create(payload: CreateReviewPayload) {

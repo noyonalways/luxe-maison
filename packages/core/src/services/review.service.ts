@@ -15,6 +15,10 @@ export function createReviewService(repository: ReviewRepository) {
       return repository.findById(id);
     },
 
+    getByProductAndCustomer(productId: string, customerId: string): Promise<Review | null> {
+      return repository.findByProductAndCustomer(productId, customerId);
+    },
+
     create(review: Review): Promise<Review> {
       return repository.create(review);
     },

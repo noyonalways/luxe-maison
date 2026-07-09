@@ -6,11 +6,11 @@ import type { Review } from '@luxe-maison/shared';
 import { reviewsApi } from '@/lib/api/reviews.api';
 import { reviewKeys } from '@/hooks/products/product-keys';
 import { ApiError } from '@/lib/api/client';
+import { getStoredToken } from '@/lib/auth-session';
 
 interface ReviewsContextType {
   addReview: (
     productId: string,
-    author: string,
     rating: number,
     text: string,
   ) => Promise<{ success: boolean; error?: string }>;
@@ -36,6 +36,15 @@ export function useProductAverage(productId: string) {
   });
 }
 
+export function useMyProductReview(productId: string, enabled = true) {
+  return useQuery({
+    queryKey: reviewKeys.mine(productId),
+    queryFn: () => reviewsApi.getMyReview(productId),
+    enabled: Boolean(productId) && enabled && Boolean(getStoredToken()),
+    staleTime: 30_000,
+  });
+}
+
 export function ReviewsProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
 
@@ -44,13 +53,14 @@ export function ReviewsProvider({ children }: { children: ReactNode }) {
     onSuccess: (_review, variables) => {
       void queryClient.invalidateQueries({ queryKey: reviewKeys.byProduct(variables.productId) });
       void queryClient.invalidateQueries({ queryKey: reviewKeys.average(variables.productId) });
+      void queryClient.invalidateQueries({ queryKey: reviewKeys.mine(variables.productId) });
     },
   });
 
   const addReview = useCallback(
-    async (productId: string, author: string, rating: number, text: string) => {
+    async (productId: string, rating: number, text: string) => {
       try {
-        await createMutation.mutateAsync({ productId, author, rating, text });
+        await createMutation.mutateAsync({ productId, rating, text });
         return { success: true };
       } catch (err) {
         const message = err instanceof ApiError ? err.message : 'Failed to submit review';

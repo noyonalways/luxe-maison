@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,17 @@ import ForgotPasswordFlow from '@/components/auth/ForgotPasswordFlow';
 import { PageCenter } from '@/components/layout/PageShell';
 
 export default function CustomerLogin() {
+  return (
+    <Suspense fallback={<PageCenter><p className="text-sm text-muted-foreground">Loading…</p></PageCenter>}>
+      <CustomerLoginForm />
+    </Suspense>
+  );
+}
+
+function CustomerLoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
   const { login, signup, isAuthenticated, user } = useAuth();
   const [tab, setTab] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
@@ -26,9 +36,9 @@ export default function CustomerLogin() {
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'customer') {
-      router.replace('/');
+      router.replace(redirectTo.startsWith('/') ? redirectTo : '/');
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, redirectTo]);
 
   if (isAuthenticated && user?.role === 'customer') {
     return null;
@@ -48,7 +58,7 @@ export default function CustomerLogin() {
     setLoading(true);
     const result = await login(email, password);
     if (result.success) {
-      router.replace('/');
+      router.replace(redirectTo.startsWith('/') ? redirectTo : '/');
     } else {
       setError(result.error || 'Login failed');
     }
@@ -61,7 +71,7 @@ export default function CustomerLogin() {
     setLoading(true);
     const result = await signup(name, email, password, phone);
     if (result.success) {
-      router.replace('/');
+      router.replace(redirectTo.startsWith('/') ? redirectTo : '/');
     } else {
       setError(result.error || 'Signup failed');
     }

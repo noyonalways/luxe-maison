@@ -83,8 +83,8 @@ export default function ProductPage({ id }: { id: string }) {
   }
 
   const related = getRelatedProducts(product.id, 4);
-  const displayRating = average ? average.avg : product.rating;
-  const displayReviewCount = average ? average.count + product.reviews : product.reviews;
+  const displayRating = average?.avg ?? product.rating;
+  const displayReviewCount = average?.count ?? product.reviews;
 
   const handleAddToCart = () => {
     if (!selectedSize) {

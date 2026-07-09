@@ -22,6 +22,12 @@ export function createImpReviewRepository(
       return reviews.find((r) => r.id === id) ?? null;
     },
 
+    async findByProductAndCustomer(productId: string, customerId: string) {
+      return (
+        reviews.find((r) => r.productId === productId && r.customerId === customerId) ?? null
+      );
+    },
+
     async create(review: Review) {
       reviews.push(review);
       return review;

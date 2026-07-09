@@ -30,6 +30,11 @@ export function createImpReviewRepository(
       return toPlain(doc);
     },
 
+    async findByProductAndCustomer(productId: string, customerId: string) {
+      const doc = await model.findOne({ productId, customerId }).lean<Review>();
+      return toPlain(doc);
+    },
+
     async create(review: Review) {
       const doc = await model.create(review);
       return toPlain(doc.toObject())!;
