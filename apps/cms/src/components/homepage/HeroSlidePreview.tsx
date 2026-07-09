@@ -74,9 +74,13 @@ export function HeroSlidePreview({ slides, activeSlideId, onActiveSlideChange }:
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-lg border border-border aspect-[16/7] bg-foreground">
+      <div className="relative overflow-hidden rounded-lg border border-border aspect-[16/9] sm:aspect-[16/8] bg-foreground">
         {imageSrc ? (
-          <img src={imageSrc} alt={slide.title} className="absolute inset-0 h-full w-full object-cover" />
+          <img
+            src={imageSrc}
+            alt={slide.title}
+            className="absolute inset-0 h-full w-full object-cover object-top sm:object-[center_20%]"
+          />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-muted to-foreground/80" />
         )}
