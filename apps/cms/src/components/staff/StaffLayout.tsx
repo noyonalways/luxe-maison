@@ -1,12 +1,35 @@
 import { Link, useLocation, useNavigate, Outlet } from '@tanstack/react-router';
-import { LayoutDashboard, Package, ShoppingCart, BarChart3, ArrowLeft, Mail, Percent, Megaphone, Users, MessageSquare, ChevronDown, Shield, ShieldAlert, Settings, PanelLeftClose, PanelLeft, LogOut, Loader2, Home } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  BarChart3,
+  ArrowLeft,
+  Mail,
+  Percent,
+  Megaphone,
+  Users,
+  MessageSquare,
+  ChevronDown,
+  Shield,
+  ShieldAlert,
+  Settings,
+  PanelLeftClose,
+  PanelLeft,
+  LogOut,
+  Loader2,
+  Home,
+  FileText,
+  Cookie,
+  type LucideIcon,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRole, pathToSection, type StaffRole } from '@/contexts/role-context';
 import { useAuth, isStaffRole } from '@/contexts/auth-context';
 import { useLogout } from '@/hooks/auth/use-logout';
-import { cmsDashboard, cmsTo, type CmsSection } from '@/lib/cms-navigation';
+import { cmsDashboard, cmsNavPath, cmsTo, type CmsSection } from '@/lib/cms-navigation';
 import { useStaffUrlRole } from '@/lib/use-staff-url-role';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   DropdownMenu,
@@ -15,22 +38,48 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
 
 const STOREFRONT_URL = import.meta.env.VITE_STOREFRONT_URL || 'http://localhost:3000';
 
-const sectionLinks = [
-  { path: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', section: 'dashboard' as const },
-  { path: 'products', icon: Package, label: 'Products', section: 'products' as const },
-  { path: 'orders', icon: ShoppingCart, label: 'Orders', section: 'orders' as const },
-  { path: 'customers', icon: Users, label: 'Customers', section: 'customers' as const },
-  { path: 'analytics', icon: BarChart3, label: 'Analytics', section: 'analytics' as const },
-  { path: 'newsletter', icon: Mail, label: 'Newsletter', section: 'newsletter' as const },
-  { path: 'discounts', icon: Percent, label: 'Discounts', section: 'discounts' as const },
-  { path: 'campaigns', icon: Megaphone, label: 'Campaigns', section: 'campaigns' as const },
-  { path: 'popup', icon: MessageSquare, label: 'Welcome Popup', section: 'popup' as const },
-  { path: 'homepage', icon: Home, label: 'Homepage', section: 'homepage' as const },
-  { path: 'team', icon: Users, label: 'Team', section: 'team' as const },
-  { path: 'access-control', icon: Shield, label: 'Access Control', section: 'access-control' as const },
+type NavItem = {
+  path: string;
+  icon: LucideIcon;
+  label: string;
+  section: CmsSection;
+};
+
+type NavGroup = {
+  label: string;
+  items: NavItem[];
+};
+
+const mainNavItems: NavItem[] = [
+  { path: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', section: 'dashboard' },
+  { path: 'products', icon: Package, label: 'Products', section: 'products' },
+  { path: 'orders', icon: ShoppingCart, label: 'Orders', section: 'orders' },
+  { path: 'customers', icon: Users, label: 'Customers', section: 'customers' },
+  { path: 'analytics', icon: BarChart3, label: 'Analytics', section: 'analytics' },
+  { path: 'newsletter', icon: Mail, label: 'Newsletter', section: 'newsletter' },
+  { path: 'discounts', icon: Percent, label: 'Discounts', section: 'discounts' },
+  { path: 'campaigns', icon: Megaphone, label: 'Campaigns', section: 'campaigns' },
+  { path: 'popup', icon: MessageSquare, label: 'Welcome Popup', section: 'popup' },
+];
+
+const pagesNavGroup: NavGroup = {
+  label: 'Pages',
+  items: [
+    { path: 'homepage', icon: Home, label: 'Homepage', section: 'homepage' },
+    { path: 'pages/privacy', icon: Shield, label: 'Privacy', section: 'pages' },
+    { path: 'pages/terms', icon: FileText, label: 'Terms', section: 'pages' },
+    { path: 'pages/cookies', icon: Cookie, label: 'Cookies', section: 'pages' },
+  ],
+};
+
+const bottomNavItems: NavItem[] = [
+  { path: 'team', icon: Users, label: 'Team', section: 'team' },
+  { path: 'access-control', icon: Shield, label: 'Access Control', section: 'access-control' },
 ];
 
 const roleLabels: Record<StaffRole, string> = {
@@ -45,6 +94,48 @@ const roleBadgeStyles: Record<StaffRole, string> = {
   employee: 'bg-secondary text-muted-foreground',
 };
 
+function navItemActive(pathname: string, role: StaffRole, path: string) {
+  const fullPath = `/${role}/${path}`;
+  if (path === 'dashboard') {
+    return pathname === fullPath || pathname === `/${role}`;
+  }
+  return pathname === fullPath || pathname.startsWith(`${fullPath}/`);
+}
+
+function NavLink({
+  item,
+  role,
+  pathname,
+  collapsed,
+}: {
+  item: NavItem;
+  role: StaffRole;
+  pathname: string;
+  collapsed: boolean;
+}) {
+  const active = navItemActive(pathname, role, item.path);
+  const linkProps = item.path.includes('/')
+    ? cmsNavPath(role, item.path)
+    : cmsTo(item.section, role);
+
+  return (
+    <Link
+      {...linkProps}
+      title={collapsed ? item.label : undefined}
+      className={cn(
+        'flex items-center rounded text-sm font-medium transition-smooth',
+        collapsed ? 'justify-center px-3 py-2.5' : 'gap-3 px-3 py-2.5',
+        active
+          ? 'bg-primary text-primary-foreground'
+          : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
+      )}
+    >
+      <item.icon size={16} />
+      {!collapsed && item.label}
+    </Link>
+  );
+}
+
 export default function StaffLayout() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -53,8 +144,30 @@ export default function StaffLayout() {
   const { user, isRestoringSession } = useAuth();
   const { logout } = useLogout();
   const [collapsed, setCollapsed] = useState(false);
+  const [pagesOpen, setPagesOpen] = useState(true);
 
   const authRole = user && isStaffRole(user.role) ? user.role : null;
+
+  const visibleMainItems = useMemo(
+    () => mainNavItems.filter((item) => hasAccess(item.section)),
+    [hasAccess],
+  );
+  const visiblePageItems = useMemo(
+    () => pagesNavGroup.items.filter((item) => hasAccess(item.section)),
+    [hasAccess],
+  );
+  const visibleBottomItems = useMemo(
+    () => bottomNavItems.filter((item) => hasAccess(item.section)),
+    [hasAccess],
+  );
+  const sidebarLinks = useMemo(
+    () => [...visibleMainItems, ...visiblePageItems, ...visibleBottomItems],
+    [visibleMainItems, visiblePageItems, visibleBottomItems],
+  );
+
+  const pagesGroupActive = visiblePageItems.some((item) =>
+    navItemActive(location.pathname, urlRole ?? 'admin', item.path),
+  );
 
   if (isRestoringSession) {
     return (
@@ -75,16 +188,64 @@ export default function StaffLayout() {
   const currentSection = pathToSection(location.pathname);
   const hasCurrentAccess = currentSection ? hasAccess(currentSection) : true;
 
-  const sidebarLinks = sectionLinks
-    .filter((link) => hasAccess(link.section))
-    .map((link) => ({ ...link, section: link.path as CmsSection }));
+  const renderNav = (navCollapsed: boolean) => (
+    <>
+      {visibleMainItems.map((item) => (
+        <NavLink
+          key={item.path}
+          item={item}
+          role={urlRole}
+          pathname={location.pathname}
+          collapsed={navCollapsed}
+        />
+      ))}
 
-  const isActive = (section: CmsSection) => {
-    const path = `/${urlRole}/${section}`;
-    return section === 'dashboard'
-      ? location.pathname === path || location.pathname === `/${urlRole}`
-      : location.pathname.startsWith(path);
-  };
+      {visiblePageItems.length > 0 && (
+        navCollapsed ? (
+          visiblePageItems.map((item) => (
+            <NavLink
+              key={item.path}
+              item={item}
+              role={urlRole}
+              pathname={location.pathname}
+              collapsed
+            />
+          ))
+        ) : (
+          <Collapsible open={pagesOpen || pagesGroupActive} onOpenChange={setPagesOpen}>
+            <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-2 text-[11px] font-semibold letter-wide uppercase text-muted-foreground hover:text-foreground transition-smooth">
+              <span>{pagesNavGroup.label}</span>
+              <ChevronDown
+                size={14}
+                className={cn('transition-transform', (pagesOpen || pagesGroupActive) && 'rotate-180')}
+              />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-1 pl-2">
+              {visiblePageItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  item={item}
+                  role={urlRole}
+                  pathname={location.pathname}
+                  collapsed={false}
+                />
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
+        )
+      )}
+
+      {visibleBottomItems.map((item) => (
+        <NavLink
+          key={item.path}
+          item={item}
+          role={urlRole}
+          pathname={location.pathname}
+          collapsed={navCollapsed}
+        />
+      ))}
+    </>
+  );
 
   if (!hasCurrentAccess) {
     return (
@@ -92,25 +253,8 @@ export default function StaffLayout() {
         <aside className="w-60 bg-background border-r border-border flex flex-col flex-shrink-0 hidden lg:flex">
           <div className="px-5 py-6 border-b border-border">
             <h1 className="font-heading text-lg font-semibold">MAISON</h1>
-            <div className="flex items-center gap-2 mt-0.5">
-              <p className="text-[10px] font-body letter-wide uppercase text-muted-foreground">{user?.name || 'Staff'}</p>
-              <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${roleBadgeStyles[role]}`}>
-                {roleLabels[role]}
-              </span>
-            </div>
           </div>
-          <nav className="flex-1 px-3 py-4 space-y-1">
-            {sidebarLinks.map((link) => (
-              <Link
-                key={link.path}
-                {...cmsTo(link.section, urlRole)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-smooth"
-              >
-                <link.icon size={16} />
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          <nav className="flex-1 px-3 py-4 space-y-1">{renderNav(false)}</nav>
         </aside>
         <main className="flex-1 flex items-center justify-center p-6">
           <motion.div
@@ -191,43 +335,17 @@ export default function StaffLayout() {
           )}
         </div>
         <nav className={`flex-1 ${collapsed ? 'px-1.5' : 'px-3'} py-4 space-y-1`}>
-          {sidebarLinks.map((link) => {
-            const active = isActive(link.section);
-            return (
-              <Link
-                key={link.section}
-                {...cmsTo(link.section, urlRole)}
-                title={collapsed ? link.label : undefined}
-                className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded text-sm font-medium transition-smooth ${
-                  active
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                }`}
-              >
-                <link.icon size={16} />
-                {!collapsed && link.label}
-              </Link>
-            );
-          })}
+          {renderNav(collapsed)}
         </nav>
         <div className={`${collapsed ? 'px-1.5' : 'px-3'} py-4 border-t border-border space-y-1`}>
-          {hasAccess('settings') && (() => {
-            const active = isActive('settings');
-            return (
-              <Link
-                {...cmsTo('settings', urlRole)}
-                title={collapsed ? 'Settings' : undefined}
-                className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded text-sm font-medium transition-smooth ${
-                  active
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                }`}
-              >
-                <Settings size={16} />
-                {!collapsed && 'Settings'}
-              </Link>
-            );
-          })()}
+          {hasAccess('settings') && (
+            <NavLink
+              item={{ path: 'settings', icon: Settings, label: 'Settings', section: 'settings' }}
+              role={urlRole}
+              pathname={location.pathname}
+              collapsed={collapsed}
+            />
+          )}
           <a
             href={STOREFRONT_URL}
             title={collapsed ? 'Back to Store' : undefined}
@@ -256,11 +374,14 @@ export default function StaffLayout() {
 
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border flex overflow-x-auto">
         {sidebarLinks.slice(0, 5).map((link) => {
-          const active = isActive(link.section);
+          const active = navItemActive(location.pathname, urlRole, link.path);
+          const linkProps = link.path.includes('/')
+            ? cmsNavPath(urlRole, link.path)
+            : cmsTo(link.section, urlRole);
           return (
             <Link
-              key={link.section}
-              {...cmsTo(link.section, urlRole)}
+              key={link.path}
+              {...linkProps}
               className={`flex-1 flex flex-col items-center gap-1 py-3 text-[10px] font-medium transition-smooth ${
                 active ? 'text-primary' : 'text-muted-foreground'
               }`}

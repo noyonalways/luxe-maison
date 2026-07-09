@@ -13,6 +13,7 @@ export {
   getReviewRepository,
   getPopupRepository,
   getHomepageRepository,
+  getContentPageRepository,
   getRolePermissionsRepository,
 } from './get-repositories.js';
 
@@ -44,6 +45,7 @@ export {
   createImpReviewRepository as createInMemoryReviewRepository,
   createImpPopupRepository as createInMemoryPopupRepository,
   createImpHomepageRepository as createInMemoryHomepageRepository,
+  createImpContentPageRepository as createInMemoryContentPageRepository,
   createImpRolePermissionsRepository as createInMemoryRolePermissionsRepository,
 } from './adapters/in_memory/repositories.js';
 
@@ -59,6 +61,7 @@ export {
   createImpReviewRepository as createMongooseReviewRepository,
   createImpPopupRepository as createMongoosePopupRepository,
   createImpHomepageRepository as createMongooseHomepageRepository,
+  createImpContentPageRepository as createMongooseContentPageRepository,
   createImpRolePermissionsRepository as createMongooseRolePermissionsRepository,
   connectMongoose,
   disconnectMongoose,
@@ -78,6 +81,7 @@ export {
   seedReviews,
   defaultPopups,
   defaultHomepageContent,
+  defaultContentPages,
   products,
   sections,
   categories,

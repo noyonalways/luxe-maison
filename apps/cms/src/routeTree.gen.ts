@@ -44,6 +44,7 @@ import { Route as rolesAdminAccessControlRouteImport } from './routes/(roles)/ad
 import { Route as rolesEmployeeProductsIndexRouteImport } from './routes/(roles)/employee/products/index'
 import { Route as rolesAdminProductsIndexRouteImport } from './routes/(roles)/admin/products/index'
 import { Route as rolesAdminProductsNewRouteImport } from './routes/(roles)/admin/products/new'
+import { Route as rolesAdminPagesSlugRouteImport } from './routes/(roles)/admin/pages/$slug'
 import { Route as rolesAdminProductsIdEditRouteImport } from './routes/(roles)/admin/products/$id.edit'
 
 const authRouteRoute = authRouteRouteImport.update({
@@ -221,6 +222,11 @@ const rolesAdminProductsNewRoute = rolesAdminProductsNewRouteImport.update({
   path: '/products/new',
   getParentRoute: () => rolesAdminRouteRoute,
 } as any)
+const rolesAdminPagesSlugRoute = rolesAdminPagesSlugRouteImport.update({
+  id: '/pages/$slug',
+  path: '/pages/$slug',
+  getParentRoute: () => rolesAdminRouteRoute,
+} as any)
 const rolesAdminProductsIdEditRoute =
   rolesAdminProductsIdEditRouteImport.update({
     id: '/products/$id/edit',
@@ -260,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof rolesAdminIndexRoute
   '/employee/': typeof rolesEmployeeIndexRoute
   '/manager/': typeof rolesManagerIndexRoute
+  '/admin/pages/$slug': typeof rolesAdminPagesSlugRoute
   '/admin/products/new': typeof rolesAdminProductsNewRoute
   '/admin/products/': typeof rolesAdminProductsIndexRoute
   '/employee/products/': typeof rolesEmployeeProductsIndexRoute
@@ -294,6 +301,7 @@ export interface FileRoutesByTo {
   '/admin': typeof rolesAdminIndexRoute
   '/employee': typeof rolesEmployeeIndexRoute
   '/manager': typeof rolesManagerIndexRoute
+  '/admin/pages/$slug': typeof rolesAdminPagesSlugRoute
   '/admin/products/new': typeof rolesAdminProductsNewRoute
   '/admin/products': typeof rolesAdminProductsIndexRoute
   '/employee/products': typeof rolesEmployeeProductsIndexRoute
@@ -333,6 +341,7 @@ export interface FileRoutesById {
   '/(roles)/admin/': typeof rolesAdminIndexRoute
   '/(roles)/employee/': typeof rolesEmployeeIndexRoute
   '/(roles)/manager/': typeof rolesManagerIndexRoute
+  '/(roles)/admin/pages/$slug': typeof rolesAdminPagesSlugRoute
   '/(roles)/admin/products/new': typeof rolesAdminProductsNewRoute
   '/(roles)/admin/products/': typeof rolesAdminProductsIndexRoute
   '/(roles)/employee/products/': typeof rolesEmployeeProductsIndexRoute
@@ -372,6 +381,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/employee/'
     | '/manager/'
+    | '/admin/pages/$slug'
     | '/admin/products/new'
     | '/admin/products/'
     | '/employee/products/'
@@ -406,6 +416,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/employee'
     | '/manager'
+    | '/admin/pages/$slug'
     | '/admin/products/new'
     | '/admin/products'
     | '/employee/products'
@@ -444,6 +455,7 @@ export interface FileRouteTypes {
     | '/(roles)/admin/'
     | '/(roles)/employee/'
     | '/(roles)/manager/'
+    | '/(roles)/admin/pages/$slug'
     | '/(roles)/admin/products/new'
     | '/(roles)/admin/products/'
     | '/(roles)/employee/products/'
@@ -705,6 +717,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof rolesAdminProductsNewRouteImport
       parentRoute: typeof rolesAdminRouteRoute
     }
+    '/(roles)/admin/pages/$slug': {
+      id: '/(roles)/admin/pages/$slug'
+      path: '/pages/$slug'
+      fullPath: '/admin/pages/$slug'
+      preLoaderRoute: typeof rolesAdminPagesSlugRouteImport
+      parentRoute: typeof rolesAdminRouteRoute
+    }
     '/(roles)/admin/products/$id/edit': {
       id: '/(roles)/admin/products/$id/edit'
       path: '/products/$id/edit'
@@ -743,6 +762,7 @@ interface rolesAdminRouteRouteChildren {
   rolesAdminSettingsRoute: typeof rolesAdminSettingsRoute
   rolesAdminTeamRoute: typeof rolesAdminTeamRoute
   rolesAdminIndexRoute: typeof rolesAdminIndexRoute
+  rolesAdminPagesSlugRoute: typeof rolesAdminPagesSlugRoute
   rolesAdminProductsNewRoute: typeof rolesAdminProductsNewRoute
   rolesAdminProductsIndexRoute: typeof rolesAdminProductsIndexRoute
   rolesAdminProductsIdEditRoute: typeof rolesAdminProductsIdEditRoute
@@ -762,6 +782,7 @@ const rolesAdminRouteRouteChildren: rolesAdminRouteRouteChildren = {
   rolesAdminSettingsRoute: rolesAdminSettingsRoute,
   rolesAdminTeamRoute: rolesAdminTeamRoute,
   rolesAdminIndexRoute: rolesAdminIndexRoute,
+  rolesAdminPagesSlugRoute: rolesAdminPagesSlugRoute,
   rolesAdminProductsNewRoute: rolesAdminProductsNewRoute,
   rolesAdminProductsIndexRoute: rolesAdminProductsIndexRoute,
   rolesAdminProductsIdEditRoute: rolesAdminProductsIdEditRoute,

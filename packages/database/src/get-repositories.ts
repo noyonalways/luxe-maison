@@ -6,6 +6,7 @@ import type {
   OrderRepository,
   PopupRepository,
   HomepageRepository,
+  ContentPageRepository,
   ProductRepository,
   ReviewRepository,
   RolePermissionsRepository,
@@ -22,6 +23,7 @@ import {
   createImpOrderRepository,
   createImpPopupRepository,
   createImpHomepageRepository,
+  createImpContentPageRepository,
   createImpProductRepository,
   createImpReviewRepository,
   createImpRolePermissionsRepository,
@@ -37,6 +39,7 @@ import {
   createImpOrderRepository as createMongooseOrderRepository,
   createImpPopupRepository as createMongoosePopupRepository,
   createImpHomepageRepository as createMongooseHomepageRepository,
+  createImpContentPageRepository as createMongooseContentPageRepository,
   createImpProductRepository as createMongooseProductRepository,
   createImpReviewRepository as createMongooseReviewRepository,
   createImpRolePermissionsRepository as createMongooseRolePermissionsRepository,
@@ -208,6 +211,17 @@ export function getHomepageRepository(adapter?: DatabaseAdapter): HomepageReposi
       return createMongooseHomepageRepository();
     default:
       return unsupported('homepage', resolveAdapter(adapter));
+  }
+}
+
+export function getContentPageRepository(adapter?: DatabaseAdapter): ContentPageRepository {
+  switch (resolveAdapter(adapter)) {
+    case 'in_memory':
+      return createImpContentPageRepository();
+    case 'mongoose':
+      return createMongooseContentPageRepository();
+    default:
+      return unsupported('content page', resolveAdapter(adapter));
   }
 }
 

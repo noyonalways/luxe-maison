@@ -14,6 +14,7 @@ export { createSettingsService, type SettingsService } from './services/settings
 export { createReviewService, type ReviewService } from './services/review.service.js';
 export { createPopupService, type PopupService } from './services/popup.service.js';
 export { createHomepageService, type HomepageService, DEFAULT_HOMEPAGE_CONTENT } from './services/homepage.service.js';
+export { createContentPageService, type ContentPageService } from './services/content-page.service.js';
 export { createAnalyticsService, computeAnalytics, type AnalyticsService } from './services/analytics.service.js';
 export { createRolePermissionsService, type RolePermissionsService } from './services/role-permissions.service.js';
 export {

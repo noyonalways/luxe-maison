@@ -14,6 +14,7 @@ export {
 } from './seed.js';
 
 export { defaultHomepageContent } from './homepage.seed.js';
+export { defaultContentPages } from './content-page.seed.js';
 
 export {
   products,

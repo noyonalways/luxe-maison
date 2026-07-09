@@ -14,6 +14,7 @@ export type CmsSection =
   | "campaigns"
   | "popup"
   | "homepage"
+  | "pages"
   | "team"
   | "settings"
   | "access-control";
@@ -24,7 +25,7 @@ const DASHBOARD_ROUTES: Record<StaffRole, AppRoutePath> = {
   employee: "/employee/dashboard",
 };
 
-const ROLE_SECTION_ROUTES: Record<StaffRole, Partial<Record<CmsSection, AppRoutePath>>> = {
+const ROLE_SECTION_ROUTES: Record<StaffRole, Partial<Record<CmsSection | string, AppRoutePath>>> = {
   admin: {
     dashboard: "/admin/dashboard",
     products: "/admin/products",
@@ -36,6 +37,9 @@ const ROLE_SECTION_ROUTES: Record<StaffRole, Partial<Record<CmsSection, AppRoute
     campaigns: "/admin/campaigns",
     popup: "/admin/popup",
     homepage: "/admin/homepage",
+    "pages/privacy": "/admin/pages/privacy",
+    "pages/terms": "/admin/pages/terms",
+    "pages/cookies": "/admin/pages/cookies",
     team: "/admin/team",
     settings: "/admin/settings",
     "access-control": "/admin/access-control",
@@ -60,6 +64,13 @@ const ROLE_SECTION_ROUTES: Record<StaffRole, Partial<Record<CmsSection, AppRoute
 /** Typed destinations for fixed role CMS routes. */
 export function cmsTo(section: CmsSection, role: StaffRole) {
   const to = ROLE_SECTION_ROUTES[role][section] ?? DASHBOARD_ROUTES[role];
+  return { to };
+}
+
+/** Navigate to a nested CMS path such as `pages/privacy`. */
+export function cmsNavPath(role: StaffRole, path: string) {
+  const routes = ROLE_SECTION_ROUTES[role] as Record<string, AppRoutePath | undefined>;
+  const to = routes[path] ?? DASHBOARD_ROUTES[role];
   return { to };
 }
 

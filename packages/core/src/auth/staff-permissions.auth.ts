@@ -13,6 +13,7 @@ export type CmsSection =
   | 'campaigns'
   | 'popup'
   | 'homepage'
+  | 'pages'
   | 'access-control'
   | 'team'
   | 'settings';
@@ -64,6 +65,7 @@ const ADMIN_PERMISSIONS: Record<CmsSection, Permission> = {
   campaigns: 'full',
   popup: 'full',
   homepage: 'full',
+  pages: 'full',
   'access-control': 'full',
   team: 'full',
   settings: 'full',
@@ -81,6 +83,7 @@ export const DEFAULT_PERMISSIONS: EditableRolePermissions = {
     campaigns: 'full',
     popup: 'none',
     homepage: 'none',
+    pages: 'none',
     'access-control': 'none',
     team: 'none',
     settings: 'none',
@@ -96,6 +99,7 @@ export const DEFAULT_PERMISSIONS: EditableRolePermissions = {
     campaigns: 'none',
     popup: 'none',
     homepage: 'none',
+    pages: 'none',
     'access-control': 'none',
     team: 'none',
     settings: 'none',
@@ -113,6 +117,7 @@ export const ALL_SECTIONS: CmsSection[] = [
   'campaigns',
   'popup',
   'homepage',
+  'pages',
   'team',
   'settings',
   'access-control',
@@ -155,6 +160,7 @@ export function pathToSection(path: string): CmsSection | null {
   const parts = path.split('/').filter(Boolean);
   if (parts.length < 2 || parts[1] === 'dashboard') return 'dashboard';
   const section = parts[1];
+  if (section === 'pages') return 'pages';
   if (ALL_SECTIONS.includes(section as CmsSection)) return section as CmsSection;
   return null;
 }

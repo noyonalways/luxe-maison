@@ -56,10 +56,18 @@ export default function Footer() {
         <div className="border-t border-background/10 mt-16 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs opacity-40">© 2026 MAISON. All rights reserved.</p>
           <div className="flex gap-6">
-            {['Privacy', 'Terms', 'Cookies'].map(item => (
-              <span key={item} className="text-xs opacity-40 cursor-pointer transition-smooth hover:opacity-80">
-                {item}
-              </span>
+            {[
+              { label: 'Privacy', href: '/privacy' },
+              { label: 'Terms', href: '/terms' },
+              { label: 'Cookies', href: '/cookies' },
+            ].map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="text-xs opacity-40 transition-smooth hover:opacity-80"
+              >
+                {item.label}
+              </Link>
             ))}
           </div>
         </div>

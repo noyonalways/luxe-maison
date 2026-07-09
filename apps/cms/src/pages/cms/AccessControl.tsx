@@ -15,6 +15,8 @@ import {
   Shield,
   Settings,
   Home,
+  FileText,
+  Cookie,
   RotateCcw,
   Loader2,
 } from 'lucide-react';
@@ -31,6 +33,7 @@ const sectionMeta: Record<Section, { label: string; icon: React.ElementType }> =
   campaigns: { label: 'Campaigns', icon: Megaphone },
   popup: { label: 'Welcome Popup', icon: MessageSquare },
   homepage: { label: 'Homepage', icon: Home },
+  pages: { label: 'Store Pages', icon: FileText },
   team: { label: 'Team', icon: Users },
   settings: { label: 'Settings', icon: Settings },
   'access-control': { label: 'Access Control', icon: Shield },
