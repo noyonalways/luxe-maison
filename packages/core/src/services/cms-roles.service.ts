@@ -115,7 +115,11 @@ export function createCmsRolesService(repository: CmsRolesRepository) {
 
     async updateRole(
       id: string,
-      updates: Partial<Pick<CmsRole, 'name' | 'slug' | 'permissions'>>,
+      updates: {
+        name?: string;
+        slug?: string;
+        permissions?: Partial<Record<CmsSection, Permission>>;
+      },
     ): Promise<CmsRole | null> {
       await ensureSeeded();
       const current = await repository.findById(id);
