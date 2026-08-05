@@ -16,6 +16,9 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import type { AuthVariables } from './middleware/auth.middleware.js';
 import { requestLogger } from './middleware/request-logger.middleware.js';
+import { requestShield } from './middleware/request-shield.middleware.js';
+import { globalRateLimiter, authRateLimiter } from './middleware/rate-limiter.middleware.js';
+import { securityHeaders } from './middleware/security-headers.middleware.js';
 import { analyticsRoutes } from './routes/analytics.routes.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { customerAuthRoutes } from './routes/customer-auth.routes.js';
@@ -51,8 +54,50 @@ const popupRepository = getPopupRepository();
 
 const app = new Hono<{ Variables: AuthVariables }>();
 
+const defaultAllowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173',
+  'https://luxe-maison.noyonrahman.com',
+  'https://admin-luxe-maison.noyonrahman.com',
+  'http://admin-luxe-maison.noyonrahman.com',
+];
+
+const envAllowedOrigins = [
+  process.env.STOREFRONT_URL,
+  process.env.CMS_URL,
+  process.env.VITE_STOREFRONT_URL,
+  process.env.VITE_CMS_URL,
+  process.env.CORS_ALLOWED_ORIGINS,
+]
+  .filter((val): val is string => Boolean(val))
+  .flatMap((url) => url.split(',').map((o) => o.trim()));
+
+const allowedOrigins = new Set([...defaultAllowedOrigins, ...envAllowedOrigins]);
+
+app.use('*', securityHeaders);
+app.use('*', requestShield);
 app.use('*', requestLogger);
-app.use('*', cors());
+app.use('*', globalRateLimiter);
+app.use(
+  '*',
+  cors({
+    origin: (origin) => {
+      if (!origin || allowedOrigins.has(origin)) {
+        return origin;
+      }
+      return null;
+    },
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    credentials: true,
+  }),
+);
+
+// Strict rate limiting for authentication endpoints
+app.use('/api/auth/*', authRateLimiter);
+app.use('/api/customer-auth/*', authRateLimiter);
 
 healthRoutes(app);
 authRoutes(app, { staffRepository });
