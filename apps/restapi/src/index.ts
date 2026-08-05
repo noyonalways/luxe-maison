@@ -12,7 +12,14 @@ const { seedStaffIfEmpty } = await import('./seed/staff.seed.js');
 await seedStaffIfEmpty(staffRepository);
 
 serve({ fetch: app.fetch, port }, (info) => {
-  console.log(`REST API listening on http://localhost:${info.port} (${adapter})`);
+  const apiUrl =
+    process.env.API_URL ||
+    process.env.PUBLIC_API_URL ||
+    process.env.SERVER_URL ||
+    process.env.VITE_API_URL ||
+    `http://localhost:${info.port}`;
+
+  console.log(`REST API listening on ${apiUrl} (${adapter})`);
 });
 
 async function shutdown() {
